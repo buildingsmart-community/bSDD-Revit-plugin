@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ApplicationPackage SchemaVersion="1.0"
+	ProductType="Application"
+	Name="RevitTemplate"
+	AppVersion="0.2.0"
+    Description="Revit Template Addin"
+    SupportedLocales="Enu"
+    Author="ASRR"
+    AutodeskProduct="Revit"
+    FriendlyVersion="0.2.0"
+    AppNameSpace="appstore.exchange.autodesk.com">
+
+	<CompanyDetails Name="ASRR" />
+
+	<RuntimeRequirements OS="Win32|Win64" Platform="Revit" SeriesMin="R2020" SeriesMax="R2020" />
+
+	<Components Description="2023 parts">
+		<RuntimeRequirements OS="Win64" Platform="Revit" SeriesMin="R2023" SeriesMax="R2023" />
+		<ComponentEntry AppName="RevitTemplate" Version="0.1.0" ModuleName="./Contents/2023/RevitTemplate.addin" AppDescription="Revit Template Addin" />
+	</Components>
+</ApplicationPackage>

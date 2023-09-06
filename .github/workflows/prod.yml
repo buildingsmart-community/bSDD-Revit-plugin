@@ -1,0 +1,90 @@
+#prod.yml
+
+name: Deploy to Production
+on:
+  push:
+    # this will cause the action to run on pushes to main
+    branches: [ dev ]  # change this tomain once that branch exists
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+jobs:
+  Build:
+    # The type of runner that the job will run on
+    runs-on: windows-latest
+    env:
+        Solution_Name: RevitTemplate.sln
+    outputs:
+      Version: ${{ steps.gitversion.outputs.nuGetVersionV2 }} 
+      CommitsSinceVersionSource: ${{ steps.gitversion.outputs.CommitsSinceVersionSource }}   
+      
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      
+       # install and calculate the new version with GitVersion  
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0.9.7
+        with:
+          versionSpec: '5.5.0'
+
+      - name: Determine Version
+        uses: gittools/actions/gitversion/execute@v0.9.7
+        with:
+          useConfigFile: true
+          configFilePath: GitVersion.yml
+        
+        id: gitversion # step id used as reference for output values
+      - name: Display GitVersion outputs
+        run: |
+          echo "MajorMinorPatch: ${{ steps.gitversion.outputs.majorMinorPatch }}"
+          echo "NuGetVersionV2: ${{ steps.gitversion.outputs.nuGetVersionV2 }}"   
+          echo "CommitsSinceVersionSource: ${{ steps.gitversion.outputs.CommitsSinceVersionSource }}"    
+      - name: Setup MSBuild.exe
+        uses: microsoft/setup-msbuild@v1.0.2
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v1.0.5
+
+      - name: Restore NuGet packages
+        run: |
+          dotnet nuget add source "https://nuget.pkg.github.com/ASRRtechnologies/index.json" --name "GitHub ASRR" --username "jcathalina" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
+          nuget restore $env:Solution_Name 
+
+      # Update the version inside of the .iss file
+      - name: Updating the version into the installer
+        run: (Get-Content RevitTemplate.Installer/Installer.iss) -replace 'MyAppVersion "1.0.0"', 'MyAppVersion "v${{ steps.gitversion.outputs.majorMinorPatch }}"' | Out-File -encoding ASCII RevitTemplate.Installer/Installer.iss
+
+      - name: Run MSBuild
+        id: run-msbuild
+        run: |
+          msbuild $env:Solution_Name /t:Clean,Build /p:platform="Any CPU" /p:Configuration=Release
+
+      - name: Run tests
+        id: run-tests
+        run: |
+          dotnet test
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ steps.gitversion.outputs.majorMinorPatch }}
+          release_name: ASRR Revit Template v${{ steps.gitversion.outputs.majorMinorPatch }}
+          automatic_release_tag: "latest"
+          draft: false
+          prerelease: false
+      - name: Upload Release Asset
+        id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+          asset_path: .\RevitTemplate.Installer\Output\RevitTemplateAddin.exe
+          asset_name: RevitTemplateAddin.exe
+          asset_content_type: application/zip

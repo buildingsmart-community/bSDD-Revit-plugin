@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33502.453
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RevitTemplate.Common", "RevitTemplate.Common\RevitTemplate.Common.shproj", "{14ACABB0-3D60-422E-9CE9-A4BC644393E3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevitTemplate.2023", "RevitTemplate.2023\RevitTemplate.2023.csproj", "{8404F487-DC2E-4E21-A29D-A164A94E0920}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevitTemplate.Installer", "RevitTemplate.Installer\RevitTemplate.Installer.csproj", "{9889A04D-AC37-404C-B2C2-01DE989866ED}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8404F487-DC2E-4E21-A29D-A164A94E0920} = {8404F487-DC2E-4E21-A29D-A164A94E0920}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevitTemplate.Resources", "RevitTemplate.Resources\RevitTemplate.Resources.csproj", "{4C519D66-46F3-43DF-BCF5-CC1847654828}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8404F487-DC2E-4E21-A29D-A164A94E0920}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8404F487-DC2E-4E21-A29D-A164A94E0920}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8404F487-DC2E-4E21-A29D-A164A94E0920}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8404F487-DC2E-4E21-A29D-A164A94E0920}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9889A04D-AC37-404C-B2C2-01DE989866ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9889A04D-AC37-404C-B2C2-01DE989866ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9889A04D-AC37-404C-B2C2-01DE989866ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9889A04D-AC37-404C-B2C2-01DE989866ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C519D66-46F3-43DF-BCF5-CC1847654828}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C519D66-46F3-43DF-BCF5-CC1847654828}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C519D66-46F3-43DF-BCF5-CC1847654828}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C519D66-46F3-43DF-BCF5-CC1847654828}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DC28645D-86C5-4082-B634-57B878A64EE3}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		RevitTemplate.Common\RevitTemplate.Common.projitems*{14acabb0-3d60-422e-9ce9-a4bc644393e3}*SharedItemsImports = 13
+		RevitTemplate.Common\RevitTemplate.Common.projitems*{8404f487-dc2e-4e21-a29d-a164a94e0920}*SharedItemsImports = 4
+	EndGlobalSection
+EndGlobal
