@@ -63,13 +63,13 @@ namespace BsddRevitPlugin.Common
             }
 
             PushButtonData pbd = new PushButtonData("Sample", "Click Me", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.Popup");
-            RibbonPanel panel = application.CreateRibbonPanel(eTabName, "Revit Template");
+            RibbonPanel panel = application.CreateRibbonPanel(eTabName, "bSDD");
 
             // Create the main button.
             PushButton pb = panel.AddItem(pbd) as PushButton;
 
             pb.ToolTip = "This is a sample Revit button";
-            pb.LargeImage = ResourceImage.GetIcon("ASRR_A_icon.png");
+            pb.LargeImage = ResourceImage.GetIcon("bsdd-label.png");
         }
     }
 }

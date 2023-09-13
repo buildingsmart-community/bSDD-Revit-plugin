@@ -53,12 +53,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Images\Icons\ASRR_A_icon.bmp" />
-    <Content Include="Images\Icons\ASRR_A_icon.ico" />
-    <EmbeddedResource Include="Images\Icons\ASRR_A_icon.png">
+    <Content Include="Images\Icons\bsdd-label.bmp" />
+    <Content Include="Images\Icons\bsdd-label.ico" />
+    <EmbeddedResource Include="Images\Icons\bsdd-label.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <Content Include="Images\Icons\ASRR_A_icon.svg" />
+    <Content Include="Images\Icons\bsdd-label.svg" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
