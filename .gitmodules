@@ -1,0 +1,6 @@
+[submodule "lib/assr/lib-asrr-core"]
+	path = lib/assr/lib-asrr-core
+	url = https://github.com/ASRRtechnologies/lib-asrr-core.git
+[submodule "lib/assr/lib-asrr-revit-core"]
+	path = lib/assr/lib-asrr-revit-core
+	url = https://github.com/ASRRtechnologies/lib-asrr-revit-core.git
