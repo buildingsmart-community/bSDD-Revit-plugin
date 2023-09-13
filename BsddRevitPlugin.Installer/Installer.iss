@@ -16,7 +16,7 @@ AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 DefaultDirName={#installerPath}
 DisableDirPage=yes
-DefaultGroupName=Revit Template Group
+DefaultGroupName=bSDD Revit Group
 DisableProgramGroupPage=yes
 
 #define Revit2023 "\Autodesk\ApplicationPlugins\BsddRevitPlugin.bundle\Contents\2023\"
@@ -31,11 +31,11 @@ OutputDir=.\Output
 OutputBaseFilename=BsddRevitPluginAddin
 Compression=lzma
 SolidCompression=yes
-SetupIconFile="..\BsddRevitPlugin.Resources\Images\Icons\ASRR_A_icon.ico"
+SetupIconFile="..\BsddRevitPlugin.Resources\Images\Icons\bsdd-label.ico"
 OutputManifestFile=Setup-Manifest.txt
 UninstallDisplayName="bSDD Revit plugin Uninstall"
-UninstallDisplayIcon="..\BsddRevitPlugin.Resources\Images\Icons\ASRR_A_icon.ico"
-WizardSmallImageFile="..\BsddRevitPlugin.Resources\Images\Icons\ASRR_A_icon.bmp"
+UninstallDisplayIcon="..\BsddRevitPlugin.Resources\Images\Icons\bsdd-label.ico"
+WizardSmallImageFile="..\BsddRevitPlugin.Resources\Images\Icons\bsdd-label.bmp"
 WizardStyle=modern
 
 [Languages]

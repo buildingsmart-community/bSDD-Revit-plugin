@@ -3,7 +3,7 @@
 	ProductType="Application"
 	Name="BsddRevitPlugin"
 	AppVersion="0.2.0"
-    Description="Revit Template Addin"
+    Description="bSDD Revit plugin"
     SupportedLocales="Enu"
     Author=""
     AutodeskProduct="Revit"
