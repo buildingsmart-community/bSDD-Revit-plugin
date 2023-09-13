@@ -1,4 +1,4 @@
-# bSDD-Revit-plugin
+# BsddRevitPlugin
 
 This is a community build tool. 
 It is not an official buildingSMART International initiative. 

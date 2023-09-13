@@ -13,7 +13,7 @@ jobs:
     # The type of runner that the job will run on
     runs-on: windows-latest
     env:
-        Solution_Name: RevitTemplate.sln
+        Solution_Name: BsddRevitPlugin.sln
     outputs:
       Version: ${{ steps.gitversion.outputs.nuGetVersionV2 }} 
       CommitsSinceVersionSource: ${{ steps.gitversion.outputs.CommitsSinceVersionSource }}   
@@ -55,7 +55,7 @@ jobs:
 
       # Update the version inside of the .iss file
       - name: Updating the version into the installer
-        run: (Get-Content RevitTemplate.Installer/Installer.iss) -replace 'MyAppVersion "1.0.0"', 'MyAppVersion "v${{ steps.gitversion.outputs.majorMinorPatch }}"' | Out-File -encoding ASCII RevitTemplate.Installer/Installer.iss
+        run: (Get-Content BsddRevitPlugin.Installer/Installer.iss) -replace 'MyAppVersion "1.0.0"', 'MyAppVersion "v${{ steps.gitversion.outputs.majorMinorPatch }}"' | Out-File -encoding ASCII BsddRevitPlugin.Installer/Installer.iss
 
       - name: Run MSBuild
         id: run-msbuild
@@ -85,6 +85,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: .\RevitTemplate.Installer\Output\RevitTemplateAddin.exe
-          asset_name: RevitTemplateAddin.exe
+          asset_path: .\BsddRevitPlugin.Installer\Output\BsddRevitPluginAddin.exe
+          asset_name: BsddRevitPluginAddin.exe
           asset_content_type: application/zip

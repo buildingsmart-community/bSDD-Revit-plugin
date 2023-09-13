@@ -17,7 +17,7 @@ jobs:
     # The type of runner that the job will run on
     runs-on: windows-latest
     env:
-      Solution_Name: RevitTemplate.sln
+      Solution_Name: BsddRevitPlugin.sln
     outputs:
       Version: ${{ steps.gitversion.outputs.nuGetVersionV2 }}
       CommitsSinceVersionSource: ${{ steps.gitversion.outputs.CommitsSinceVersionSource }}
