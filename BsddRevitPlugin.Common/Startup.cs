@@ -63,13 +63,22 @@ namespace BsddRevitPlugin.Common
             }
 
             PushButtonData pbd = new PushButtonData("Sample", "Click Me", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.Popup");
-            RibbonPanel panel = application.CreateRibbonPanel(eTabName, "bSDD");
-
+            PushButtonData pbd1 = new PushButtonData("Sample", "Click Me", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.IFCexporter");
+            PushButtonData pbd2 = new PushButtonData("Sample", "Click Me", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.ParameterAanpassen");
+            RibbonPanel panel = application.CreateRibbonPanel(eTabName, "Popup");
+            RibbonPanel panel1 = application.CreateRibbonPanel(eTabName, "IFCExporter");
+            RibbonPanel panel2 = application.CreateRibbonPanel(eTabName, "ParameterAanpassen");
             // Create the main button.
             PushButton pb = panel.AddItem(pbd) as PushButton;
+            PushButton pb1 = panel1.AddItem(pbd1) as PushButton;
+            PushButton pb2 = panel2.AddItem(pbd2) as PushButton;
 
             pb.ToolTip = "This is a sample Revit button";
             pb.LargeImage = ResourceImage.GetIcon("bsdd-label.png");
+            pb1.ToolTip = "This is a sample Revit button";
+            pb1.LargeImage = ResourceImage.GetIcon("bsdd-label.png");
+            pb2.ToolTip = "This is a sample Revit button";
+            pb2.LargeImage = ResourceImage.GetIcon("bsdd-label.png");
         }
     }
 }

@@ -12,7 +12,7 @@ namespace BsddRevitPlugin.Common.Commands
         {
             try
             {
-                TaskDialog.Show("bSDD Revit plugin", "Looks like this worked!");
+                TaskDialog.Show("bSDD Revit plugin", "Looks like this worked! CvO");
                 return Result.Succeeded;
             }
             catch (Exception e)
