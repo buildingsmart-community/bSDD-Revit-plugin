@@ -1,0 +1,41 @@
+﻿<Page x:Class="DockableDialog.Forms.bSDDPanel"
+        xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:dat="clr-namespace:System.Windows.Data;assembly=PresentationFramework"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:System="clr-namespace:System;assembly=mscorlib"
+        Title="Dockable Dialogs"  Height="500" Width="200"
+        x:Name="DockableDialogs"  Background="LightGray" Loaded="DockableDialogs_Loaded">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition/>
+            <RowDefinition Height="0*"></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+
+        </Grid.ColumnDefinitions>
+        <Label Grid.Row="0" Margin="0,0,0,246" Grid.RowSpan="2">Log</Label>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,246" Grid.RowSpan="2">
+            <ComboBox Name="SM" SelectionChanged="SM_SelectionChanged"/>
+            <Label x:Name="lb1" Content=""/>
+            <ListBox Name="lbxSelection" Height="Auto"></ListBox>
+        </StackPanel>
+
+        <!--  
+        <Button Name="btn_stats" Click="PaneInfoButton_Click">Tjo...</Button>
+        <TextBox Name="tb_output" Grid.Row="1" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible"></TextBox>
+        <Label Content="Project Name:" Grid.Row="2" Height="28" HorizontalAlignment="Left" Name="lblProjectNameHeading" VerticalAlignment="Top" Margin="0,6,0,0" />
+        <Label Content="Label" Grid.Row="2" Height="26" HorizontalAlignment="Left" Margin="12,34,0,0" Name="lblProjectName" VerticalAlignment="Top" Width="176" />
+-->
+    </Grid>
+
+</Page>
+
+
+
+
+
+

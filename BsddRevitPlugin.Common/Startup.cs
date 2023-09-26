@@ -1,6 +1,8 @@
 ﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.UI;
 using BsddRevitPlugin.Resources;
+using DockableDialog.Forms;
+using DockablePanel;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -20,6 +22,9 @@ namespace BsddRevitPlugin.Common
 
         public Result OnStartup(UIControlledApplication application)
         {
+            //Registreer Dockable panel voor Revit project geopend wordt.
+            RegisterDockPanel(application);
+            
             AddRibbonButtons(application);
             Main.Instance.OpenLogs();
 
@@ -71,5 +76,21 @@ namespace BsddRevitPlugin.Common
             pb.ToolTip = "This is a sample Revit button";
             pb.LargeImage = ResourceImage.GetIcon("bsdd-label.png");
         }
+
+        #region DockablePanel
+
+        private void RegisterDockPanel(UIControlledApplication app)
+        {
+            //Koppel het window aan de Mainpage
+            bSDDPanel MainDockableWindow = new bSDDPanel();
+            DockablePaneProviderData data = new DockablePaneProviderData();
+
+            //Maak een ID aan
+            DockablePaneId dpid = new DockablePaneId(new Guid("D7C963CE-B3CA-426A-8D51-6E8254D21158"));
+
+            app.RegisterDockablePane(dpid, "bSDD", MainDockableWindow as IDockablePaneProvider);
+        }
+
+        #endregion
     }
 }
