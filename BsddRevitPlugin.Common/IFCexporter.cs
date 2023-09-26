@@ -16,15 +16,6 @@ using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 
-
-using System;
-using Autodesk.Revit.Attributes;
-using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
-
-
-
-
 namespace IFCexporter
 {
     [Transaction(TransactionMode.Manual)]
@@ -173,11 +164,14 @@ namespace IFCexporter
                                 exportOptions.AddOption("ExportSchedulesAsPsets", false.ToString());
                                 exportOptions.AddOption("ExportSpecificSchedules", false.ToString());
 
-                                exportOptions.AddOption("ExportUserDefinedPsets", false.ToString());
-                                exportOptions.AddOption("ExportUserDefinedPsetsFileName", "");
 
-                                exportOptions.AddOption("ExportUserDefinedParameterMapping", false.ToString());
-                                exportOptions.AddOption("ExportUserDefinedParameterMappingFileName", "");
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                //exportOptions.AddOption("ExportUserDefinedPsets", false.ToString());
+                                //exportOptions.AddOption("ExportUserDefinedPsetsFileName", "");
+
+                                //exportOptions.AddOption("ExportUserDefinedParameterMapping", false.ToString());
+                                //exportOptions.AddOption("ExportUserDefinedParameterMappingFileName", "");
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                                 exportOptions.AddOption("TessellationLevelOfDetail", 0.5.ToString());
                                 exportOptions.AddOption("ExportPartsAsBuildingElements", false.ToString());
