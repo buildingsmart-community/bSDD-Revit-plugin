@@ -38,7 +38,7 @@ namespace Selectors
             return list;
         }
 
-        public List<Element> AllSelectedElements(UIApplication uiapp)
+        public List<Element> SelectElements(UIApplication uiapp)
         {
             //Select by selection
             List<Element> list = new List<Element>();

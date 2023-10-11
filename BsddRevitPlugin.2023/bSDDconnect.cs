@@ -11,25 +11,125 @@ using System.Text;
 using System.Windows.Data;
 using System.Windows.Documents;
 using Selectors;
+using System.Windows.Controls;
+using System.Security.Cryptography.X509Certificates;
+using System.Windows.Controls.Primitives;
 
-namespace bSDDconnect
+namespace BSDDconnect
 {
+    public class EventMakeSelection : IExternalEventHandler
+    {
+        static List<Element> elemList = new List<Element>();
+        Select Selectorlist = new Select();
+        
+        public void Execute(UIApplication uiapp)
+        {
+            elemList = Selectorlist.SelectElements(uiapp);
+
+            //print
+            bSDDPanel print = new bSDDPanel();
+            print.printList(elemList);
+        }
+
+        public string GetName()
+        {
+            return "";
+        }
+    }
+
+    public class EventSelectAll : IExternalEventHandler
+    {
+        static List<Element> elemList = new List<Element>();
+        Select Selectorlist = new Select();
+
+        public void Execute(UIApplication uiapp)
+        {
+            elemList = Selectorlist.AllElements(uiapp);
+
+            //print
+            bSDDPanel print = new bSDDPanel();
+            print.printList(elemList);
+            //TaskDialog.Show("Titel: ", print(elemList));
+        }
+
+        public string GetName()
+        {
+            return "";
+        }
+
+        public string print(List<Element> elemList)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            if (elemList != null && elemList.Count > 0)
+            {
+                foreach (Element elem in elemList)
+                {
+                    sb.Append("\n" + elem.Name);
+                }
+            }
+            return sb.ToString();
+        }
+    }
+
+    public class EventSelectView : IExternalEventHandler
+    {
+        static List<Element> elemList = new List<Element>();
+        Select Selectorlist = new Select();
+
+        public void Execute(UIApplication uiapp)
+        {
+            elemList = Selectorlist.AllElementsView(uiapp);
+
+            //print
+            bSDDPanel print = new bSDDPanel();
+            print.printList(elemList);
+            //TaskDialog.Show("Titel: ", print(elemList));
+        }
+
+        public string GetName()
+        {
+            return "";
+        }
+
+        public string print(List<Element> elemList)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            if (elemList != null && elemList.Count > 0)
+            {
+                foreach (Element elem in elemList)
+                {
+                    sb.Append("\n" + elem.Name);
+                }
+            }
+            return sb.ToString();
+        }
+    }
+
+
+
     [Transaction(TransactionMode.Manual)]
     public class Command : IExternalCommand
     {
-        static List<Element> elemList = new List<Element>();
-
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
             UIApplication uiapp = commandData.Application;
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uidoc.Document;
 
-            elemList.Clear();
+            //using(Transaction t = new Transaction(doc, "Modify Project Name"))
+            //{
+            //    t.Start();
+            //    doc.ProjectInformation.GetParameters("Project Name")[0].Set("Space Elevator");
+            //    t.Commit();
+            //}
+
+            
             Select Selectorlist = new Select();
             //elemList = Selectorlist.AllElements(uiapp);
 
-            elemList = Selectorlist.AllElementsView(uiapp);
+            //elemList = Selectorlist.AllElementsView(uiapp);
 
             //elemList = Selectorlist.AllSelectedElements(uiapp);
 
@@ -46,21 +146,7 @@ namespace bSDDconnect
             //zet in lijst
             //                    List<ElementId> ids = (from Reference r in collectionSelect select r.ElementId).ToList();
 
-            using (Transaction tx = new Transaction(doc))
-            {
-                //print
-                StringBuilder sb = new StringBuilder();
-                tx.Start("transaction");
-                if (elemList != null && elemList.Count > 0)
-                {
-                    foreach (Element elem in elemList)
-                    {
-                        sb.Append("\n" + elem.Name);
-                    }
-                    TaskDialog.Show("Titel: ", sb.ToString());
-                }
-                tx.Commit();
-            };
+            
             //Geef standaarden aan?
 
             //Verwijder niet van toepassing zijnde elementen uit de lijst
