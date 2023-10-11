@@ -1,32 +1,18 @@
 ﻿using System;
-using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media.Imaging;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Net;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using Microsoft.Win32;
-using System.Windows.Navigation;
-using System.Windows.Controls.Primitives;
 using System.Reflection;
-using System.Drawing;
-using System.Configuration;
 using System.Collections.Generic;
 using Autodesk.Revit.UI;
 using System.Text;
-using APIUtility;
-using System.Windows.Forms;
 using ComboBox = System.Windows.Controls.ComboBox;
-using Autodesk.Revit.DB.Electrical;
 using Autodesk.Revit.DB;
-using System.Windows.Shapes;
-using System.Windows.Markup;
-using bSDDconnect;
+using BSDDconnect;
+using System.Windows.Forms;
+using Autodesk.Revit.Creation;
+using System.Windows.Documents;
+using Autodesk.Revit.UI.Selection;
+using System.Collections;
 
 namespace DockableDialog.Forms
 {
@@ -35,6 +21,13 @@ namespace DockableDialog.Forms
     /// </summary>
     public partial class bSDDPanel : Page, Autodesk.Revit.UI.IDockablePaneProvider
     {
+        
+        //Declaration
+        BSDDconnect.EventMakeSelection SelectEHMS;
+        BSDDconnect.EventSelectAll SelectEHSA;
+        BSDDconnect.EventSelectView SelectEHSV;
+        ExternalEvent SelectEEMS, SelectEESA, SelectEESV;
+
         #region Data
         private Guid m_targetGuid = new Guid("D7C963CE-B3CA-426A-8D51-6E8254D21158");
         private DockPosition m_position = DockPosition.Floating;
@@ -42,16 +35,31 @@ namespace DockableDialog.Forms
         private int m_right = 100;
         private int m_top = 100;
         private int m_bottom = 100;
+        public List<ListItem> items = new List<ListItem>();
         #endregion
+
+        // constructor
         public bSDDPanel()
         {
             InitializeComponent();
+            
+            lbxSelection.ItemsSource = items;
+
+            //initialazor
+            SelectEHMS = new BSDDconnect.EventMakeSelection();
+            SelectEHSA = new BSDDconnect.EventSelectAll();
+            SelectEHSV = new BSDDconnect.EventSelectView();
+            SelectEEMS = ExternalEvent.Create(SelectEHMS);
+            SelectEESA = ExternalEvent.Create(SelectEHSA);
+            SelectEESV = ExternalEvent.Create(SelectEHSV);
+            
             SM.Items.Add(new ComboBoxItem() { Content = "Selection method:", IsSelected = true, IsEnabled = false });
             SM.Items.Add(new ComboBoxItem() { Content = "Make selection" });
             SM.Items.Add(new ComboBoxItem() { Content = "Select all" });
             SM.Items.Add(new ComboBoxItem() { Content = "Select visable in view" });
             SM.SelectedItem = SM.Items[0];
         }
+
         public void SetupDockablePane(Autodesk.Revit.UI.DockablePaneProviderData data)
         {
             data.FrameworkElement = this as FrameworkElement;
@@ -74,12 +82,7 @@ namespace DockableDialog.Forms
             if (m_position == DockPosition.Floating)
             {
                 data.InitialState.SetFloatingRectangle(new Autodesk.Revit.DB.Rectangle(0, 0, 100, 710));
-                //data.InitialState.DockPosition = DockPosition.Tabbed;
             }
-            System.Windows.MessageBox.Show("***Intial docking parameters***");
-            System.Windows.MessageBox.Show(GetDockStateSummary(data.InitialState));
-            //Log.Message("***Intial docking parameters***");
-            //Log.Message(APIUtility.GetDockStateSummary(data.InitialState));
         }
         public void SetInitialDockingParameters(int left, int right, int top, int bottom, DockPosition position, Guid targetGuid)
         {
@@ -116,59 +119,50 @@ namespace DockableDialog.Forms
 
         }
 
-        /// <summary>
-        /// Display docking state information as a string.
-        /// </summary>
-        public static string GetDockStateSummary(DockablePaneState paneState)
-        {
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
-            sb.AppendLine(" -DockablePaneState-");
-            sb.AppendLine(" Left: " + paneState.FloatingRectangle.Left.ToString());
-            sb.AppendLine(" Right: " + paneState.FloatingRectangle.Right.ToString());
-            sb.AppendLine(" Top: " + paneState.FloatingRectangle.Top.ToString());
-            sb.AppendLine(" Bottom: " + paneState.FloatingRectangle.Bottom.ToString());
-            sb.AppendLine(" Position: " + paneState.DockPosition.ToString());
-            sb.AppendLine(" Tab target guid:" + paneState.TabBehind.Guid.ToString());
-            return (sb.ToString());
-        }
 
         private void SM_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            string path = Assembly.GetExecutingAssembly().Location;
-            var lijst = "";
+            items.Clear();
+
+            //Make the IExternalcommand happen
             if (((ComboBoxItem)(((ComboBox)sender).SelectedItem)).Content.ToString() == "Make selection")
             {
-                var elemList = new bSDDconnect.Command();
-                new PushButtonData("Contact", "Contact", path, "Contact.Command");
-
-                //ListBuilder(elemList);
-                lijst = "hoi1";
+                SelectEEMS.Raise();
             }
             else if (((ComboBoxItem)(((ComboBox)sender).SelectedItem)).Content.ToString() == "Select all")
             {
-                var elemList = new bSDDconnect.Command();
-                lijst = "hoi2";
+                SelectEESA.Raise();
             }
             else if (((ComboBoxItem)(((ComboBox)sender).SelectedItem)).Content.ToString() == "Select visable in view")
             {
-                var elemList = new bSDDconnect.Command();
-                lijst = "hoi3";
+                SelectEESV.Raise();
             };
-            lb1.Content = lijst;
         }
 
-        private void ListBuilder(List<Element> e)
+
+        public void printList(List<Element> lijst)
         {
-            //print
-            StringBuilder sb = new StringBuilder();
-            if (e != null && e.Count > 0)
+            //string combinedString = string.Join("\n", lijst);
+            foreach (Element item in lijst)
             {
-                foreach (Element elem in e)
-                {
-                    sb.Append("\n" + elem.Name);
-                }
-                TaskDialog.Show("Titel: ", sb.ToString());
+                items.Add(new ListItem() { Familyname = GetFamilyName(item) });
+                //System.Windows.MessageBox.Show(items.GetRange(0));
             }
+
+            lbxSelection.Items.Refresh();  
         }
+        public static string GetFamilyName(Element e)
+        {
+            var eId = e?.GetTypeId();
+            if (eId == null)
+                return "";
+            var elementType = e.Document.GetElement(eId) as ElementType;
+            return elementType?.FamilyName ?? "";
+        }
+    }
+    
+    public class ListItem
+    {
+        public string Familyname { get; set; }
     }
 }

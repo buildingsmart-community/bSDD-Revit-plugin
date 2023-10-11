@@ -68,13 +68,17 @@ namespace BsddRevitPlugin.Common
             }
 
             PushButtonData pbd = new PushButtonData("Sample", "Click Me", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.Popup");
+            PushButtonData pbddp = new PushButtonData("Sample2", "Show/Hide selector", executingAssemblyPath, "DockablePanel.ShowDockableWindow");
             RibbonPanel panel = application.CreateRibbonPanel(eTabName, "bSDD");
 
             // Create the main button.
             PushButton pb = panel.AddItem(pbd) as PushButton;
+            PushButton pbdp = panel.AddItem(pbddp) as PushButton;
 
             pb.ToolTip = "This is a sample Revit button";
+            pbdp.ToolTip = "Show/hide bSDD selection panel";
             pb.LargeImage = ResourceImage.GetIcon("bsdd-label.png");
+            pbdp.LargeImage = ResourceImage.GetIcon("bsdd-label.png");
         }
 
         #region DockablePanel
