@@ -36,6 +36,7 @@ namespace DockableDialog.Forms
         private int m_top = 100;
         private int m_bottom = 100;
         public List<ListItem> items = new List<ListItem>();
+        System.Windows.Threading.Dispatcher uiDispatcher = null;
         #endregion
 
         // constructor
@@ -142,15 +143,17 @@ namespace DockableDialog.Forms
 
         public void printList(List<Element> lijst)
         {
-            //string combinedString = string.Join("\n", lijst);
+            string combinedString = string.Join("\n", lijst);
+            System.Windows.MessageBox.Show(combinedString);
             foreach (Element item in lijst)
             {
-                items.Add(new ListItem() { Familyname = GetFamilyName(item) });
-                //System.Windows.MessageBox.Show(items.GetRange(0));
+                lbxSelection.Items.Add(new ListItem() { Familyname = GetFamilyName(item) });
             }
-
             lbxSelection.Items.Refresh();  
         }
+
+
+
         public static string GetFamilyName(Element e)
         {
             var eId = e?.GetTypeId();

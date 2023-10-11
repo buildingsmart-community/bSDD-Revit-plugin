@@ -68,7 +68,7 @@ namespace BsddRevitPlugin.Common
             }
 
             PushButtonData pbd = new PushButtonData("Sample", "Click Me", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.Popup");
-            PushButtonData pbddp = new PushButtonData("Sample2", "Show/Hide selector", executingAssemblyPath, "DockablePanel.ShowDockableWindow");
+            PushButtonData pbddp = new PushButtonData("Show/Hide", "Show/Hide selector", executingAssemblyPath, "DockablePanel.ShowDockableWindow");
             RibbonPanel panel = application.CreateRibbonPanel(eTabName, "bSDD");
 
             // Create the main button.
