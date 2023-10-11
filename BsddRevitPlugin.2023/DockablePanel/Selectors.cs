@@ -4,6 +4,7 @@ using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
 using System.Collections;
 using System.Collections.Generic;
+using System.Windows.Controls;
 
 namespace Selectors
 {
@@ -21,6 +22,7 @@ namespace Selectors
             {
                 list.Add(elem);
             }
+            
             return list;
         }
 
@@ -28,8 +30,9 @@ namespace Selectors
         {
             //Select alle elementen in document
             List<Element> list = new List<Element>();
-            FilteredElementCollector allElements = new FilteredElementCollector(uiapp.ActiveUIDocument.Document);
-            allElements.WherePasses(new LogicalOrFilter(new ElementIsElementTypeFilter(false), new ElementIsElementTypeFilter(true)));
+            UIDocument uidoc = uiapp.ActiveUIDocument;
+            Document doc = uidoc.Document;
+            FilteredElementCollector allElements = new FilteredElementCollector(doc);
             IList elementsAll = (IList)allElements.ToElements();
             foreach (Element elem in elementsAll)
             {
