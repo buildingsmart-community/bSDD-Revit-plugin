@@ -11,10 +11,11 @@
             <ComboBox DockPanel.Dock="Top" Name="SM" SelectionChanged="SM_SelectionChanged"/>
             <Label DockPanel.Dock="Top" x:Name="lb1" Content="Selected families:"/>
             <ListBox 
-                x:Name="lbxSelection">
+                x:Name="lbxSelection"
+                ItemsSource="{Binding Elements}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding Familyname}" />
+                        <TextBlock Text="{Binding FamName}" />
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
