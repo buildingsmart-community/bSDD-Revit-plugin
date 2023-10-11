@@ -74,10 +74,12 @@
     <Compile Include="bSDDconnect.cs" />
     <Compile Include="DockablePanel\DockablePanel.cs" />
     <Compile Include="DockablePanel\Selectors.cs" />
-    <Compile Include="DockablePanel\bSDDPanel.xaml.cs">
+    <Compile Include="View\bSDDPanel.xaml.cs">
       <DependentUpon>bSDDPanel.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Model\Elements.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ViewModel\ElementViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\lib\assr\lib-asrr-core\ASRR.Core.csproj">
@@ -93,11 +95,12 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="DockablePanel\bSDDPanel.xaml">
+    <Page Include="View\bSDDPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="..\BsddRevitPlugin.Common\BsddRevitPlugin.Common.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -147,20 +147,9 @@ namespace DockableDialog.Forms
             System.Windows.MessageBox.Show(combinedString);
             foreach (Element item in lijst)
             {
-                lbxSelection.Items.Add(new ListItem() { Familyname = GetFamilyName(item) });
+                //lbxSelection.Items.Add(new ListItem() { Familyname = GetFamilyName(item) });
             }
             lbxSelection.Items.Refresh();  
-        }
-
-
-
-        public static string GetFamilyName(Element e)
-        {
-            var eId = e?.GetTypeId();
-            if (eId == null)
-                return "";
-            var elementType = e.Document.GetElement(eId) as ElementType;
-            return elementType?.FamilyName ?? "";
         }
     }
     
