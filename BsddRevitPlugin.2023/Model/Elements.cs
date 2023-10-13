@@ -1,4 +1,8 @@
-﻿using System;
+﻿/*
+https://www.google.com/search?q=mvvm+wpf&oq=mvvm&gs_lcrp=EgZjaHJvbWUqBwgHEAAYgAQyBggAEEUYOTIHCAEQABiABDIHCAIQABiABDIHCAMQABiABDIHCAQQABiABDIHCAUQABiABDIHCAYQABiABDIHCAcQABiABDIHCAgQABiABNIBCDUyODRqMGo0qAIAsAIA&sourceid=chrome&ie=UTF-8#fpstate=ive&vld=cid:292e5a84,vid:4v8PobcZpqM,st:0
+*/
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,26 +12,22 @@ using Autodesk.Revit.DB;
 
 namespace BsddRevitPlugin._2023.Model
 {
-    public class Elem : INotifyPropertyChanged
+    public class Elem //: INotifyPropertyChanged
     {
-        private Element elm;
-        private ElementId elemId;
-        private FamilyType famT;
-        private Family fam;
-        private string famName;
-        public string FamName
+        //private Element elm;
+        //private ElementId elemId;
+        //private FamilyType famT;
+        //private Family fam;
+        
+        public Elem()
         {
-            get
-            {
-                return famName;
-            }
-            set
-            {
-                famName = value;
-                OnPropertyChanged("FamName");
-            }
+            
         }
+        public string Family { get; set; }
 
+        public string Type { get; set; }
+
+        /*
         public Element Elm
         {
             get
@@ -79,17 +79,6 @@ namespace BsddRevitPlugin._2023.Model
                 OnPropertyChanged("Fam");
             }
         }
-
-        #region INotifyPropertyChanged Members  
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        private void OnPropertyChanged(string propertyName)
-        {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-            }
-        }
-        #endregion
+        */
     }
 }

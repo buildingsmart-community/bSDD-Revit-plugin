@@ -74,6 +74,7 @@
     <Compile Include="bSDDconnect.cs" />
     <Compile Include="DockablePanel\DockablePanel.cs" />
     <Compile Include="DockablePanel\Selectors.cs" />
+    <Compile Include="Model\ElementsManager.cs" />
     <Compile Include="View\bSDDPanel.xaml.cs">
       <DependentUpon>bSDDPanel.xaml</DependentUpon>
     </Compile>

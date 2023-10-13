@@ -14,6 +14,8 @@ using Selectors;
 using System.Windows.Controls;
 using System.Security.Cryptography.X509Certificates;
 using System.Windows.Controls.Primitives;
+using BsddRevitPlugin._2023.Model;
+using System.Windows.Media.Media3D;
 
 namespace BSDDconnect
 {
@@ -26,9 +28,20 @@ namespace BSDDconnect
         {
             elemList = Selectorlist.SelectElements(uiapp);
 
-            //print
-            bSDDPanel print = new bSDDPanel();
-            print.printList(elemList);
+            foreach (Element item in elemList)
+            {
+                try
+                {
+                    if (
+                        item.Category.Name != "Levels" &&
+                        item.Category.Name != "Location Data"
+                        )
+                    {
+                        ElemManager.AddElem(new Elem() { Type = item.Name, Family = item.Category.Name });
+                    }
+                }
+                catch { }
+            }
         }
 
         public string GetName()
@@ -46,29 +59,25 @@ namespace BSDDconnect
         {
             elemList = Selectorlist.AllElements(uiapp);
 
-            //print
-            bSDDPanel print = new bSDDPanel();
-            print.printList(elemList);
-            //TaskDialog.Show("Titel: ", print(elemList));
+            foreach (Element item in elemList)
+            {
+                try
+                {
+                    if (
+                        item.Category.Name != "Levels" &&
+                        item.Category.Name != "Location Data"
+                        )
+                    {
+                        ElemManager.AddElem(new Elem() { Type = item.Name, Family = item.Category.Name });
+                    }
+                }
+                catch { }
+            }
         }
 
         public string GetName()
         {
             return "";
-        }
-
-        public string print(List<Element> elemList)
-        {
-            StringBuilder sb = new StringBuilder();
-
-            if (elemList != null && elemList.Count > 0)
-            {
-                foreach (Element elem in elemList)
-                {
-                    sb.Append("\n" + elem.Name);
-                }
-            }
-            return sb.ToString();
         }
     }
 
@@ -81,29 +90,26 @@ namespace BSDDconnect
         {
             elemList = Selectorlist.AllElementsView(uiapp);
 
-            //print
-            bSDDPanel print = new bSDDPanel();
-            print.printList(elemList);
-            //TaskDialog.Show("Titel: ", print(elemList));
+            foreach (Element item in elemList)
+            {
+                try
+                {
+                    if(
+                        item.Category.Name != "Levels" &&
+                        item.Category.Name != "Location Data"
+                        )
+                    {
+                        ElemManager.AddElem(new Elem() { Type = item.Name, Family = item.Category.Name });
+                    }
+                    
+                }
+                catch { }
+            }
         }
 
         public string GetName()
         {
             return "";
-        }
-
-        public string print(List<Element> elemList)
-        {
-            StringBuilder sb = new StringBuilder();
-
-            if (elemList != null && elemList.Count > 0)
-            {
-                foreach (Element elem in elemList)
-                {
-                    sb.Append("\n" + elem.Name);
-                }
-            }
-            return sb.ToString();
         }
     }
 

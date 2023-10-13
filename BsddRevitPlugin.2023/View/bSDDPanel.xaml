@@ -10,22 +10,17 @@
         <DockPanel>
             <ComboBox DockPanel.Dock="Top" Name="SM" SelectionChanged="SM_SelectionChanged"/>
             <Label DockPanel.Dock="Top" x:Name="lb1" Content="Selected families:"/>
-            <ListBox 
-                x:Name="lbxSelection"
-                ItemsSource="{Binding Elements}">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding FamName}" />
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+            <ListView 
+                Name="lbxSelection"
+                ItemsSource="{Binding Elems}">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn DisplayMemberBinding="{Binding Family}" Header="Family" Width="auto"/>
+                        <GridViewColumn DisplayMemberBinding="{Binding Type}" Header="Type"/>
+                    </GridView>
+                </ListView.View>
+            </ListView>
         </DockPanel>
-        
-        <StackPanel 
-            Orientation="Vertical" 
-            Height="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=StackPanel}, Path=ActualHeight}">
-           
-        </StackPanel>
     </Grid>
 </Page>
 
