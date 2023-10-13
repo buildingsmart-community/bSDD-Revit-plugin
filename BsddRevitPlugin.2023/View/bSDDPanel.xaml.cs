@@ -13,6 +13,9 @@ using Autodesk.Revit.Creation;
 using System.Windows.Documents;
 using Autodesk.Revit.UI.Selection;
 using System.Collections;
+using BsddRevitPlugin._2023.ViewModel;
+using BsddRevitPlugin._2023.Model;
+using System.Windows.Input;
 
 namespace DockableDialog.Forms
 {
@@ -35,17 +38,16 @@ namespace DockableDialog.Forms
         private int m_right = 100;
         private int m_top = 100;
         private int m_bottom = 100;
-        public List<ListItem> items = new List<ListItem>();
-        System.Windows.Threading.Dispatcher uiDispatcher = null;
         #endregion
 
         // constructor
         public bSDDPanel()
         {
             InitializeComponent();
-            
-            lbxSelection.ItemsSource = items;
 
+            ElementViewModel elementViewModel = new ElementViewModel();
+            this.DataContext = elementViewModel;
+            
             //initialazor
             SelectEHMS = new BSDDconnect.EventMakeSelection();
             SelectEHSA = new BSDDconnect.EventSelectAll();
@@ -123,7 +125,7 @@ namespace DockableDialog.Forms
 
         private void SM_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            items.Clear();
+            ElemManager.Clear();
 
             //Make the IExternalcommand happen
             if (((ComboBoxItem)(((ComboBox)sender).SelectedItem)).Content.ToString() == "Make selection")
@@ -139,22 +141,5 @@ namespace DockableDialog.Forms
                 SelectEESV.Raise();
             };
         }
-
-
-        public void printList(List<Element> lijst)
-        {
-            string combinedString = string.Join("\n", lijst);
-            System.Windows.MessageBox.Show(combinedString);
-            foreach (Element item in lijst)
-            {
-                //lbxSelection.Items.Add(new ListItem() { Familyname = GetFamilyName(item) });
-            }
-            lbxSelection.Items.Refresh();  
-        }
-    }
-    
-    public class ListItem
-    {
-        public string Familyname { get; set; }
     }
 }

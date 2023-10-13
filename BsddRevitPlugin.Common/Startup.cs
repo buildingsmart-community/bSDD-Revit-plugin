@@ -92,9 +92,6 @@ namespace BsddRevitPlugin.Common
             bSDDPanel MainDockableWindow = new bSDDPanel();
             DockablePaneProviderData data = new DockablePaneProviderData();
 
-            ElementViewModel VM = new ElementViewModel();
-            MainDockableWindow.DataContext = VM;
-
             //Maak een ID aan
             DockablePaneId dpid = new DockablePaneId(new Guid("D7C963CE-B3CA-426A-8D51-6E8254D21158"));
 
