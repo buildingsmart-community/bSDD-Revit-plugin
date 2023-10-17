@@ -12,16 +12,65 @@ using Autodesk.Revit.DB;
 
 namespace BsddRevitPlugin._2023.Model
 {
+
+    public class ElementList
+    {
+        public Elements[] elements { get; set; }
+    }
+
+    public class Elements
+    {
+        public Hasassociation[] hasAssociations { get; set; }
+        public Isdefinedby[] isDefinedBy { get; set; }
+    }
+
+    public class Hasassociation
+    {
+        public string type { get; set; }
+        public string name { get; set; }
+        public string location { get; set; }
+        public string identification { get; set; }
+        public Referencedsource referencedSource { get; set; }
+    }
+
+    public class Referencedsource
+    {
+        public string type { get; set; }
+        public string name { get; set; }
+    }
+
+    public class Isdefinedby
+    {
+        public string type { get; set; }
+        public string name { get; set; }
+        public Hasproperty[] hasProperties { get; set; }
+    }
+
+    public class Hasproperty
+    {
+        public string type { get; set; }
+        public string name { get; set; }
+        public string specification { get; set; }
+        public Nominalvalue nominalValue { get; set; }
+    }
+
+    public class Nominalvalue
+    {
+        public string type { get; set; }
+        public object value { get; set; }
+    }
+
+
     public class Elem //: INotifyPropertyChanged
     {
         //private Element elm;
         //private ElementId elemId;
         //private FamilyType famT;
         //private Family fam;
-        
+
         public Elem()
         {
-            
+
         }
         public string Family { get; set; }
 

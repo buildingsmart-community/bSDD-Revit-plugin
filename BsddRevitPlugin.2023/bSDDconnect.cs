@@ -1,21 +1,15 @@
 ﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using Autodesk.Revit.UI.Selection;
-using DockableDialog.Forms;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Data;
-using System.Windows.Documents;
-using Selectors;
-using System.Windows.Controls;
-using System.Security.Cryptography.X509Certificates;
-using System.Windows.Controls.Primitives;
 using BsddRevitPlugin._2023.Model;
-using System.Windows.Media.Media3D;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Selectors;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using static BsddRevitPlugin._2023.Utilities.FileHandling;
 
 namespace BSDDconnect
 {
@@ -23,10 +17,61 @@ namespace BSDDconnect
     {
         static List<Element> elemList = new List<Element>();
         Select Selectorlist = new Select();
-        
+
         public void Execute(UIApplication uiapp)
         {
             elemList = Selectorlist.SelectElements(uiapp);
+
+            ElementList elemLst = new ElementList();
+
+
+            foreach (Element elem in elemList)
+            {
+                
+                //Fill "hasAssociations"
+
+                Elements nwElem = new Elements();
+
+                try
+                {
+                    nwElem.hasAssociations.Append(new Hasassociation
+                    {
+                        type = "type",
+                        name = elem.Name,
+                        location = "location",
+                        identification = "identification",
+                        referencedSource = new Referencedsource
+                        {
+                            type = "type",
+                            name = "name",
+                        }
+
+                    });
+                }
+                catch (Exception)
+                {
+
+                    throw;
+                }
+               
+
+                foreach (var item in elem.Parameters)
+                {
+                    //Fill "isDefinedBy"
+                    //Which parameters do we send? Do we send everything, or only a current acceptable set. Who decides what go's?
+
+                }
+
+
+                elemLst.elements.Append(nwElem);
+
+            }
+
+            JObject json = JObject.Parse(JsonConvert.SerializeObject(elemLst));
+            WriteToJson("C:\\TEMP\\bsdddSend.json", json);
+
+            Process.Start("C:\\TEMP\\bsdddSend.json");
+
 
             foreach (Element item in elemList)
             {
@@ -86,22 +131,24 @@ namespace BSDDconnect
         static List<Element> elemList = new List<Element>();
         Select Selectorlist = new Select();
 
+            
         public void Execute(UIApplication uiapp)
         {
             elemList = Selectorlist.AllElementsView(uiapp);
+
 
             foreach (Element item in elemList)
             {
                 try
                 {
-                    if(
+                    if (
                         item.Category.Name != "Levels" &&
                         item.Category.Name != "Location Data"
                         )
                     {
                         ElemManager.AddElem(new Elem() { Type = item.Name, Family = item.Category.Name });
                     }
-                    
+
                 }
                 catch { }
             }
@@ -131,7 +178,7 @@ namespace BSDDconnect
             //    t.Commit();
             //}
 
-            
+
             Select Selectorlist = new Select();
             //elemList = Selectorlist.AllElements(uiapp);
 
@@ -152,7 +199,7 @@ namespace BSDDconnect
             //zet in lijst
             //                    List<ElementId> ids = (from Reference r in collectionSelect select r.ElementId).ToList();
 
-            
+
             //Geef standaarden aan?
 
             //Verwijder niet van toepassing zijnde elementen uit de lijst
@@ -176,8 +223,13 @@ namespace BSDDconnect
             //Bij annuleren vraag stellen om reeds opgegeven koppelingen te behouden of niet
             //Volgende item
 
+            /////Veel van hierboven zit in de UI kant
+            /////Er moet een JSON opgebouwd worden met de geselelcteerde elementen
+            /////En een json ontvangen kunnen worden en teruggezet worden in de elementen
 
-
+            /////Waarom alles in .2023 plugin file
+            /////Sommige namespaces hebben ._2023?
+            /////Logger!
 
             TaskDialog.Show("BSDD", String.Join(", ", collectionView));
 
