@@ -5,7 +5,9 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Windows;
 using System.Windows.Media.Imaging;
+using UIFramework;
 
 namespace BsddRevitPlugin.Common
 {
@@ -20,6 +22,9 @@ namespace BsddRevitPlugin.Common
 
         public Result OnStartup(UIControlledApplication application)
         {
+            //Registreer Dockable panel voor Revit project geopend wordt.
+            RegisterDockPanel(application);
+
             AddRibbonButtons(application);
             Main.Instance.OpenLogs();
 
@@ -65,20 +70,40 @@ namespace BsddRevitPlugin.Common
             PushButtonData pbd = new PushButtonData("Sample", "Click Me", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.Popup");
             PushButtonData pbd1 = new PushButtonData("Sample", "Click Me", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.IFCexporter");
             PushButtonData pbd2 = new PushButtonData("Sample", "Click Me", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.ParameterAanpassen");
-            RibbonPanel panel = application.CreateRibbonPanel(eTabName, "Popup");
-            RibbonPanel panel1 = application.CreateRibbonPanel(eTabName, "IFCExporter");
-            RibbonPanel panel2 = application.CreateRibbonPanel(eTabName, "ParameterAanpassen");
+            PushButtonData pbddp = new PushButtonData("Show/Hide", "Show/Hide selector", executingAssemblyPath, "DockablePanel.ShowDockableWindow");
+            RibbonPanel panel = application.CreateRibbonPanel(eTabName, "bsDD");
             // Create the main button.
             PushButton pb = panel.AddItem(pbd) as PushButton;
-            PushButton pb1 = panel1.AddItem(pbd1) as PushButton;
-            PushButton pb2 = panel2.AddItem(pbd2) as PushButton;
+            PushButton pb1 = panel.AddItem(pbd1) as PushButton;
+            PushButton pb2 = panel.AddItem(pbd2) as PushButton;
+            PushButton pbdp = panel.AddItem(pbddp) as PushButton;
 
-            pb.ToolTip = "This is a sample Revit button";
+            pb.ToolTip = "This is a sample Revit button";";
             pb.LargeImage = ResourceImage.GetIcon("bsdd-label.png");
             pb1.ToolTip = "This is a sample Revit button";
             pb1.LargeImage = ResourceImage.GetIcon("bsdd-label.png");
             pb2.ToolTip = "This is a sample Revit button";
             pb2.LargeImage = ResourceImage.GetIcon("bsdd-label.png");
+
+            pbdp.ToolTip = "Show/hide bSDD selection panel
+            pbdp.LargeImage = ResourceImage.GetIcon("bsdd-label.png");
         }
+
+        #region DockablePanel
+
+        private void RegisterDockPanel(UIControlledApplication app)
+        {
+            //Koppel het window aan de Mainpage
+            //bSDDPanel MainDockableWindow = new bSDDPanel();
+            DockablePaneProviderData data = new DockablePaneProviderData();
+
+            //Maak een ID aan
+            DockablePaneId dpid = new DockablePaneId(new Guid("D7C963CE-B3CA-426A-8D51-6E8254D21158"));
+
+            //app.RegisterDockablePane(dpid, "bSDD", MainDockableWindow as IDockablePaneProvider);
+
+        }
+
+        #endregion
     }
 }
