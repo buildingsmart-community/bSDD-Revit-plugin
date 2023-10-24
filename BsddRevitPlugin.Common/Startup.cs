@@ -1,11 +1,16 @@
 ﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.UI;
+using BsddRevitPlugin._2023.ViewModel;
 using BsddRevitPlugin.Resources;
+using DockableDialog.Forms;
+using DockablePanel;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Windows;
 using System.Windows.Media.Imaging;
+using UIFramework;
 
 namespace BsddRevitPlugin.Common
 {
@@ -20,6 +25,9 @@ namespace BsddRevitPlugin.Common
 
         public Result OnStartup(UIControlledApplication application)
         {
+            //Registreer Dockable panel voor Revit project geopend wordt.
+            RegisterDockPanel(application);
+
             AddRibbonButtons(application);
             Main.Instance.OpenLogs();
 
@@ -63,13 +71,33 @@ namespace BsddRevitPlugin.Common
             }
 
             PushButtonData pbd = new PushButtonData("Sample", "Click Me", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.Popup");
+            PushButtonData pbddp = new PushButtonData("Show/Hide", "Show/Hide selector", executingAssemblyPath, "DockablePanel.ShowDockableWindow");
             RibbonPanel panel = application.CreateRibbonPanel(eTabName, "bSDD");
 
             // Create the main button.
             PushButton pb = panel.AddItem(pbd) as PushButton;
+            PushButton pbdp = panel.AddItem(pbddp) as PushButton;
 
             pb.ToolTip = "This is a sample Revit button";
+            pbdp.ToolTip = "Show/hide bSDD selection panel";
             pb.LargeImage = ResourceImage.GetIcon("bsdd-label.png");
+            pbdp.LargeImage = ResourceImage.GetIcon("bsdd-label.png");
         }
+
+        #region DockablePanel
+
+        private void RegisterDockPanel(UIControlledApplication app)
+        {
+            //Koppel het window aan de Mainpage
+            bSDDPanel MainDockableWindow = new bSDDPanel();
+            DockablePaneProviderData data = new DockablePaneProviderData();
+
+            //Maak een ID aan
+            DockablePaneId dpid = new DockablePaneId(new Guid("D7C963CE-B3CA-426A-8D51-6E8254D21158"));
+
+            app.RegisterDockablePane(dpid, "bSDD", MainDockableWindow as IDockablePaneProvider);
+        }
+
+        #endregion
     }
 }
