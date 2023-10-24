@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Dockable Dialogs"  Height="auto" Width="200"
         x:Name="DockableDialogs"  Background="LightGray" Loaded="DockableDialogs_Loaded">
-    <!--<Grid Name="PanelGrid">
+    <Grid Name="PanelGrid">
         <DockPanel>
             <ComboBox DockPanel.Dock="Top" Name="SM" SelectionChanged="SM_SelectionChanged"/>
             <Label DockPanel.Dock="Top" x:Name="lb1" Content="Selected families:"/>
@@ -16,7 +16,7 @@
                         <Setter Property="HorizontalContentAlignment" Value="Left" />
                     </Style>
                 </ListView.Resources>
-                
+
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Header="Family" Width="120" DisplayMemberBinding="{Binding Family}" />
@@ -34,12 +34,12 @@
                         </GroupStyle.HeaderTemplate>
                     </GroupStyle>
                 </ListView.GroupStyle>
-                
+
 
 
             </ListView>
         </DockPanel>
-    </Grid>-->
+    </Grid>
 </Page>
 
 
