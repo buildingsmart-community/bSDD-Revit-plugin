@@ -72,6 +72,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="bSDDconnect.cs" />
+    <Compile Include="Commands\RelayCommand.cs" />
     <Compile Include="DockablePanel\DockablePanel.cs" />
     <Compile Include="DockablePanel\Selectors.cs" />
     <Compile Include="Model\ElementsManager.cs" />
@@ -81,6 +82,9 @@
     <Compile Include="Model\Elements.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModel\ElementViewModel.cs" />
+    <Compile Include="View\CheckFamilyType.xaml.cs">
+      <DependentUpon>CheckFamilyType.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\lib\assr\lib-asrr-core\ASRR.Core.csproj">
@@ -97,6 +101,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="View\bSDDPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\CheckFamilyType.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
