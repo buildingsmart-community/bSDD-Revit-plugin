@@ -67,9 +67,9 @@ namespace BsddRevitPlugin.Common
                 // tab already exists
             }
 
-            PushButtonData pbd = new PushButtonData("Sample", "Click Me", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.Popup");
-            PushButtonData pbd1 = new PushButtonData("Sample", "Click Me", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.IFCexporter");
-            PushButtonData pbd2 = new PushButtonData("Sample", "Click Me", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.ParameterAanpassen");
+            PushButtonData pbd = new PushButtonData("Popup", "Click Me", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.Popup");
+            PushButtonData pbd1 = new PushButtonData("IFCexporter", "IFC export", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.IFCexporter");
+            PushButtonData pbd2 = new PushButtonData("ParameterChange", "Parameters\raanpassen", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.ParameterAanpassen");
             PushButtonData pbddp = new PushButtonData("Show/Hide", "Show/Hide selector", executingAssemblyPath, "DockablePanel.ShowDockableWindow");
             RibbonPanel panel = application.CreateRibbonPanel(eTabName, "bsDD");
             // Create the main button.
@@ -78,14 +78,14 @@ namespace BsddRevitPlugin.Common
             PushButton pb2 = panel.AddItem(pbd2) as PushButton;
             PushButton pbdp = panel.AddItem(pbddp) as PushButton;
 
-            pb.ToolTip = "This is a sample Revit button";";
+            pb.ToolTip = "This is a sample Revit button";
             pb.LargeImage = ResourceImage.GetIcon("bsdd-label.png");
             pb1.ToolTip = "This is a sample Revit button";
             pb1.LargeImage = ResourceImage.GetIcon("bsdd-label.png");
             pb2.ToolTip = "This is a sample Revit button";
             pb2.LargeImage = ResourceImage.GetIcon("bsdd-label.png");
 
-            pbdp.ToolTip = "Show/hide bSDD selection panel
+            pbdp.ToolTip = "Show/hide bSDD selection panel";
             pbdp.LargeImage = ResourceImage.GetIcon("bsdd-label.png");
         }
 
