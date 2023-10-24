@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Documents;
 using System.Windows.Input;
 
-namespace BsddRevitPlugin._2023.Commands
+namespace BsddRevitPlugin.Logic.Commands
 {
     public class RelayCommand : ICommand
     {

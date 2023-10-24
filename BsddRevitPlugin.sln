@@ -22,6 +22,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASRR.Core", "lib\assr\lib-a
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASRR.Revit.Core", "lib\assr\lib-asrr-revit-core\ASRR.Revit.Core.csproj", "{60AC09BD-DB0E-40A9-B8A7-B0D40E7042E6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BsddRevitPlugin.LogicOld", "BsddRevitPlugin.LogicOld\BsddRevitPlugin.LogicOld.csproj", "{4ADB19D3-24D7-4410-BDCB-19DBFE6908EB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BsddRevitPlugin.Logic", "BsddRevitPlugin.Logic\BsddRevitPlugin.Logic.csproj", "{43F87A8A-5736-45F4-83D5-761FCC664DEA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,6 +52,14 @@ Global
 		{60AC09BD-DB0E-40A9-B8A7-B0D40E7042E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{60AC09BD-DB0E-40A9-B8A7-B0D40E7042E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{60AC09BD-DB0E-40A9-B8A7-B0D40E7042E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4ADB19D3-24D7-4410-BDCB-19DBFE6908EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4ADB19D3-24D7-4410-BDCB-19DBFE6908EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4ADB19D3-24D7-4410-BDCB-19DBFE6908EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4ADB19D3-24D7-4410-BDCB-19DBFE6908EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43F87A8A-5736-45F4-83D5-761FCC664DEA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43F87A8A-5736-45F4-83D5-761FCC664DEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43F87A8A-5736-45F4-83D5-761FCC664DEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43F87A8A-5736-45F4-83D5-761FCC664DEA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
