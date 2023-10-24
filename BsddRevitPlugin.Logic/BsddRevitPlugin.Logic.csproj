@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{8404F487-DC2E-4E21-A29D-A164A94E0920}</ProjectGuid>
+    <ProjectGuid>{43F87A8A-5736-45F4-83D5-761FCC664DEA}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BsddRevitPlugin._2023</RootNamespace>
-    <AssemblyName>BsddRevitPlugin</AssemblyName>
+    <RootNamespace>BsddRevitPlugin.Logic</RootNamespace>
+    <AssemblyName>BsddRevitPlugin.Logic</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -42,8 +42,6 @@
     <Reference Include="NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <HintPath>..\packages\NLog.5.2.4\lib\net46\NLog.dll</HintPath>
     </Reference>
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
     <Reference Include="RevitAPI, Version=24.0.0.0, Culture=neutral, processorArchitecture=AMD64">
       <HintPath>..\packages\Revit_All_Main_Versions_API_x64.2024.0.0\lib\net48\RevitAPI.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
@@ -58,8 +56,6 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.IO.Compression" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -71,28 +67,20 @@
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
-    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="bSDDconnect.cs" />
+    <Compile Include="Commands\RelayCommand.cs" />
+    <Compile Include="DockablePanel\DockablePanel.cs" />
+    <Compile Include="DockablePanel\Selectors.cs" />
+    <Compile Include="Model\Elements.cs" />
+    <Compile Include="Model\ElementsManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\lib\assr\lib-asrr-core\ASRR.Core.csproj">
-      <Project>{12ea4456-8cd5-43ef-80c7-d70338c8b018}</Project>
-      <Name>ASRR.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\BsddRevitPlugin.Resources\BsddRevitPlugin.Resources.csproj">
-      <Project>{4c519d66-46f3-43df-bcf5-cc1847654828}</Project>
-      <Name>BsddRevitPlugin.Resources</Name>
-    </ProjectReference>
+    <Compile Include="Utilities\FileHandling.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="Resources\bsddRecieveExample" />
   </ItemGroup>
-  <ItemGroup />
-  <Import Project="..\BsddRevitPlugin.Common\BsddRevitPlugin.Common.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>if $(ConfigurationName) == Debug copy /Y "$(TargetDir)" "$(AppData)\Autodesk\Revit\Addins\2023\"</PostBuildEvent>
-  </PropertyGroup>
 </Project>
