@@ -1,26 +1,31 @@
 ﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BsddRevitPlugin._2023.Model;
+using BsddRevitPlugin.Logic.DockablePanel;
+using BsddRevitPlugin.Logic.Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Selectors;
+using NLog;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using static BsddRevitPlugin._2023.Utilities.FileHandling;
+
 
 
 namespace BSDDconnect
 {
     public class EventMakeSelection : IExternalEventHandler
     {
+
+        Logger logger = LogManager.GetCurrentClassLogger();
+
         static List<Element> elemList = new List<Element>();
         Select Selectorlist = new Select();
 
         public void Execute(UIApplication uiapp)
         {
+            logger.Debug("hoi");
             elemList = Selectorlist.SelectElements(uiapp);
 
             ElementList elemLst = new ElementList();
@@ -35,19 +40,19 @@ namespace BSDDconnect
 
                 try
                 {
-                    nwElem.hasAssociations.Append(new Hasassociation
-                    {
-                        type = "type",
-                        name = elem.Name,
-                        location = "location",
-                        identification = "identification",
-                        referencedSource = new Referencedsource
-                        {
-                            type = "type",
-                            name = "name",
-                        }
+                    //nwElem.hasAssociations.Append(new Hasassociation
+                    //{
+                    //    type = "type",
+                    //    name = elem.Name,
+                    //    location = "location",
+                    //    identification = "identification",
+                    //    referencedSource = new Referencedsource
+                    //    {
+                    //        type = "type",
+                    //        name = "name",
+                    //    }
 
-                    });
+                    //});
                 }
                 catch (Exception)
                 {
@@ -64,12 +69,12 @@ namespace BSDDconnect
                 }
 
 
-                elemLst.elements.Append(nwElem);
+                //elemLst.elements.Append(nwElem);
 
             }
 
             JObject json = JObject.Parse(JsonConvert.SerializeObject(elemLst));
-            WriteToJson("C:\\TEMP\\bsdddSend.json", json);
+            //WriteToJson("C:\\TEMP\\bsdddSend.json", json);
 
             Process.Start("C:\\TEMP\\bsdddSend.json");
 
@@ -109,11 +114,15 @@ namespace BSDDconnect
 
     public class EventSelectAll : IExternalEventHandler
     {
+        Logger logger = LogManager.GetCurrentClassLogger();
+
         static List<Element> elemList = new List<Element>();
         Select Selectorlist = new Select();
 
         public void Execute(UIApplication uiapp)
         {
+            logger.Debug("hoi");
+
             elemList = Selectorlist.AllElements(uiapp);
 
             foreach (Element item in elemList)
@@ -223,7 +232,7 @@ namespace BSDDconnect
 
             //Knop keuze:
             //Alle elementen in view
-            var collectionView = new FilteredElementCollector(doc, doc.ActiveView.Id).Cast<Element>().ToList();
+            //var collectionView = new FilteredElementCollector(doc, doc.ActiveView.Id).Cast<Element>().ToList();
             //By Categorie
 
             //Selectie

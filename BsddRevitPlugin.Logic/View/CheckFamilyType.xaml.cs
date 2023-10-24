@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace BsddRevitPlugin._2023.View
+namespace BsddRevitPlugin.Logic.View
 {
     /// <summary>
     /// Interaction logic for CheckFamilyType.xaml

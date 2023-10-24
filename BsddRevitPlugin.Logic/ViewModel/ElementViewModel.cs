@@ -1,13 +1,11 @@
 ﻿using System.Windows.Input;
-using System.ComponentModel;
-using System.Collections.Generic;
-using System;
-using BsddRevitPlugin._2023.Model;
-using System.Collections.ObjectModel;
-using BsddRevitPlugin._2023.Commands;
-using BsddRevitPlugin._2023.View;
 
-namespace BsddRevitPlugin._2023.ViewModel
+using System.Collections.ObjectModel;
+using BsddRevitPlugin.Logic.Model;
+using BsddRevitPlugin.Logic.Commands;
+using BsddRevitPlugin.Logic.View;
+
+namespace BsddRevitPlugin.Logic.ViewModel
 {
     public class ElementViewModel
     {
