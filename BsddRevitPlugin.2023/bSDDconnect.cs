@@ -16,6 +16,8 @@ using System.Security.Cryptography.X509Certificates;
 using System.Windows.Controls.Primitives;
 using BsddRevitPlugin._2023.Model;
 using System.Windows.Media.Media3D;
+using static Autodesk.Revit.DB.SpecTypeId;
+using System.Windows;
 
 namespace BSDDconnect
 {
@@ -34,10 +36,21 @@ namespace BSDDconnect
                 {
                     if (
                         item.Category.Name != "Levels" &&
-                        item.Category.Name != "Location Data"
+                        item.Category.Name != "Location Data" &&
+                        item.Category.Name != "Model Groups" &&
+                        item.Category.Name != "RVT Links" &&
+                        item.Category.Name.Substring(Math.Max(0, item.Category.Name.Length - 4)) != ".dwg" &&
+                        item.Category.Name.Substring(Math.Max(0, item.Category.Name.Length - 4)) != ".pdf"
                         )
                     {
-                        ElemManager.AddElem(new Elem() { Type = item.Name, Family = item.Category.Name });
+                        try
+                        {
+                            ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = (item as FamilySymbol).FamilyName, Type = item.Name, Id = item.Id });
+                        }
+                        catch
+                        {
+                            ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = item.Category.Name, Type = item.Name, Id = item.Id });
+                        }
                     }
                 }
                 catch { }
@@ -65,10 +78,21 @@ namespace BSDDconnect
                 {
                     if (
                         item.Category.Name != "Levels" &&
-                        item.Category.Name != "Location Data"
+                        item.Category.Name != "Location Data" &&
+                        item.Category.Name != "Model Groups" &&
+                        item.Category.Name != "RVT Links" &&
+                        item.Category.Name.Substring(Math.Max(0, item.Category.Name.Length - 4)) != ".dwg" &&
+                        item.Category.Name.Substring(Math.Max(0, item.Category.Name.Length - 4)) != ".pdf"
                         )
                     {
-                        ElemManager.AddElem(new Elem() { Type = item.Name, Family = item.Category.Name });
+                        try
+                        {
+                            ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = (item as FamilySymbol).FamilyName, Type = item.Name, Id = item.Id });
+                        }
+                        catch
+                        {
+                            ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = item.Category.Name, Type = item.Name, Id = item.Id });
+                        }
                     }
                 }
                 catch { }
@@ -96,10 +120,21 @@ namespace BSDDconnect
                 {
                     if(
                         item.Category.Name != "Levels" &&
-                        item.Category.Name != "Location Data"
+                        item.Category.Name != "Location Data" &&
+                        item.Category.Name != "Model Groups" &&
+                        item.Category.Name != "RVT Links" &&
+                        item.Category.Name.Substring(Math.Max(0, item.Category.Name.Length - 4)) != ".dwg" &&
+                        item.Category.Name.Substring(Math.Max(0, item.Category.Name.Length - 4)) != ".pdf"
                         )
                     {
-                        ElemManager.AddElem(new Elem() { Type = item.Name, Family = item.Category.Name });
+                        try
+                        {
+                            ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = (item as FamilySymbol).FamilyName, Type = item.Name, Id = item.Id });
+                        }
+                        catch
+                        {
+                            ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = item.Category.Name, Type = item.Name, Id = item.Id });
+                        }
                     }
                     
                 }
@@ -179,7 +214,7 @@ namespace BSDDconnect
 
 
 
-            TaskDialog.Show("BSDD", String.Join(", ", collectionView));
+            
 
 
             return Result.Succeeded;

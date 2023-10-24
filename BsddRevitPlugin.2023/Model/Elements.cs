@@ -23,62 +23,17 @@ namespace BsddRevitPlugin._2023.Model
         {
             
         }
+        public enum CategoryType { Walls, Windows, Doors };
+        
+        public string Category { get; set; }
+
         public string Family { get; set; }
 
         public string Type { get; set; }
 
-        /*
-        public Element Elm
-        {
-            get
-            {
-                return elm;
-            }
-            set
-            {
-                elm = value;
-                OnPropertyChanged("Elem");
-            }
-        }
+        public ElementId Id { get; set; }
 
-        public ElementId ElemId
-        {
-            get
-            {
-                return elemId;
-            }
-            set
-            {
-                elemId = value;
-                OnPropertyChanged("ElemId");
-            }
-        }
+        public CategoryType CatEnum { get; set; }
 
-        public FamilyType FamT
-        {
-            get
-            {
-                return famT;
-            }
-            set
-            {
-                famT = value;
-                OnPropertyChanged("FamT");
-            }
-        }
-
-        public Family Fam
-        {
-            get
-            {
-                return fam;
-            }
-            set
-            {
-                fam = value;
-                OnPropertyChanged("Fam");
-            }
-        }
-        */
     }
 }

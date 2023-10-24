@@ -16,6 +16,8 @@ using System.Collections;
 using BsddRevitPlugin._2023.ViewModel;
 using BsddRevitPlugin._2023.Model;
 using System.Windows.Input;
+using System.ComponentModel;
+using System.Windows.Data;
 
 namespace DockableDialog.Forms
 {
@@ -47,6 +49,14 @@ namespace DockableDialog.Forms
 
             ElementViewModel elementViewModel = new ElementViewModel();
             this.DataContext = elementViewModel;
+            lbxSelection.ItemsSource = elementViewModel.Elems;
+
+            //Sorteren van elementenlijst
+            CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(lbxSelection.ItemsSource);
+            PropertyGroupDescription groupDescription = new PropertyGroupDescription("Category");
+            view.GroupDescriptions.Add(groupDescription);
+            view.SortDescriptions.Add(new SortDescription("Family", ListSortDirection.Ascending));
+            view.SortDescriptions.Add(new SortDescription("Type", ListSortDirection.Ascending));
             
             //initialazor
             SelectEHMS = new BSDDconnect.EventMakeSelection();
@@ -121,7 +131,6 @@ namespace DockableDialog.Forms
         {
 
         }
-
 
         private void SM_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
