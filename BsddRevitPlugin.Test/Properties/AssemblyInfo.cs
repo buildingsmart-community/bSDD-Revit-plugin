@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("BsddRevitPlugin.Logic")]
+[assembly: AssemblyTitle("BsddRevitPlugin.Test")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("VolkerWessels Bouw & Vastgoedontwikkeling B.V.")]
-[assembly: AssemblyProduct("BsddRevitPlugin.Logic")]
+[assembly: AssemblyProduct("BsddRevitPlugin.Test")]
 [assembly: AssemblyCopyright("Copyright © VolkerWessels Bouw & Vastgoedontwikkeling B.V. 2023")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("43f87a8a-5736-45f4-83d5-761fcc664dea")]
+[assembly: Guid("bc732cd9-f8ce-485c-b246-5d6f2ec0565c")]
 
 // Version information for an assembly consists of the following four values:
 //
