@@ -1,25 +1,15 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Reflection;
-using System.Collections.Generic;
 using Autodesk.Revit.UI;
-using System.Text;
-using ComboBox = System.Windows.Controls.ComboBox;
-using Autodesk.Revit.DB;
-using BSDDconnect;
-using System.Windows.Forms;
-using Autodesk.Revit.Creation;
-using System.Windows.Documents;
-using Autodesk.Revit.UI.Selection;
-using System.Collections;
-using BsddRevitPlugin._2023.ViewModel;
-using BsddRevitPlugin._2023.Model;
-using System.Windows.Input;
-using System.ComponentModel;
-using System.Windows.Data;
+using BsddRevitPlugin.Logic.ViewModel;
 
-namespace DockableDialog.Forms
+//using System.Windows.Input;
+//using System.ComponentModel;
+//using System.Windows.Data;
+using ComboBox = System.Windows.Controls.ComboBox;
+
+namespace BsddRevitPlugin.Logic.View
 {
     /// <summary>
     /// Interaction logic for UserControl1.xaml
@@ -49,28 +39,28 @@ namespace DockableDialog.Forms
 
             ElementViewModel elementViewModel = new ElementViewModel();
             this.DataContext = elementViewModel;
-            lbxSelection.ItemsSource = elementViewModel.Elems;
+            //lbxSelection.ItemsSource = elementViewModel.Elems;
 
-            //Sorteren van elementenlijst
-            CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(lbxSelection.ItemsSource);
-            PropertyGroupDescription groupDescription = new PropertyGroupDescription("Category");
-            view.GroupDescriptions.Add(groupDescription);
-            view.SortDescriptions.Add(new SortDescription("Family", ListSortDirection.Ascending));
-            view.SortDescriptions.Add(new SortDescription("Type", ListSortDirection.Ascending));
+            ////Sorteren van elementenlijst
+            //CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(lbxSelection.ItemsSource);
+            //PropertyGroupDescription groupDescription = new PropertyGroupDescription("Category");
+            //view.GroupDescriptions.Add(groupDescription);
+            //view.SortDescriptions.Add(new SortDescription("Family", ListSortDirection.Ascending));
+            //view.SortDescriptions.Add(new SortDescription("Type", ListSortDirection.Ascending));
             
-            //initialazor
-            SelectEHMS = new BSDDconnect.EventMakeSelection();
-            SelectEHSA = new BSDDconnect.EventSelectAll();
-            SelectEHSV = new BSDDconnect.EventSelectView();
-            SelectEEMS = ExternalEvent.Create(SelectEHMS);
-            SelectEESA = ExternalEvent.Create(SelectEHSA);
-            SelectEESV = ExternalEvent.Create(SelectEHSV);
+            ////initialazor
+            //SelectEHMS = new BSDDconnect.EventMakeSelection();
+            //SelectEHSA = new BSDDconnect.EventSelectAll();
+            //SelectEHSV = new BSDDconnect.EventSelectView();
+            //SelectEEMS = ExternalEvent.Create(SelectEHMS);
+            //SelectEESA = ExternalEvent.Create(SelectEHSA);
+            //SelectEESV = ExternalEvent.Create(SelectEHSV);
             
-            SM.Items.Add(new ComboBoxItem() { Content = "Selection method:", IsSelected = true, IsEnabled = false });
-            SM.Items.Add(new ComboBoxItem() { Content = "Make selection" });
-            SM.Items.Add(new ComboBoxItem() { Content = "Select all" });
-            SM.Items.Add(new ComboBoxItem() { Content = "Select visable in view" });
-            SM.SelectedItem = SM.Items[0];
+            //SM.Items.Add(new ComboBoxItem() { Content = "Selection method:", IsSelected = true, IsEnabled = false });
+            //SM.Items.Add(new ComboBoxItem() { Content = "Make selection" });
+            //SM.Items.Add(new ComboBoxItem() { Content = "Select all" });
+            //SM.Items.Add(new ComboBoxItem() { Content = "Select visable in view" });
+            //SM.SelectedItem = SM.Items[0];
         }
 
         public void SetupDockablePane(Autodesk.Revit.UI.DockablePaneProviderData data)

@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.ComponentModel;
-using Autodesk.Revit.DB;
+﻿
 using System.Collections.ObjectModel;
-using System.Data;
 
-namespace BsddRevitPlugin._2023.Model
+
+namespace BsddRevitPlugin.Logic.Model
 {
     public class ElemManager
     {
