@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("BsddRevitPlugin.Logic")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("VolkerWessels Bouw & Vastgoedontwikkeling B.V.")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("BsddRevitPlugin.Logic")]
-[assembly: AssemblyCopyright("Copyright © VolkerWessels Bouw & Vastgoedontwikkeling B.V. 2023")]
+[assembly: AssemblyCopyright("Copyright ©  2023")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("43f87a8a-5736-45f4-83d5-761fcc664dea")]
+[assembly: Guid("4adb19d3-24d7-4410-bdcb-19dbfe6908eb")]
 
 // Version information for an assembly consists of the following four values:
 //

@@ -6,12 +6,9 @@ using BsddRevitPlugin.Logic.Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-
-
 
 namespace BSDDconnect
 {
@@ -28,62 +25,13 @@ namespace BSDDconnect
             logger.Debug("hoi");
             elemList = Selectorlist.SelectElements(uiapp);
 
-            ElementList elemLst = new ElementList();
-
-
-            foreach (Element elem in elemList)
-            {
-                
-                //Fill "hasAssociations"
-
-                Elements nwElem = new Elements();
-
-                try
-                {
-                    //nwElem.hasAssociations.Append(new Hasassociation
-                    //{
-                    //    type = "type",
-                    //    name = elem.Name,
-                    //    location = "location",
-                    //    identification = "identification",
-                    //    referencedSource = new Referencedsource
-                    //    {
-                    //        type = "type",
-                    //        name = "name",
-                    //    }
-
-                    //});
-                }
-                catch (Exception)
-                {
-
-                    throw;
-                }
-               
-
-                foreach (var item in elem.Parameters)
-                {
-                    //Fill "isDefinedBy"
-                    //Which parameters do we send? Do we send everything, or only a current acceptable set. Who decides what go's?
-
-                }
-
-
-                //elemLst.elements.Append(nwElem);
-
-            }
-
-            JObject json = JObject.Parse(JsonConvert.SerializeObject(elemLst));
-            //WriteToJson("C:\\TEMP\\bsdddSend.json", json);
-
-            Process.Start("C:\\TEMP\\bsdddSend.json");
-
-
             foreach (Element item in elemList)
             {
                 try
                 {
-                    if (
+                    if (item.Category != null)
+                    {
+                        if (
                         item.Category.Name != "Levels" &&
                         item.Category.Name != "Location Data" &&
                         item.Category.Name != "Model Groups" &&
@@ -91,14 +39,15 @@ namespace BSDDconnect
                         item.Category.Name.Substring(Math.Max(0, item.Category.Name.Length - 4)) != ".dwg" &&
                         item.Category.Name.Substring(Math.Max(0, item.Category.Name.Length - 4)) != ".pdf"
                         )
-                    {
-                        try
                         {
-                            ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = (item as FamilySymbol).FamilyName, Type = item.Name, Id = item.Id });
-                        }
-                        catch
-                        {
-                            ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = item.Category.Name, Type = item.Name, Id = item.Id });
+                            try
+                            {
+                                ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = (item as FamilySymbol).FamilyName, Type = item.Name, Id = item.Id });
+                            }
+                            catch
+                            {
+                                ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = item.Category.Name, Type = item.Name, Id = item.Id });
+                            }
                         }
                     }
                 }
@@ -121,15 +70,17 @@ namespace BSDDconnect
 
         public void Execute(UIApplication uiapp)
         {
-            logger.Debug("hoi");
-
             elemList = Selectorlist.AllElements(uiapp);
 
+            logger.Debug(elemList);
+            
             foreach (Element item in elemList)
             {
                 try
                 {
-                    if (
+                    if (item.Category != null)
+                    {
+                        if (
                         item.Category.Name != "Levels" &&
                         item.Category.Name != "Location Data" &&
                         item.Category.Name != "Model Groups" &&
@@ -137,14 +88,15 @@ namespace BSDDconnect
                         item.Category.Name.Substring(System.Math.Max(0, item.Category.Name.Length - 4)) != ".dwg" &&
                         item.Category.Name.Substring(System.Math.Max(0, item.Category.Name.Length - 4)) != ".pdf"
                         )
-                    {
-                        try
                         {
-                            ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = (item as FamilySymbol).FamilyName, Type = item.Name, Id = item.Id });
-                        }
-                        catch
-                        {
-                            ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = item.Category.Name, Type = item.Name, Id = item.Id });
+                            try
+                            {
+                                ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = (item as FamilySymbol).FamilyName, Type = item.Name, Id = item.Id });
+                            }
+                            catch
+                            {
+                                ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = item.Category.Name, Type = item.Name, Id = item.Id });
+                            }
                         }
                     }
                 }
@@ -160,6 +112,8 @@ namespace BSDDconnect
 
     public class EventSelectView : IExternalEventHandler
     {
+        Logger logger = LogManager.GetCurrentClassLogger();
+
         static List<Element> elemList = new List<Element>();
         Select Selectorlist = new Select();
 
@@ -168,12 +122,14 @@ namespace BSDDconnect
         {
             elemList = Selectorlist.AllElementsView(uiapp);
 
+            logger.Debug(elemList);
 
             foreach (Element item in elemList)
             {
                 try
                 {
-                    if (
+                    if (item.Category != null) {
+                        if (
                         item.Category.Name != "Levels" &&
                         item.Category.Name != "Location Data" &&
                         item.Category.Name != "Model Groups" &&
@@ -181,19 +137,18 @@ namespace BSDDconnect
                         item.Category.Name.Substring(Math.Max(0, item.Category.Name.Length - 4)) != ".dwg" &&
                         item.Category.Name.Substring(Math.Max(0, item.Category.Name.Length - 4)) != ".pdf"
                         )
-                    {
-                        try
                         {
-                            ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = (item as FamilySymbol).FamilyName, Type = item.Name, Id = item.Id });
-                        }
-                        catch
-                        {
-                            ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = item.Category.Name, Type = item.Name, Id = item.Id });
+                            try
+                            {
+                                ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = (item as FamilySymbol).FamilyName, Type = item.Name, Id = item.Id });
+                            }
+                            catch
+                            {
+                                ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = item.Category.Name, Type = item.Name, Id = item.Id });
+                            }
                         }
                     }
-
-                }
-                catch { }
+                } catch { }
             }
         }
 
