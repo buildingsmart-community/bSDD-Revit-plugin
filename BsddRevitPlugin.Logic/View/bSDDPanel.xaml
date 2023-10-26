@@ -11,44 +11,41 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid>
-        <DockPanel>
-            <ComboBox DockPanel.Dock="Top" Name="SM" SelectionChanged="SM_SelectionChanged"/>
-            <Label DockPanel.Dock="Top" x:Name="lb1" Content="Selected families:"/>
-            <ListView 
-                Name="lbxSelection"
-                ItemsSource="{Binding Elems}">
+            <DockPanel>
+                <ComboBox DockPanel.Dock="Top" Name="SM" SelectionChanged="SM_SelectionChanged"/>
+                <Label DockPanel.Dock="Top" x:Name="lb1" Content="Selected families:"/>
+                <ListView 
+                    Name="lbxSelection"
+                    ItemsSource="{Binding Elems}">
 
-                <ListView.Resources>
-                    <Style TargetType="{x:Type GridViewColumnHeader}">
-                        <Setter Property="HorizontalContentAlignment" Value="Left" />
-                    </Style>
-                </ListView.Resources>
+                    <ListView.Resources>
+                        <Style TargetType="{x:Type GridViewColumnHeader}">
+                            <Setter Property="HorizontalContentAlignment" Value="Left" />
+                        </Style>
+                    </ListView.Resources>
 
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn Header="Family" Width="120" DisplayMemberBinding="{Binding Family}" />
-                        <GridViewColumn Header="Type" Width="50" DisplayMemberBinding="{Binding Type}" />
-                        <GridViewColumn Header="Category" Width="50" DisplayMemberBinding="{Binding Category}" />
-                    </GridView>
-                </ListView.View>
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Family" Width="120" DisplayMemberBinding="{Binding Family}" />
+                            <GridViewColumn Header="Type" Width="50" DisplayMemberBinding="{Binding Type}" />
+                            <GridViewColumn Header="Category" Width="50" DisplayMemberBinding="{Binding Category}" />
+                        </GridView>
+                    </ListView.View>
 
-                <ListView.GroupStyle>
-                    <GroupStyle>
-                        <GroupStyle.HeaderTemplate>
-                            <DataTemplate>
-                                <TextBlock FontWeight="Bold" FontSize="14" Text="{Binding Categorie}"/>
-                            </DataTemplate>
-                        </GroupStyle.HeaderTemplate>
-                    </GroupStyle>
-                </ListView.GroupStyle>
-
-
-
-            </ListView>
+                    <ListView.GroupStyle>
+                        <GroupStyle>
+                            <GroupStyle.HeaderTemplate>
+                                <DataTemplate>
+                                    <TextBlock FontWeight="Bold" FontSize="14" Text="{Binding Categorie}"/>
+                                </DataTemplate>
+                            </GroupStyle.HeaderTemplate>
+                        </GroupStyle>
+                    </ListView.GroupStyle>
+                </ListView>
             </DockPanel>
         </Grid>
-        <Border Grid.Row="1" BorderBrush="Gray" BorderThickness="0,1">
-            <wpf:ChromiumWebBrowser x:Name="Browser" Address="www.google.com"/>
-        </Border>
+        <Grid Grid.Row="1">
+            <wpf:ChromiumWebBrowser x:Name="Browser" VerticalAlignment="Stretch"></wpf:ChromiumWebBrowser>
+        </Grid>
     </Grid>
 </Page>
