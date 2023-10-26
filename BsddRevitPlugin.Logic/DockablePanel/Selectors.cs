@@ -6,7 +6,6 @@ using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
 using System.Collections;
 using System.Collections.Generic;
-using System.Windows.Controls;
 using System.Xml.Linq;
 
 namespace BsddRevitPlugin.Logic.DockablePanel
