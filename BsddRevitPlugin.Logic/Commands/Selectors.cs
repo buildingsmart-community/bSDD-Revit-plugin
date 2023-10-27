@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Windows.Controls;
 using System.Xml.Linq;
 
-namespace BsddRevitPlugin.Logic.DockablePanel
+namespace BsddRevitPlugin.Logic.Commands
 {
     class Select
     {

@@ -1,7 +1,7 @@
 ﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BsddRevitPlugin.Logic.DockablePanel;
+using BsddRevitPlugin.Logic.Commands;
 using BsddRevitPlugin.Logic.Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;

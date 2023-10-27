@@ -1,6 +1,6 @@
 ﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.UI;
-using BsddRevitPlugin.Logic.DockablePanel;
+using BsddRevitPlugin.Logic.Commands;
 using BsddRevitPlugin.Logic.View;
 using BsddRevitPlugin.Resources;
 using System;
@@ -70,7 +70,7 @@ namespace BsddRevitPlugin.Common
             }
 
             PushButtonData pbd = new PushButtonData("Sample", "Click Me", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.Popup");
-            PushButtonData pbddp = new PushButtonData("Show/Hide", "Show/Hide selector", executingAssemblyPath, "DockablePanel.ShowDockableWindow");
+            PushButtonData pbddp = new PushButtonData("Show/Hide", "Show/Hide selector", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.ShowDockableWindow");
             RibbonPanel panel = application.CreateRibbonPanel(eTabName, "bSDD");
 
             // Create the main button.
