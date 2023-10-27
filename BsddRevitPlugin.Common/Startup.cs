@@ -95,7 +95,7 @@ namespace BsddRevitPlugin.Common
             PushButtonData pbd = new PushButtonData("Popup", "Click Me", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.Popup");
             PushButtonData pbd1 = new PushButtonData("IFCexporter", "IFC export", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.IFCexporter");
             PushButtonData pbd2 = new PushButtonData("ParameterChange", "Parameters\raanpassen", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.ParameterAanpassen");
-            PushButtonData pbddp = new PushButtonData("Show/Hide", "Show/Hide selector", executingAssemblyPath, "DockablePanel.ShowDockableWindow");
+            PushButtonData pbddp = new PushButtonData("Show/Hide", "Show/Hide selector", executingAssemblyPath, "BsddRevitPlugin.Logic.DockablePanel.ShowDockableWindow");
             RibbonPanel panel = application.CreateRibbonPanel(eTabName, "bSDD");
             PushButton pb = panel.AddItem(pbd) as PushButton;
             PushButton pb1 = panel.AddItem(pbd1) as PushButton;
