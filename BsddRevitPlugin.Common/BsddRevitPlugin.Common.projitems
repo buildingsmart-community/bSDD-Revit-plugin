@@ -15,6 +15,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Commands\ParameterAanpassen.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Commands\Popup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Commands\IFCexporter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IfcData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Main.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Startup.cs" />
   </ItemGroup>
