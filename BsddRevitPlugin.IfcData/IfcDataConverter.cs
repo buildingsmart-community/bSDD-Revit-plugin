@@ -43,5 +43,10 @@ namespace BsddRevitPlugin.IfcData
 
             return ifcData;
         }
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
