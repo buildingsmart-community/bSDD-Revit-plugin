@@ -22,7 +22,11 @@ namespace BsddRevitPlugin.Logic.View
         BSDDconnect.EventMakeSelection SelectEHMS;
         BSDDconnect.EventSelectAll SelectEHSA;
         BSDDconnect.EventSelectView SelectEHSV;
-        ExternalEvent SelectEEMS, SelectEESA, SelectEESV;
+        BSDDconnect.EventTest testEvent;
+        ExternalEvent SelectEEMS, SelectEESA, SelectEESV, testExEvent;
+
+
+
 
         // Data fields
         private Guid m_targetGuid = new Guid("D7C963CE-B3CA-426A-8D51-6E8254D21158");
@@ -57,9 +61,11 @@ namespace BsddRevitPlugin.Logic.View
             SelectEHMS = new BSDDconnect.EventMakeSelection();
             SelectEHSA = new BSDDconnect.EventSelectAll();
             SelectEHSV = new BSDDconnect.EventSelectView();
+            testEvent = new BSDDconnect.EventTest();
             SelectEEMS = ExternalEvent.Create(SelectEHMS);
             SelectEESA = ExternalEvent.Create(SelectEHSA);
             SelectEESV = ExternalEvent.Create(SelectEHSV);
+            testExEvent = ExternalEvent.Create(testEvent);
 
             // Add the selection methods to the selection method combo box
             SM.Items.Add(new ComboBoxItem() { Content = "Selection method:", IsSelected = true, IsEnabled = false });
@@ -140,15 +146,16 @@ namespace BsddRevitPlugin.Logic.View
             // Raise the appropriate external event based on the selected item in the combo box
             if (((ComboBoxItem)(((ComboBox)sender).SelectedItem)).Content.ToString() == "Make selection")
             {
-                SelectEEMS.Raise();
+                //SelectEEMS.Raise();
+                testExEvent.Raise();
             }
             else if (((ComboBoxItem)(((ComboBox)sender).SelectedItem)).Content.ToString() == "Select all")
             {
-                SelectEESA.Raise();
+                //SelectEESA.Raise();
             }
             else if (((ComboBoxItem)(((ComboBox)sender).SelectedItem)).Content.ToString() == "Select visible in view")
             {
-                SelectEESV.Raise();
+                //SelectEESV.Raise();
             };
         }
     }
