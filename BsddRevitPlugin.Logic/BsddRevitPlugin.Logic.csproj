@@ -96,6 +96,8 @@
     <Compile Include="Commands\RelayCommand.cs" />
     <Compile Include="DockablePanel\DockablePanel.cs" />
     <Compile Include="DockablePanel\Selectors.cs" />
+    <Compile Include="IfcJson\IfcJson.cs" />
+    <Compile Include="IfcJson\IfcJsonConverter.cs" />
     <Compile Include="Model\Elements.cs" />
     <Compile Include="Model\ElementsManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

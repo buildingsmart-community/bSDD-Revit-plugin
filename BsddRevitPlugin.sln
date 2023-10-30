@@ -24,8 +24,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASRR.Revit.Core", "lib\assr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BsddRevitPlugin.Logic", "BsddRevitPlugin.Logic\BsddRevitPlugin.Logic.csproj", "{4ADB19D3-24D7-4410-BDCB-19DBFE6908EB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BsddRevitPlugin.IfcData", "BsddRevitPlugin.IfcData\BsddRevitPlugin.IfcData.csproj", "{EB3372D2-A81C-42BD-A50D-4EF3A020015A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -44,30 +42,18 @@ Global
 		{4C519D66-46F3-43DF-BCF5-CC1847654828}.Debug|x64.Build.0 = Debug|x64
 		{4C519D66-46F3-43DF-BCF5-CC1847654828}.Release|x64.ActiveCfg = Release|x64
 		{4C519D66-46F3-43DF-BCF5-CC1847654828}.Release|x64.Build.0 = Release|x64
-		{12EA4456-8CD5-43EF-80C7-D70338C8B018}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{12EA4456-8CD5-43EF-80C7-D70338C8B018}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{12EA4456-8CD5-43EF-80C7-D70338C8B018}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{12EA4456-8CD5-43EF-80C7-D70338C8B018}.Debug|x64.Build.0 = Debug|Any CPU
-		{12EA4456-8CD5-43EF-80C7-D70338C8B018}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{12EA4456-8CD5-43EF-80C7-D70338C8B018}.Release|Any CPU.Build.0 = Release|Any CPU
 		{12EA4456-8CD5-43EF-80C7-D70338C8B018}.Release|x64.ActiveCfg = Release|x64
 		{12EA4456-8CD5-43EF-80C7-D70338C8B018}.Release|x64.Build.0 = Release|x64
-		{60AC09BD-DB0E-40A9-B8A7-B0D40E7042E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{60AC09BD-DB0E-40A9-B8A7-B0D40E7042E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{60AC09BD-DB0E-40A9-B8A7-B0D40E7042E6}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{60AC09BD-DB0E-40A9-B8A7-B0D40E7042E6}.Debug|x64.Build.0 = Debug|Any CPU
-		{60AC09BD-DB0E-40A9-B8A7-B0D40E7042E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{60AC09BD-DB0E-40A9-B8A7-B0D40E7042E6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{60AC09BD-DB0E-40A9-B8A7-B0D40E7042E6}.Release|x64.ActiveCfg = Release|x64
 		{60AC09BD-DB0E-40A9-B8A7-B0D40E7042E6}.Release|x64.Build.0 = Release|x64
 		{4ADB19D3-24D7-4410-BDCB-19DBFE6908EB}.Debug|x64.ActiveCfg = Debug|x64
 		{4ADB19D3-24D7-4410-BDCB-19DBFE6908EB}.Debug|x64.Build.0 = Debug|x64
 		{4ADB19D3-24D7-4410-BDCB-19DBFE6908EB}.Release|x64.ActiveCfg = Release|x64
 		{4ADB19D3-24D7-4410-BDCB-19DBFE6908EB}.Release|x64.Build.0 = Release|x64
-		{EB3372D2-A81C-42BD-A50D-4EF3A020015A}.Debug|x64.ActiveCfg = Debug|x64
-		{EB3372D2-A81C-42BD-A50D-4EF3A020015A}.Debug|x64.Build.0 = Debug|x64
-		{EB3372D2-A81C-42BD-A50D-4EF3A020015A}.Release|x64.ActiveCfg = Release|x64
-		{EB3372D2-A81C-42BD-A50D-4EF3A020015A}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace BsddRevitPlugin.IfcData
+namespace BsddRevitPlugin.Logic.IfcJson
 {
     /// <summary>
     /// Represents a reference to an IFC classification.
