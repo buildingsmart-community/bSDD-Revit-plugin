@@ -3,9 +3,9 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 
-namespace BsddRevitPlugin.IfcData
+namespace BsddRevitPlugin.Logic.IfcJson
 {
-    public class IfcDataConverter : JsonConverter
+    public class IfcJsonConverter : JsonConverter
     {
         public override bool CanConvert(Type objectType)
         {
