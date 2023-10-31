@@ -4,9 +4,13 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.DockablePanel;
 using BsddRevitPlugin.Logic.Model;
+using BsddRevitPlugin.Logic.UI.View;
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Controls.Primitives;
+using System.Windows.Interop;
 using System.Windows.Shapes;
 using Document = Autodesk.Revit.DB.Document;
 
@@ -214,6 +218,33 @@ namespace BSDDconnect
         }
     }
 
+
+
+    public class EventTest2 : IExternalEventHandler
+    {
+        Logger logger = LogManager.GetCurrentClassLogger();
+
+
+
+        public void Execute(UIApplication uiapp)
+        {
+
+            var MyWindow = new bSDDSelector();
+            HwndSource hwndSource = HwndSource.FromHwnd(uiapp.MainWindowHandle);
+            Window wnd = hwndSource.RootVisual as Window;
+            if (wnd != null)
+            {
+                MyWindow.Owner = wnd;
+                //MyWindow.ShowInTaskbar = false;
+                MyWindow.Show();
+            }
+        }
+
+        public string GetName()
+        {
+            return "";
+        }
+    }
 
 
     [Transaction(TransactionMode.Manual)]

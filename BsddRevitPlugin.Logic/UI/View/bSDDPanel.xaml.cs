@@ -4,16 +4,17 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.Model;
-using BsddRevitPlugin.Logic.ViewModel;
+using BsddRevitPlugin.Logic.UI.ViewModel;
 using ComboBox = System.Windows.Controls.ComboBox;
 using System.ComponentModel;
+using System.Windows.Interop;
 
 /// <summary>
 /// Event handler for the selection method combo box. Clears the element manager and raises the appropriate external event based on the selected item in the combo box.
 /// </summary>
 /// <param name="sender">The selection method combo box.</param>
 /// <param name="e">The selection changed event arguments.</param>
-namespace BsddRevitPlugin.Logic.View
+namespace BsddRevitPlugin.Logic.UI.View
 {
     // This class represents the main panel of the bSDD Revit plugin
     public partial class bSDDPanel : Page, IDockablePaneProvider
@@ -23,7 +24,8 @@ namespace BsddRevitPlugin.Logic.View
         BSDDconnect.EventSelectAll SelectEHSA;
         BSDDconnect.EventSelectView SelectEHSV;
         BSDDconnect.EventTest testEvent;
-        ExternalEvent SelectEEMS, SelectEESA, SelectEESV, testExEvent;
+        BSDDconnect.EventTest2 testEvent2;
+        ExternalEvent SelectEEMS, SelectEESA, SelectEESV, testExEvent, testExEvent2;
 
 
 
@@ -62,10 +64,12 @@ namespace BsddRevitPlugin.Logic.View
             SelectEHSA = new BSDDconnect.EventSelectAll();
             SelectEHSV = new BSDDconnect.EventSelectView();
             testEvent = new BSDDconnect.EventTest();
+            testEvent2 = new BSDDconnect.EventTest2();
             SelectEEMS = ExternalEvent.Create(SelectEHMS);
             SelectEESA = ExternalEvent.Create(SelectEHSA);
             SelectEESV = ExternalEvent.Create(SelectEHSV);
             testExEvent = ExternalEvent.Create(testEvent);
+            testExEvent2 = ExternalEvent.Create(testEvent2);
 
             // Add the selection methods to the selection method combo box
             SM.Items.Add(new ComboBoxItem() { Content = "Selection method:", IsSelected = true, IsEnabled = false });
@@ -147,7 +151,11 @@ namespace BsddRevitPlugin.Logic.View
             if (((ComboBoxItem)(((ComboBox)sender).SelectedItem)).Content.ToString() == "Make selection")
             {
                 //SelectEEMS.Raise();
-                testExEvent.Raise();
+                //testExEvent.Raise
+                testExEvent2.Raise();
+
+
+                ////Main.Instance.ShowbSDDSelector(commandData.Application);
             }
             else if (((ComboBoxItem)(((ComboBox)sender).SelectedItem)).Content.ToString() == "Select all")
             {
