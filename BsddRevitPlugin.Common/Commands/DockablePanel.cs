@@ -4,7 +4,7 @@ using Autodesk.Revit.UI;
 using System;
 using System.Windows;
 
-namespace BsddRevitPlugin.Logic.DockablePanel
+namespace BsddRevitPlugin.Common.Commands.DockablePanel
 {
     //Check availability
     public class AvailabilityNoOpenDocument : IExternalCommandAvailability

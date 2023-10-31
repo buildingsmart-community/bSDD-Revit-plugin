@@ -1,7 +1,7 @@
 ﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BsddRevitPlugin.Logic.View;
+using BsddRevitPlugin.Logic.UI.View;
 using CefSharp;
 using System;
 using System.Runtime.InteropServices;
@@ -15,38 +15,40 @@ namespace BsddRevitPlugin.Common.Commands
     public class Popup : IExternalCommand
     {
 
-        // ModelessForm instance
-        private bSDDSelector _mainWindow;
+        ////// ModelessForm instance
+        ////private bSDDSelector _mainWindow;
 
-        // Separate thread to run Ui on
-        private Thread _uiThread;
+        ////// Separate thread to run Ui on
+        ////private Thread _uiThread;
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
-            //if (!(_uiThread is null) && _uiThread.IsAlive) return;
-            try
-            {
-                //UI THREAD WERKT NIET
 
-                //_uiThread = new Thread(() =>
-                //{
-                    SynchronizationContext.SetSynchronizationContext(
-                        new DispatcherSynchronizationContext(
-                            Dispatcher.CurrentDispatcher));
-                    // The dialog becomes the owner responsible for disposing the objects given to it.
-                    _mainWindow = new bSDDSelector();
-                    _mainWindow.Closed += (s, e) => Dispatcher.CurrentDispatcher.InvokeShutdown();
-                    _mainWindow.Show();
-                    Dispatcher.Run();
-                //});
+            //////if (!(_uiThread is null) && _uiThread.IsAlive) return;
+            ////try
+            ////{
+            ////    //UI THREAD WERKT NIET
 
-                //TaskDialog.Show("bSDD Revit plugin", "Looks like this worked! CvO");
-                return Result.Succeeded;
-            }
-            catch (Exception e)
-            {
-                TaskDialog.Show("bSDD Revit plugin", $"Exception found: {e.Message}");
-                return Result.Failed;
-            }
+            ////    //_uiThread = new Thread(() =>
+            ////    //{
+            ////        SynchronizationContext.SetSynchronizationContext(
+            ////            new DispatcherSynchronizationContext(
+            ////                Dispatcher.CurrentDispatcher));
+            ////        // The dialog becomes the owner responsible for disposing the objects given to it.
+            ////        _mainWindow = new bSDDSelector();
+            ////        _mainWindow.Closed += (s, e) => Dispatcher.CurrentDispatcher.InvokeShutdown();
+            ////        _mainWindow.Show();
+            ////        Dispatcher.Run();
+            ////    //});
+
+            ////    //TaskDialog.Show("bSDD Revit plugin", "Looks like this worked! CvO");
+            ////    return Result.Succeeded;
+            ////}
+            ////catch (Exception e)
+            ////{
+            ////    TaskDialog.Show("bSDD Revit plugin", $"Exception found: {e.Message}");
+            ////    return Result.Failed;
+            ////}
+            return Result.Succeeded;
         }
     }
 }
