@@ -24,8 +24,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASRR.Revit.Core", "lib\assr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BsddRevitPlugin.Logic", "BsddRevitPlugin.Logic\BsddRevitPlugin.Logic.csproj", "{4ADB19D3-24D7-4410-BDCB-19DBFE6908EB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfApp1", "WpfApp1\WpfApp1.csproj", "{7DBC8BB6-B7B3-452F-962D-C4002E050912}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -82,14 +80,6 @@ Global
 		{4ADB19D3-24D7-4410-BDCB-19DBFE6908EB}.Release|Any CPU.Build.0 = Release|x64
 		{4ADB19D3-24D7-4410-BDCB-19DBFE6908EB}.Release|x64.ActiveCfg = Release|x64
 		{4ADB19D3-24D7-4410-BDCB-19DBFE6908EB}.Release|x64.Build.0 = Release|x64
-		{7DBC8BB6-B7B3-452F-962D-C4002E050912}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7DBC8BB6-B7B3-452F-962D-C4002E050912}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7DBC8BB6-B7B3-452F-962D-C4002E050912}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{7DBC8BB6-B7B3-452F-962D-C4002E050912}.Debug|x64.Build.0 = Debug|Any CPU
-		{7DBC8BB6-B7B3-452F-962D-C4002E050912}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7DBC8BB6-B7B3-452F-962D-C4002E050912}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7DBC8BB6-B7B3-452F-962D-C4002E050912}.Release|x64.ActiveCfg = Release|Any CPU
-		{7DBC8BB6-B7B3-452F-962D-C4002E050912}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
