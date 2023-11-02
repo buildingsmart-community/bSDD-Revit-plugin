@@ -8,7 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Xml.Linq;
 
-namespace BsddRevitPlugin.Logic.DockablePanel
+namespace BsddRevitPlugin.Logic.UI.DockablePanel
 {
     class Select
     {

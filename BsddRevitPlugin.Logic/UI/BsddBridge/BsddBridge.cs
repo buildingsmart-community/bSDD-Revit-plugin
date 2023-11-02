@@ -2,7 +2,7 @@
 using BsddRevitPlugin.Logic.IfcJson;
 using Newtonsoft.Json;
 
-namespace BsddRevitPlugin.Logic
+namespace BsddRevitPlugin.Logic.UI.BsddBridge
 {
     /// <summary>
     /// Provides functionality to interact with the bSDD components.

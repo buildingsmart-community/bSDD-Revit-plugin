@@ -2,7 +2,7 @@
 using Autodesk.Revit.Creation;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BsddRevitPlugin.Logic.DockablePanel;
+using BsddRevitPlugin.Logic.UI.DockablePanel;
 using BsddRevitPlugin.Logic.Model;
 using BsddRevitPlugin.Logic.UI.View;
 using NLog;
@@ -14,7 +14,7 @@ using System.Windows.Interop;
 using System.Windows.Shapes;
 using Document = Autodesk.Revit.DB.Document;
 
-namespace BSDDconnect
+namespace BsddRevitPlugin.Logic.UI.Wrappers
 {
     public class EventMakeSelection : IExternalEventHandler
     {
