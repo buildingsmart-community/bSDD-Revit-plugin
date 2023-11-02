@@ -103,7 +103,7 @@
     <Compile Include="Model\Elements.cs" />
     <Compile Include="Model\ElementsManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UI\BsddBridge\BsddBridge.cs" />
+    <Compile Include="UI\BsddBridge\bSDDbridge.cs" />
     <Compile Include="UI\DockablePanel\Selectors.cs" />
     <Compile Include="UI\ViewModel\ElementViewModel.cs" />
     <Compile Include="UI\View\bSDDPanel.xaml.cs">

@@ -8,6 +8,7 @@ using BsddRevitPlugin.Logic.UI.ViewModel;
 using ComboBox = System.Windows.Controls.ComboBox;
 using System.ComponentModel;
 using System.Windows.Interop;
+using BSDDconnect = BsddRevitPlugin.Logic.UI.Wrappers;
 
 /// <summary>
 /// Event handler for the selection method combo box. Clears the element manager and raises the appropriate external event based on the selected item in the combo box.
@@ -45,7 +46,7 @@ namespace BsddRevitPlugin.Logic.UI.View
 
             // Set the address of the CefSharp browser component to the index.html file of the plugin
             Browser.Address = addinLocation + "/html/index.html";
-            Browser.JavascriptObjectRepository.Register("bsddBridge", new BsddBridge(), true);
+            Browser.JavascriptObjectRepository.Register("bsddBridge", new BsddBridge.BsddBridge(), true);
 
             // Set the data context of the panel to an instance of ElementViewModel
             ElementViewModel elementViewModel = new ElementViewModel();
