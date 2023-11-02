@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
 using Newtonsoft.Json;
+using BSDDconnect = BsddRevitPlugin.Logic.UI.Wrappers;
 
 namespace BsddRevitPlugin.Logic.UI.BsddBridge
 {

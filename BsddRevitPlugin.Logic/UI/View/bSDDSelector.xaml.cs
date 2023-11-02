@@ -1,6 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BSDDconnect;
+using BSDDconnect = BsddRevitPlugin.Logic.UI.Wrappers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
