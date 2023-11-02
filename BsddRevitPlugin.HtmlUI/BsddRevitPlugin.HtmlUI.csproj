@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <OutputType>Library</OutputType>
+    <Platforms>x64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="BsddRevitPlugin.HtmlUI.csproj.user" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="bsdd-revit-plugin-html-ui\package.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Update="bsdd-revit-plugin-html-ui\tsconfig.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+    <Content Update="bsdd-revit-plugin-html-ui\tsconfig.node.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="bsdd-revit-plugin-html-ui\dist\index.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  
+  <Target Name="CopyFiles" AfterTargets="Build">
+    <ItemGroup>
+      <DistFiles Include="$(ProjectDir)bsdd-revit-plugin-html-ui\dist\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(DistFiles)" DestinationFolder="$(OutputPath)\%(RecursiveDir)" />
+  </Target>
+
+</Project>
