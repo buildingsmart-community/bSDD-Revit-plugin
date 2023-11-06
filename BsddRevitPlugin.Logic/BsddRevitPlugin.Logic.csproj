@@ -73,6 +73,9 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing.Common, Version=7.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Drawing.Common.7.0.0\lib\net462\System.Drawing.Common.dll</HintPath>
+    </Reference>
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Reflection.Context" />
     <Reference Include="System.Windows.Forms" />
@@ -89,26 +92,31 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="WindowsBase" />
+    <Reference Include="Wpf.Ui, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\WPF-UI.2.1.0\lib\net472\Wpf.Ui.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BsddBridge\BsddBridge.cs" />
-    <Compile Include="bSDDconnect.cs" />
     <Compile Include="Commands\RelayCommand.cs" />
-    <Compile Include="DockablePanel\DockablePanel.cs" />
-    <Compile Include="DockablePanel\Selectors.cs" />
     <Compile Include="IfcJson\IfcJson.cs" />
     <Compile Include="IfcJson\IfcJsonConverter.cs" />
     <Compile Include="Model\Elements.cs" />
     <Compile Include="Model\ElementsManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Utilities\FileHandling.cs" />
-    <Compile Include="ViewModel\ElementViewModel.cs" />
-    <Compile Include="View\bSDDPanel.xaml.cs">
+    <Compile Include="UI\BsddBridge\bSDDbridge.cs" />
+    <Compile Include="UI\DockablePanel\Selectors.cs" />
+    <Compile Include="UI\ViewModel\ElementViewModel.cs" />
+    <Compile Include="UI\View\bSDDPanel.xaml.cs">
       <DependentUpon>bSDDPanel.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\CheckFamilyType.xaml.cs">
+    <Compile Include="UI\View\bSDDSelector.xaml.cs">
+      <DependentUpon>bSDDSelector.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\View\CheckFamilyType.xaml.cs">
       <DependentUpon>CheckFamilyType.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UI\Wrappers\bSDDconnect.cs" />
+    <Compile Include="Utilities\FileHandling.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="html\css\bootstrap.min.css.map">
@@ -122,16 +130,6 @@
     </None>
     <None Include="packages.config" />
     <None Include="Resources\bsddRecieveExample" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Include="View\bSDDPanel.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="View\CheckFamilyType.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <Content Include="html\css\bootstrap.min.css">
@@ -182,6 +180,20 @@
     <Content Include="html\js\select2.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="UI\View\bSDDPanel.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\View\bSDDSelector.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\View\CheckFamilyType.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

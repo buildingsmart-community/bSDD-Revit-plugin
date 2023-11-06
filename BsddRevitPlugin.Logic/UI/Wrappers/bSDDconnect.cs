@@ -1,16 +1,20 @@
 ﻿using Autodesk.Revit.Attributes;
+using Autodesk.Revit.Creation;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BsddRevitPlugin.Logic.DockablePanel;
+using BsddRevitPlugin.Logic.UI.DockablePanel;
 using BsddRevitPlugin.Logic.Model;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using BsddRevitPlugin.Logic.UI.View;
 using NLog;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Windows;
+using System.Windows.Controls.Primitives;
+using System.Windows.Interop;
+using System.Windows.Shapes;
+using Document = Autodesk.Revit.DB.Document;
 
-namespace BSDDconnect
+namespace BsddRevitPlugin.Logic.UI.Wrappers
 {
     public class EventMakeSelection : IExternalEventHandler
     {
@@ -73,7 +77,7 @@ namespace BSDDconnect
             elemList = Selectorlist.AllElements(uiapp);
 
             logger.Debug(elemList);
-            
+
             foreach (Element item in elemList)
             {
                 try
@@ -117,7 +121,7 @@ namespace BSDDconnect
         static List<Element> elemList = new List<Element>();
         Select Selectorlist = new Select();
 
-            
+
         public void Execute(UIApplication uiapp)
         {
             elemList = Selectorlist.AllElementsView(uiapp);
@@ -128,7 +132,8 @@ namespace BSDDconnect
             {
                 try
                 {
-                    if (item.Category != null) {
+                    if (item.Category != null)
+                    {
                         if (
                         item.Category.Name != "Levels" &&
                         item.Category.Name != "Location Data" &&
@@ -148,7 +153,8 @@ namespace BSDDconnect
                             }
                         }
                     }
-                } catch { }
+                }
+                catch { }
             }
         }
 
@@ -158,6 +164,87 @@ namespace BSDDconnect
         }
     }
 
+    public class EventTest : IExternalEventHandler
+    {
+        Logger logger = LogManager.GetCurrentClassLogger();
+
+        static List<Element> elemList = new List<Element>();
+        Select Selectorlist = new Select();
+
+
+        public void Execute(UIApplication uiapp)
+        {
+            logger.Debug(elemList);
+            Document doc = uiapp.ActiveUIDocument.Document;
+
+            using (Transaction transaction = new Transaction(doc, "Type Comments"))
+            {
+                transaction.Start();
+
+                string idString = "766645";
+                int idInt = Convert.ToInt32(idString);
+                ElementId id = new ElementId(idInt);
+                Element eFromId = doc.GetElement(id);
+
+                string idString2 = "594824";
+                int idInt2 = Convert.ToInt32(idString2);
+                ElementId id2 = new ElementId(idInt2);
+                Element eTypeFromId = doc.GetElement(id2);
+
+                Parameter p = eFromId.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS);
+                Parameter p2 = eTypeFromId.get_Parameter(BuiltInParameter.ALL_MODEL_TYPE_COMMENTS);
+
+                p.Set("Testing");
+                p2.Set("TestingType");
+
+                transaction.Commit();
+            }
+
+            
+
+            //    foreach (Element item in elemList)
+            //    {
+            //        try
+            //        {
+            //            SetParameterValue(item, "Type Comments", "Test");
+            //        }
+            //        catch { }
+            //    }
+        }
+
+        public string GetName()
+        {
+            return "";
+        }
+    }
+
+
+
+    public class EventTest2 : IExternalEventHandler
+    {
+        Logger logger = LogManager.GetCurrentClassLogger();
+
+
+
+        public void Execute(UIApplication uiapp)
+        {
+
+            var MyWindow = new bSDDSelector();
+            HwndSource hwndSource = HwndSource.FromHwnd(uiapp.MainWindowHandle);
+            Window wnd = hwndSource.RootVisual as Window;
+            if (wnd != null)
+            {
+                MyWindow.Owner = wnd;
+                //MyWindow.ShowInTaskbar = false;
+                MyWindow.Show();
+            }
+        }
+
+        public string GetName()
+        {
+            return "";
+        }
+    }
 
 
     [Transaction(TransactionMode.Manual)]
@@ -229,7 +316,7 @@ namespace BSDDconnect
             /////Sommige namespaces hebben ._2023?
             /////Logger!
 
-            
+
 
 
             return Result.Succeeded;
