@@ -3,9 +3,9 @@
 using System.Collections.ObjectModel;
 using BsddRevitPlugin.Logic.Model;
 using BsddRevitPlugin.Logic.Commands;
-using BsddRevitPlugin.Logic.View;
+using BsddRevitPlugin.Logic.UI.View;
 
-namespace BsddRevitPlugin.Logic.ViewModel
+namespace BsddRevitPlugin.Logic.UI.ViewModel
 {
     public class ElementViewModel
     {

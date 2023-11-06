@@ -1,8 +1,11 @@
 ﻿using ASRR.Core.Log;
 using Autodesk.Revit.UI;
+using BsddRevitPlugin.Logic.UI.View;
 using NLog;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
+using System.Windows.Threading;
 
 namespace BsddRevitPlugin.Common
 {
@@ -12,6 +15,7 @@ namespace BsddRevitPlugin.Common
         private static readonly object InstanceLock = new object();
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
         private string _openLogFilePath;
+
 
         private Main()
         {
