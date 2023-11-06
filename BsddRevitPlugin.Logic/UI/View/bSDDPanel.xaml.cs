@@ -4,16 +4,18 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.Model;
-using BsddRevitPlugin.Logic.ViewModel;
+using BsddRevitPlugin.Logic.UI.ViewModel;
 using ComboBox = System.Windows.Controls.ComboBox;
 using System.ComponentModel;
+using System.Windows.Interop;
+using BSDDconnect = BsddRevitPlugin.Logic.UI.Wrappers;
 
 /// <summary>
 /// Event handler for the selection method combo box. Clears the element manager and raises the appropriate external event based on the selected item in the combo box.
 /// </summary>
 /// <param name="sender">The selection method combo box.</param>
 /// <param name="e">The selection changed event arguments.</param>
-namespace BsddRevitPlugin.Logic.View
+namespace BsddRevitPlugin.Logic.UI.View
 {
     // This class represents the main panel of the bSDD Revit plugin
     public partial class bSDDPanel : Page, IDockablePaneProvider
@@ -22,7 +24,12 @@ namespace BsddRevitPlugin.Logic.View
         BSDDconnect.EventMakeSelection SelectEHMS;
         BSDDconnect.EventSelectAll SelectEHSA;
         BSDDconnect.EventSelectView SelectEHSV;
-        ExternalEvent SelectEEMS, SelectEESA, SelectEESV;
+        BSDDconnect.EventTest testEvent;
+        BSDDconnect.EventTest2 testEvent2;
+        ExternalEvent SelectEEMS, SelectEESA, SelectEESV, testExEvent, testExEvent2;
+
+
+
 
         // Data fields
         private Guid m_targetGuid = new Guid("D7C963CE-B3CA-426A-8D51-6E8254D21158");
@@ -39,7 +46,7 @@ namespace BsddRevitPlugin.Logic.View
 
             // Set the address of the CefSharp browser component to the index.html file of the plugin
             Browser.Address = addinLocation + "/html/index.html";
-            Browser.JavascriptObjectRepository.Register("bsddBridge", new BsddBridge(), true);
+            Browser.JavascriptObjectRepository.Register("bsddBridge", new BsddBridge.BsddBridge(), true);
 
             // Set the data context of the panel to an instance of ElementViewModel
             ElementViewModel elementViewModel = new ElementViewModel();
@@ -57,9 +64,13 @@ namespace BsddRevitPlugin.Logic.View
             SelectEHMS = new BSDDconnect.EventMakeSelection();
             SelectEHSA = new BSDDconnect.EventSelectAll();
             SelectEHSV = new BSDDconnect.EventSelectView();
+            testEvent = new BSDDconnect.EventTest();
+            testEvent2 = new BSDDconnect.EventTest2();
             SelectEEMS = ExternalEvent.Create(SelectEHMS);
             SelectEESA = ExternalEvent.Create(SelectEHSA);
             SelectEESV = ExternalEvent.Create(SelectEHSV);
+            testExEvent = ExternalEvent.Create(testEvent);
+            testExEvent2 = ExternalEvent.Create(testEvent2);
 
             // Add the selection methods to the selection method combo box
             SM.Items.Add(new ComboBoxItem() { Content = "Selection method:", IsSelected = true, IsEnabled = false });
@@ -140,15 +151,20 @@ namespace BsddRevitPlugin.Logic.View
             // Raise the appropriate external event based on the selected item in the combo box
             if (((ComboBoxItem)(((ComboBox)sender).SelectedItem)).Content.ToString() == "Make selection")
             {
-                SelectEEMS.Raise();
+                //SelectEEMS.Raise();
+                //testExEvent.Raise
+                testExEvent2.Raise();
+
+
+                ////Main.Instance.ShowbSDDSelector(commandData.Application);
             }
             else if (((ComboBoxItem)(((ComboBox)sender).SelectedItem)).Content.ToString() == "Select all")
             {
-                SelectEESA.Raise();
+                //SelectEESA.Raise();
             }
             else if (((ComboBoxItem)(((ComboBox)sender).SelectedItem)).Content.ToString() == "Select visible in view")
             {
-                SelectEESV.Raise();
+                //SelectEESV.Raise();
             };
         }
     }
