@@ -1,0 +1,80 @@
+[
+    {
+        "type": "IfcSlab",
+        "name": "Floor: 23_FL_AT_breedplaatvloer_260 (C35/45)",
+        "description": "breedplaatvloer",
+        "PredefinedType": "FLOOR",
+        "hasAssociations": [
+            {
+                "type": "IfcClassificationReference",
+                "name": "23.21 vloeren; constructief, vrijdragende vloeren",
+                "location": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021/class/23.21",
+                "identification": "23.21",
+                "referencedSource": {
+                    "type": "IfcClassification",
+                    "name": "DigiBase Demo NL-SfB tabel 1",
+                    "location": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021"
+                }
+            },
+            {
+                "type": "IfcMaterial",
+                "name": "beton generiek",
+                "description": "https://identifier.buildingsmart.org/uri/bimloket/naakt/0.1/class/betongeneriek"
+            }
+        ]
+    },
+    {
+        "type": "IfcSlab",
+        "name": "Floor: 23_FL_AT_breedplaatvloer_200 (C35/45)",
+        "description": "breedplaatvloer",
+        "PredefinedType": "FLOOR"
+    },
+    {
+        "type": "IfcSlab",
+        "name": "Floor: 23_FL_AT_breedplaatvloer_200 (C35/45)",
+        "description": "breedplaatvloer",
+        "PredefinedType": "FLOOR"
+    },
+    {
+        "type": "IfcSlab",
+        "name": "Floor: 23_FL_AT_breedplaatvloer_400 (C35/45) (oranje)",
+        "description": "breedplaatvloer",
+        "PredefinedType": "FLOOR",
+        "hasAssociations": [
+            {
+                "type": "IfcClassificationReference",
+                "name": "23.21 vloeren; constructief, vrijdragende vloeren",
+                "location": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021/class/23.21",
+                "identification": "23.21",
+                "referencedSource": {
+                    "type": "IfcClassification",
+                    "name": "DigiBase Demo NL-SfB tabel 1",
+                    "location": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021"
+                }
+            },
+            {
+                "type": "IfcMaterial",
+                "name": "beton generiek",
+                "description": "https://identifier.buildingsmart.org/uri/bimloket/naakt/0.1/class/betongeneriek"
+            }
+        ]
+    },
+    {
+        "type": "IfcSlab",
+        "name": "Kanaalplaatvloer 200 VBI",
+        "description": "kanaalplaatvloer",
+        "PredefinedType": "FLOOR"
+    },
+    {
+        "type": "IfcSlab",
+        "name": "Kanaalplaatvloer 200 VBI",
+        "description": "kanaalplaatvloer",
+        "PredefinedType": "FLOOR"
+    },
+    {
+        "type": "IfcDoor",
+        "name": "Kegro Geïsoleerde voordeur 9155N",
+        "description": "buitendeur",
+        "PredefinedType": "DOOR"
+    }
+]
