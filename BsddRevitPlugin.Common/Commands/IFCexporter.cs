@@ -114,6 +114,7 @@ namespace BsddRevitPlugin.Common.Commands
                     exportOptions.AddOption("UseOnlyTriangulation", false.ToString());
                     exportOptions.AddOption("UseTypeNameOnlyForIfcType", true.ToString());
                     exportOptions.AddOption("UseVisibleRevitNameAsEntityName", true.ToString());
+                    
                     //exportOptions.AddOption("SelectedSite", "MF");
                     //exportOptions.AddOption("SitePlacement", 0.ToString());
                     //exportOptions.AddOption("GeoRefCRSName", "");

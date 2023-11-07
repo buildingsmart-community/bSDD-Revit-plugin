@@ -20,8 +20,6 @@ namespace BsddRevitPlugin.Common.Commands
             string jsonString = "{\"350319\":{\"Export Type to IFC As\":\"IfcSlab.FLOOR\",\"Type Comments\":\"ABC\",\"Type Name\":\"ABC\"},\"350304\":{\"Export Type to IFC As\":\"IfcWall\",\"Type Comments\":\"DEF\",\"Type Name\":\"ABC123\"},\"350307\":{\"cat\":\"Ceiling\",\"Type Comments\":\"GHI\",\"Type Name\":\"ABsdfaC\"}}";
             string jsonStringempty = "{\"Export to IFC As\":\"\",\"IFC Predefined Type\":\"\",\"Comments\":\"\"}";
 
-
-
             try
             {
                 Dictionary<int, Dictionary<string, string>> dictionary = JsonConvert.DeserializeObject<Dictionary<int, Dictionary<string, string>>>(jsonString);
