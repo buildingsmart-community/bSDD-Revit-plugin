@@ -1,97 +1,140 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using Newtonsoft.Json;
 
 namespace BsddRevitPlugin.Common.Commands
 {
     [Transaction(TransactionMode.Manual)]
     public class ParameterAanpassen : IExternalCommand
     {
-        public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
+        public Result Execute(
+            ExternalCommandData commandData, ref string message, ElementSet elements)
         {
-            // Get the active document
-            UIDocument uiDoc = commandData.Application.ActiveUIDocument;
+            UIApplication uiApp = commandData.Application;
+            UIDocument uiDoc = uiApp.ActiveUIDocument;
             Document doc = uiDoc.Document;
 
+            string jsonString = "{\"350319\":{\"Export Type to IFC As\":\"IfcSlab.FLOOR\",\"Type Comments\":\"ABC\",\"Type Name\":\"ABC\"},\"350304\":{\"Export Type to IFC As\":\"IfcWall\",\"Type Comments\":\"DEF\",\"Type Name\":\"ABC123\"},\"350307\":{\"cat\":\"Ceiling\",\"Type Comments\":\"GHI\",\"Type Name\":\"ABsdfaC\"}}";
+            string jsonStringempty = "{\"Export to IFC As\":\"\",\"IFC Predefined Type\":\"\",\"Comments\":\"\"}";
 
-            List<ElementId> elementTypeIds = new List<ElementId>();
 
-            // Create a filtered element collector to get all the elements in the document
-            FilteredElementCollector collector = new FilteredElementCollector(doc);
 
-            // Filter elements by IsElementType property to get only ElementTypes
-            ICollection<Element> elementTypes = collector
-                .WhereElementIsElementType()
-                .ToElements();
-
-            // Get the ElementIds of all the ElementTypes
-            foreach (Element elementType in elementTypes)
+            try
             {
-                elementTypeIds.Add(elementType.Id);
-            }
+                Dictionary<int, Dictionary<string, string>> dictionary = JsonConvert.DeserializeObject<Dictionary<int, Dictionary<string, string>>>(jsonString);
+                Dictionary<string, string> dictionaryempty = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonStringempty);
+                
 
 
-            // Get all ID's to adjust
-            List<int> sourceList = new List<int> { 350319, 350304 };
-
-            // Element IDs to edit
-            List<ElementId> elementIdsToEdit = new List<ElementId> {};
-            sourceList.ForEach(item => elementIdsToEdit.Add(new ElementId(item)));
-
-            // Parameter name to edit
-            string parameterName = "Type Comments";
-
-            // New parameter value
-            string newParameterValue = "Dit werkt!"; // Change this value as needed
-
-            // Start a transaction
-            using (Transaction tx = new Transaction(doc, "Edit Parameters"))
-            {
-                if (tx.Start() == TransactionStatus.Started)
+                // You can now access the data in the dictionary
+                foreach (var entry in dictionary)
                 {
-                    // Loop through the element IDs and edit the parameter
-                    foreach (ElementId elementId in elementIdsToEdit)
-                    //foreach (ElementId elementId in elementTypeIds)
+                    int key = entry.Key;
+                    Dictionary<string, string> values = entry.Value;
+
+                    try
                     {
-                        Element element = doc.GetElement(elementId);
+                        ElementId elementid = new ElementId(key);                         
+                        Element element = doc.GetElement(elementid);
 
-                        // Check if the element is valid and can have the specified parameter
-                        if (element != null && element.IsValidObject) //&& element.CanHaveParameter(parameterName))
+                        if (element != null)
                         {
-                            // Get the parameter by name
-                            Parameter parameter = element.LookupParameter(parameterName);
+                            // TYPEPARAMETERS //
+                            List<Parameter> typeparameters = new List<Parameter>();
+                            ElementId typeId = element.GetTypeId();
+                            Element elementType = doc.GetElement(typeId);
 
-                            //if (parameter != null && parameter.StorageType == StorageType.String)
-                            //{
-                                // Set the new parameter value
-                                parameter.Set(newParameterValue);
-                            //}
-                            //else
-                            //{
-                                // Handle the case when the parameter is not found or is of a different type
-                            //    var value = parameter.AsString();
-                            //    TaskDialog.Show("Error", value);
-                            //}
-                        }
-                        else
-                        {
-                            // Handle the case when the element is not valid or cannot have the specified parameter
-                            TaskDialog.Show("Error", "Element not valid or cannot have the specified parameter.");
+                            foreach (Parameter typeparameter in elementType.Parameters)
+                            {
+                                typeparameters.Add(typeparameter);
+                            }
+
+                            using (Transaction trans = new Transaction(doc, "Update Parameters"))
+                            {
+                                if (trans.Start() == TransactionStatus.Started)
+                                {
+                                    foreach (Parameter typeparameter in typeparameters)
+                                    {
+                                        string paramName = typeparameter.Definition.Name;
+                                        //TaskDialog.Show("Success", paramName);
+
+                                        if (!typeparameter.IsReadOnly)
+                                        {
+                                            if (values.ContainsKey(paramName))
+                                            {
+                                                string parametervalue = values[paramName];
+                                                typeparameter.Set(parametervalue);
+                                                //TaskDialog.Show("Success", paramName + ": " + parametervalue);
+                                            }
+
+                                            //string test = parameter.Definition.GetDataType().ToString();
+                                            //TaskDialog.Show("Success", parameter.AsValueString());
+                                            //parameter.Set("Aanpassen parameters");
+                                        }
+                                        //if (typeparameter.Definition.Name == )
+                                    }
+
+                                    trans.Commit();
+                                }
+
+                            }
+                            // TYPEPARAMETERS //
+
+                            // INSTANCEPARAMETERS //
+
+                            List<Parameter> parameters = new List<Parameter>();
+                            foreach (Parameter parameter in element.Parameters)
+                            {
+                                parameters.Add(parameter);
+                            }
+
+                            using (Transaction trans = new Transaction(doc, "Update Parameters"))
+                            {
+                                if (trans.Start() == TransactionStatus.Started)
+                                {
+                                    foreach (Parameter parameter in parameters)
+                                    {
+                                        if (!parameter.IsReadOnly)
+                                        {
+                                            string paramName = parameter.Definition.Name;
+                                            if (dictionaryempty.ContainsKey(paramName))
+                                            {
+                                                string parametervalue = dictionaryempty[paramName];
+                                                parameter.Set(parametervalue);
+                                            }
+                                        }
+                                    }
+
+                                    trans.Commit();
+                                }
+
+                            }
+                            // INSTANCEPARAMETERS //
+
+
                         }
                     }
-
-                    // Commit the transaction
-                    tx.Commit();
-                    return Result.Succeeded;
-                }
-                else
-                {
-                    // Handle the case when the transaction fails to start
-                    TaskDialog.Show("Error", "Transaction failed to start.");
-                    return Result.Failed;
+                    catch(Exception ex)
+                    {
+                        message = ex.Message;
+                        return Result.Failed;
+                    }
                 }
             }
+            catch (JsonException ex)
+            {
+                TaskDialog.Show("Success", "Error deserializing JSON: " + ex.Message);
+            }
+
+            TaskDialog.Show("Success", "Parameters updated successfully.");
+            return Result.Succeeded;
         }
+       
     }
 }
+
+
+
