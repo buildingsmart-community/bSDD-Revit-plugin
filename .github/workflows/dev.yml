@@ -62,7 +62,7 @@ jobs:
       - name: Run MSBuild
         id: run-msbuild
         run: |
-          msbuild $env:Solution_Name /t:Clean,Build /p:platform="Any CPU" /p:Configuration=Release
+          msbuild $env:Solution_Name /t:Clean,Build /p:platform="x64" /p:Configuration=Release
 
       - name: Run tests
         id: run-tests
