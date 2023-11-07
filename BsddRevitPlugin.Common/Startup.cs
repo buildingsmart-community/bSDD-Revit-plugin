@@ -1,7 +1,6 @@
 ﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.Commands;
-using BsddRevitPlugin.Logic.View;
 using BsddRevitPlugin.Logic.UI.View;
 using BsddRevitPlugin.Resources;
 using System;

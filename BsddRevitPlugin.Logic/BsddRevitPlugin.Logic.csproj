@@ -98,7 +98,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\RelayCommand.cs" />
-    <Compile Include="Commands\Selectors.cs" />
     <Compile Include="IfcJson\IfcJson.cs" />
     <Compile Include="IfcJson\IfcJsonConverter.cs" />
     <Compile Include="Model\Elements.cs" />
