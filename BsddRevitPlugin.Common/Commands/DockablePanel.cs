@@ -2,9 +2,8 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using System;
-using System.Windows;
 
-namespace BsddRevitPlugin.Common.Commands.DockablePanel
+namespace BsddRevitPlugin.Common.Commands
 {
     //Check availability
     public class AvailabilityNoOpenDocument : IExternalCommandAvailability
