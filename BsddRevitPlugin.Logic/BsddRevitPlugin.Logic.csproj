@@ -103,6 +103,7 @@
     <Compile Include="Model\Elements.cs" />
     <Compile Include="Model\ElementsManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Resources\IfcDataExample.cs" />
     <Compile Include="UI\BsddBridge\bSDDbridge.cs" />
     <Compile Include="UI\DockablePanel\Selectors.cs" />
     <Compile Include="UI\ViewModel\ElementViewModel.cs" />
@@ -130,6 +131,7 @@
     </None>
     <None Include="packages.config" />
     <None Include="Resources\bsddRecieveExample" />
+    <None Include="Resources\ifcDataFromRevitExample.json" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="html\css\bootstrap.min.css">
