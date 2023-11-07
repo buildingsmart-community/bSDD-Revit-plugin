@@ -6,6 +6,8 @@ using BsddRevitPlugin.Logic.Commands;
 using BsddRevitPlugin.Logic.UI.DockablePanel;
 using BsddRevitPlugin.Logic.Model;
 using BsddRevitPlugin.Logic.UI.View;
+using BsddRevitPlugin.Logic.IfcJson;
+using ASRR.Core.Persistence;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -14,6 +16,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Interop;
 using System.Windows.Shapes;
 using Document = Autodesk.Revit.DB.Document;
+
 
 namespace BsddRevitPlugin.Logic.UI.Wrappers
 {
@@ -27,37 +30,23 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
         public void Execute(UIApplication uiapp)
         {
-            logger.Debug("hoi");
+            //logger.Debug("hoi");
             elemList = Selectorlist.SelectElements(uiapp);
+            ListAdjust lst = new ListAdjust();
+            elemList = lst.ListFilter(elemList);
+            lst.elemToJSON(elemList);
 
-            foreach (Element item in elemList)
-            {
-                try
-                {
-                    if (item.Category != null)
-                    {
-                        if (
-                        item.Category.Name != "Levels" &&
-                        item.Category.Name != "Location Data" &&
-                        item.Category.Name != "Model Groups" &&
-                        item.Category.Name != "RVT Links" &&
-                        item.Category.Name.Substring(Math.Max(0, item.Category.Name.Length - 4)) != ".dwg" &&
-                        item.Category.Name.Substring(Math.Max(0, item.Category.Name.Length - 4)) != ".pdf"
-                        )
-                        {
-                            try
-                            {
-                                ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = (item as FamilySymbol).FamilyName, Type = item.Name, Id = item.Id });
-                            }
-                            catch
-                            {
-                                ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = item.Category.Name, Type = item.Name, Id = item.Id });
-                            }
-                        }
-                    }
-                }
-                catch { }
-            }
+            //foreach (Element item in elemList)
+            //{
+            //    try
+            //    {
+            //        ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = (item as FamilySymbol).FamilyName, Type = item.Name, Id = item.Id });
+            //    }
+            //    catch
+            //    {
+            //        ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = item.Category.Name, Type = item.Name, Id = item.Id });
+            //    }
+            //}
         }
 
         public string GetName()
@@ -76,8 +65,65 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         public void Execute(UIApplication uiapp)
         {
             elemList = Selectorlist.AllElements(uiapp);
+            ListAdjust lst = new ListAdjust();
+            elemList = lst.ListFilter(elemList);
+            lst.elemToJSON(elemList);
 
-            logger.Debug(elemList);
+            //foreach (Element item in elemList)
+            //{
+            //    try
+            //    {
+            //        ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = (item as FamilySymbol).FamilyName, Type = item.Name, Id = item.Id });
+            //    }
+            //    catch
+            //    {
+            //        ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = item.Category.Name, Type = item.Name, Id = item.Id });
+            //    }
+            //}
+        }
+
+        public string GetName()
+        {
+            return "";
+        }
+    }
+
+    public class EventSelectView : IExternalEventHandler
+    {
+        static List<Element> elemList = new List<Element>();
+        Select Selectorlist = new Select();
+
+        public void Execute(UIApplication uiapp)
+        {
+            elemList = Selectorlist.AllElementsView(uiapp);
+            ListAdjust lst = new ListAdjust();
+            elemList = lst.ListFilter(elemList);
+            lst.elemToJSON(elemList);
+
+            //foreach (Element item in elemList)
+            //{
+            //    try
+            //    {
+            //        ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = (item as FamilySymbol).FamilyName, Type = item.Name, Id = item.Id });
+            //    }
+            //    catch
+            //    {
+            //        ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = item.Category.Name, Type = item.Name, Id = item.Id });
+            //    }
+            //}
+        }
+
+        public string GetName()
+        {
+            return "";
+        }
+    }
+
+    public class ListAdjust
+    {
+        public List<Element> ListFilter(List<Element> elemList)
+        {
+            List<Element> elemListFiltered = new List<Element>();
 
             foreach (Element item in elemList)
             {
@@ -94,76 +140,57 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
                         item.Category.Name.Substring(System.Math.Max(0, item.Category.Name.Length - 4)) != ".pdf"
                         )
                         {
-                            try
-                            {
-                                ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = (item as FamilySymbol).FamilyName, Type = item.Name, Id = item.Id });
-                            }
-                            catch
-                            {
-                                ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = item.Category.Name, Type = item.Name, Id = item.Id });
-                            }
+                            elemListFiltered.Add(item);
                         }
                     }
                 }
                 catch { }
             }
+            return elemListFiltered;
         }
 
-        public string GetName()
+        public void elemToJSON(List<Element> elemList)
         {
-            return "";
-        }
-    }
-
-    public class EventSelectView : IExternalEventHandler
-    {
-        Logger logger = LogManager.GetCurrentClassLogger();
-
-        static List<Element> elemList = new List<Element>();
-        Select Selectorlist = new Select();
-
-
-        public void Execute(UIApplication uiapp)
-        {
-            elemList = Selectorlist.AllElementsView(uiapp);
-
-            logger.Debug(elemList);
+            List<IfcData> ifcDataLst = new List<IfcData>();
 
             foreach (Element item in elemList)
             {
-                try
-                {
-                    if (item.Category != null)
-                    {
-                        if (
-                        item.Category.Name != "Levels" &&
-                        item.Category.Name != "Location Data" &&
-                        item.Category.Name != "Model Groups" &&
-                        item.Category.Name != "RVT Links" &&
-                        item.Category.Name.Substring(Math.Max(0, item.Category.Name.Length - 4)) != ".dwg" &&
-                        item.Category.Name.Substring(Math.Max(0, item.Category.Name.Length - 4)) != ".pdf"
-                        )
-                        {
-                            try
-                            {
-                                ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = (item as FamilySymbol).FamilyName, Type = item.Name, Id = item.Id });
-                            }
-                            catch
-                            {
-                                ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = item.Category.Name, Type = item.Name, Id = item.Id });
-                            }
-                        }
-                    }
-                }
-                catch { }
-            }
-        }
+            //    IfcData ifcData = new IfcData
+            //    {
+            //        IsDefinedBy = new List<IfcPropertySet>()
+            //            {
+            //                new IfcPropertySet
+            //                {
+            //                    Name = item.Name
+            //                }
+            //            },
+            //        HasAssociations = new List<IfcClassificationReference>()
+            //            {
+            //                new IfcClassificationReference
+            //                {
+            //                Name = item.Name,
+            //                Identification = "test"
+            //                },
+            //                new IfcClassificationReference
+            //                {
+            //                Name = "testing",
+            //                Identification = "test2"
+            //                }
+            //            }
+            //    };
 
-        public string GetName()
-        {
-            return "";
+
+
+            //    ifcDataLst.Add(ifcData);
+            }
+            ////JObject json = JObject.Parse(JsonConvert.SerializeObject(ifcDataLst));
+
+            //var provider = new JsonBasedPersistenceProvider("C://temp");
+
+            //provider.Persist(ifcDataLst);
         }
     }
+        
 
     public class EventTest : IExternalEventHandler
     {
@@ -257,69 +284,8 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uidoc.Document;
 
-            //using(Transaction t = new Transaction(doc, "Modify Project Name"))
-            //{
-            //    t.Start();
-            //    doc.ProjectInformation.GetParameters("Project Name")[0].Set("Space Elevator");
-            //    t.Commit();
-            //}
-
-
             Select Selectorlist = new Select();
-            //elemList = Selectorlist.AllElements(uiapp);
-
-            //elemList = Selectorlist.AllElementsView(uiapp);
-
-            //elemList = Selectorlist.AllSelectedElements(uiapp);
-
-
-            //Knop keuze:
-            //Alle elementen in view
-            //var collectionView = new FilteredElementCollector(doc, doc.ActiveView.Id).Cast<Element>().ToList();
-            //By Categorie
-
-            //Selectie
-            //Er is al een selectie
-            //Er is nog geen selectie: Maak nieuwe selectie
-            //                    IList<Reference> collectionSelect = uidoc.Selection.PickObjects(ObjectType.Element);
-            //zet in lijst
-            //                    List<ElementId> ids = (from Reference r in collectionSelect select r.ElementId).ToList();
-
-
-            //Geef standaarden aan?
-
-            //Verwijder niet van toepassing zijnde elementen uit de lijst
-
-            //Waarschuw dat elementen van dezelfde families die niet geselecteerd zijn ook worden gewijzigd/bewerkt 
-            //Zet elementen per family en type in een lijst met status code rood/oranje/geel/groen
-            //Rood: Nog niet gekoppeld
-            //Oranje: Gekoppeld, maar nog niet volledig
-            //Geel: Gekoppeld, niet volledig maar voldoende
-            //Groen: Volledig gekoppeld
-
-            //Loop family type lijst
-            //Pak volgende family type
-            //Koppel data in Pop-up menu <--BSDD
-            //Haal parameters en waarden op uit BSDD volgens de juiste standaard
-            //Check of parameters bestaan, anders toevoegen
-            //verschil tussen loadable/system families
-            //Shared parameters GUIDs in bsDD?
-            //Voeg UI velden toe van parameters, gruis uit wat niet meer te wijzigen is
-            //Volgende/Gereed/annuleren knop als gebruiker klaar is met huidige type
-            //Bij annuleren vraag stellen om reeds opgegeven koppelingen te behouden of niet
-            //Volgende item
-
-            /////Veel van hierboven zit in de UI kant
-            /////Er moet een JSON opgebouwd worden met de geselelcteerde elementen
-            /////En een json ontvangen kunnen worden en teruggezet worden in de elementen
-
-            /////Waarom alles in .2023 plugin file
-            /////Sommige namespaces hebben ._2023?
-            /////Logger!
-
-
-
-
+            
             return Result.Succeeded;
         }
     }
