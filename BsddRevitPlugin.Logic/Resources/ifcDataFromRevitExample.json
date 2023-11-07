@@ -3,7 +3,7 @@
         "type": "IfcSlab",
         "name": "Floor: 23_FL_AT_breedplaatvloer_260 (C35/45)",
         "description": "breedplaatvloer",
-        "PredefinedType": "FLOOR",
+        "predefinedType": "FLOOR",
         "hasAssociations": [
             {
                 "type": "IfcClassificationReference",
@@ -27,19 +27,19 @@
         "type": "IfcSlab",
         "name": "Floor: 23_FL_AT_breedplaatvloer_200 (C35/45)",
         "description": "breedplaatvloer",
-        "PredefinedType": "FLOOR"
+        "predefinedType": "FLOOR"
     },
     {
         "type": "IfcSlab",
         "name": "Floor: 23_FL_AT_breedplaatvloer_200 (C35/45)",
         "description": "breedplaatvloer",
-        "PredefinedType": "FLOOR"
+        "predefinedType": "FLOOR"
     },
     {
         "type": "IfcSlab",
         "name": "Floor: 23_FL_AT_breedplaatvloer_400 (C35/45) (oranje)",
         "description": "breedplaatvloer",
-        "PredefinedType": "FLOOR",
+        "predefinedType": "FLOOR",
         "hasAssociations": [
             {
                 "type": "IfcClassificationReference",
@@ -63,18 +63,18 @@
         "type": "IfcSlab",
         "name": "Kanaalplaatvloer 200 VBI",
         "description": "kanaalplaatvloer",
-        "PredefinedType": "FLOOR"
+        "predefinedType": "FLOOR"
     },
     {
         "type": "IfcSlab",
         "name": "Kanaalplaatvloer 200 VBI",
         "description": "kanaalplaatvloer",
-        "PredefinedType": "FLOOR"
+        "predefinedType": "FLOOR"
     },
     {
         "type": "IfcDoor",
         "name": "Kegro Geïsoleerde voordeur 9155N",
         "description": "buitendeur",
-        "PredefinedType": "DOOR"
+        "predefinedType": "DOOR"
     }
 ]

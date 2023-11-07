@@ -1,16 +1,13 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace BsddRevitPlugin.Logic.IfcJson
 {
     /// <summary>
-    /// Represents a reference to an IFC classification.
+    /// Represents the bSDD data as an IFC object.
     /// </summary>
-    public class IfcClassificationReference
+    public class IfcData
     {
         [JsonProperty("type")]
         public string Type { get; set; }
@@ -18,14 +15,45 @@ namespace BsddRevitPlugin.Logic.IfcJson
         [JsonProperty("name")]
         public string Name { get; set; }
 
+        [JsonProperty("description")]
+        public string Description { get; set; }
+
+        [JsonProperty("predefinedType")]
+        public string PredefinedType { get; set; }
+
+        [JsonProperty("hasAssociations")]
+        public List<Association> HasAssociations { get; set; }
+
+        [JsonProperty("isDefinedBy")]
+        public List<IfcPropertySet> IsDefinedBy { get; set; }
+    }
+    /// <summary>
+    /// Represents a reference to an IFC classification.
+    /// </summary>
+    public class Association
+    {
+        [JsonProperty("type")]
+        public string Type { get; set; }
+
+        [JsonProperty("name")]
+    }
+
+    public class IfcClassificationReference: Association
+    {
+
         [JsonProperty("location")]
-        public string Location { get; set; }
+        public Uri Location { get; set; }
 
         [JsonProperty("identification")]
         public string Identification { get; set; }
 
         [JsonProperty("referencedSource")]
         public IfcClassification ReferencedSource { get; set; }
+    }
+    public class IfcMaterial: Association
+    {
+        [JsonProperty("description")]
+        public string Description { get; set; }
     }
 
     /// <summary>
@@ -38,6 +66,8 @@ namespace BsddRevitPlugin.Logic.IfcJson
 
         [JsonProperty("name")]
         public string Name { get; set; }
+        [JsonProperty("location")]
+        public Uri Location { get; set; }
     }
 
     /// <summary>
@@ -85,15 +115,5 @@ namespace BsddRevitPlugin.Logic.IfcJson
         public object Value { get; set; }
     }
 
-    /// <summary>
-    /// Represents the bSDD data as an IFC object.
-    /// </summary>
-    public class IfcData
-    {
-        [JsonProperty("hasAssociations")]
-        public List<IfcClassificationReference> HasAssociations { get; set; }
 
-        [JsonProperty("isDefinedBy")]
-        public List<IfcPropertySet> IsDefinedBy { get; set; }
-    }
 }
