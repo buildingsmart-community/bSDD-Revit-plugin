@@ -18,7 +18,7 @@ namespace BsddRevitPlugin.Logic.IfcJson
 
             IfcData ifcData = new IfcData();
 
-            ifcData.HasAssociations = new List<IfcClassificationReference>();
+            ifcData.HasAssociations = new List<Association>();
             ifcData.IsDefinedBy = new List<IfcPropertySet>();
 
             foreach (JObject item in jsonObject["hasAssociations"])
@@ -28,6 +28,10 @@ namespace BsddRevitPlugin.Logic.IfcJson
                     case "IfcClassificationReference":
                         ifcData.HasAssociations.Add(item.ToObject<IfcClassificationReference>());
                         break;
+                    case "IfcMaterial":
+                        ifcData.HasAssociations.Add(item.ToObject<IfcMaterial>());
+                        break;
+                        
                 }
             }
 
