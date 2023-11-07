@@ -5,6 +5,22 @@ using System.Collections.Generic;
 namespace BsddRevitPlugin.Logic.IfcJson
 {
     /// <summary>
+    /// Message data including the main domain and filter domains
+    /// </summary>
+    public class MainData
+    {
+        [JsonProperty("domain")]
+        public Uri Domain { get; set; }
+    
+        [JsonProperty("filters")]
+        public List<Uri> Filters { get; set; }
+
+
+        [JsonProperty("ifcData")]
+        public List<IfcData> IfcData { get; set; }
+    }
+
+    /// <summary>
     /// Represents the bSDD data as an IFC object.
     /// </summary>
     public class IfcData
@@ -36,6 +52,7 @@ namespace BsddRevitPlugin.Logic.IfcJson
         public string Type { get; set; }
 
         [JsonProperty("name")]
+        public string Name { get; set; }
     }
 
     public class IfcClassificationReference: Association
@@ -66,6 +83,7 @@ namespace BsddRevitPlugin.Logic.IfcJson
 
         [JsonProperty("name")]
         public string Name { get; set; }
+
         [JsonProperty("location")]
         public Uri Location { get; set; }
     }
