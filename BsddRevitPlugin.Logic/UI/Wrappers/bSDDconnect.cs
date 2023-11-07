@@ -2,6 +2,7 @@
 using Autodesk.Revit.Creation;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using BsddRevitPlugin.Logic.Commands;
 using BsddRevitPlugin.Logic.UI.DockablePanel;
 using BsddRevitPlugin.Logic.Model;
 using BsddRevitPlugin.Logic.UI.View;
