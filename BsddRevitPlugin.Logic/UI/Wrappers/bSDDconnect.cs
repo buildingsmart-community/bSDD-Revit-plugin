@@ -16,6 +16,11 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Interop;
 using System.Windows.Shapes;
 using Document = Autodesk.Revit.DB.Document;
+using static System.Net.WebRequestMethods;
+using System.Xml.Linq;
+using System.Windows.Controls;
+using System.Windows.Media.Media3D;
+using CefSharp;
 
 
 namespace BsddRevitPlugin.Logic.UI.Wrappers
@@ -68,18 +73,6 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             ListAdjust lst = new ListAdjust();
             elemList = lst.ListFilter(elemList);
             lst.elemToJSON(elemList);
-
-            //foreach (Element item in elemList)
-            //{
-            //    try
-            //    {
-            //        ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = (item as FamilySymbol).FamilyName, Type = item.Name, Id = item.Id });
-            //    }
-            //    catch
-            //    {
-            //        ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = item.Category.Name, Type = item.Name, Id = item.Id });
-            //    }
-            //}
         }
 
         public string GetName()
@@ -99,18 +92,6 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             ListAdjust lst = new ListAdjust();
             elemList = lst.ListFilter(elemList);
             lst.elemToJSON(elemList);
-
-            //foreach (Element item in elemList)
-            //{
-            //    try
-            //    {
-            //        ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = (item as FamilySymbol).FamilyName, Type = item.Name, Id = item.Id });
-            //    }
-            //    catch
-            //    {
-            //        ElemManager.AddElem(new Elem() { Category = item.Category.Name, Family = item.Category.Name, Type = item.Name, Id = item.Id });
-            //    }
-            //}
         }
 
         public string GetName()
@@ -155,40 +136,119 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
             foreach (Element item in elemList)
             {
-            //    IfcData ifcData = new IfcData
-            //    {
-            //        IsDefinedBy = new List<IfcPropertySet>()
-            //            {
-            //                new IfcPropertySet
-            //                {
-            //                    Name = item.Name
-            //                }
-            //            },
-            //        HasAssociations = new List<IfcClassificationReference>()
-            //            {
-            //                new IfcClassificationReference
-            //                {
-            //                Name = item.Name,
-            //                Identification = "test"
-            //                },
-            //                new IfcClassificationReference
-            //                {
-            //                Name = "testing",
-            //                Identification = "test2"
-            //                }
-            //            }
-            //    };
-
-
-
-            //    ifcDataLst.Add(ifcData);
+                HostObject HostItem = item as HostObject;
+                
+                IfcData ifcData = new IfcData
+                {
+                    Type = GetParamValueByName("Export Type to IFC As", item),
+                    Name = GetParamValueByName("IfcName", item),
+                    Description = GetParamValueByName("IfcDescription", item),
+                    PredefinedType = GetParamValueByName("Type IFC Predefined Type", item),
+                    HasAssociations = new List<Association>
+                    {
+                        new IfcClassificationReference
+                        {
+                            Type = item.Name,
+                            Name = GetParamValueByName("Assembly Description", item),
+                            Location = GetLocationParam(item),
+                            Identification = GetParamValueByName("Assembly Code", item),
+                            ReferencedSource = new IfcClassification
+                            {
+                                Type = item.Name,
+                                Name = GetFamilyName(item),
+                                Location = GetLocationParam(item)
+                            }
+                        },
+                        new IfcMaterial
+                        {
+                            //Type = HostItem.GetType().ToString(),
+                            Name = GetMaterial(item),
+                            Description = GetParamValueByName("Assembly Code", item)
+                        }
+                    }
+                };
+                
+                ifcDataLst.Add(ifcData);
             }
-            ////JObject json = JObject.Parse(JsonConvert.SerializeObject(ifcDataLst));
+            //JObject json = JObject.Parse(JsonConvert.SerializeObject(ifcDataLst));
 
-            //var provider = new JsonBasedPersistenceProvider("C://temp");
-
-            //provider.Persist(ifcDataLst);
+            var provider = new JsonBasedPersistenceProvider("C://temp");
+            provider.Persist(ifcDataLst);
         }
+
+        public static string GetFamilyName(Element e)
+        {
+            Logger logger = LogManager.GetCurrentClassLogger();
+
+            var eId = e?.GetTypeId();
+            logger.Debug("0000");
+            if (eId == null) return "1";
+            logger.Debug("1111");
+            var elementType = e.Document.GetElement(eId) as ElementType;
+            logger.Debug("2222");
+            return elementType?.FamilyName ?? eId.ToString();
+        }
+
+        public string GetParamValueByName(string name, Element e)
+        {
+            var paramValue = string.Empty;
+
+            foreach (Parameter parameter in e.Parameters)
+            {
+                if (parameter.Definition.Name == name)
+                {
+                    paramValue = parameter.AsString();
+                }
+            }
+            return paramValue;
+        }
+
+        public Autodesk.Revit.DB.Material GetMaterial(Element e)
+        {
+            UIDocument uiDoc = new UIDocument(Command.MyApp.DbDoc);
+            Document doc = uiDoc.Document;
+
+            Type tp = e.GetType();
+            CompoundStructure structure = null;
+            switch (tp.Name)
+            {
+                case "Wall":
+                    Wall wall = e as Wall;
+                    structure = wall.WallType.GetCompoundStructure();
+                    break;
+                case "Floor":
+                    Floor floor = e as Floor;
+                    structure = floor.FloorType.GetCompoundStructure();
+                    break;
+                case "FootPrintRoof":
+                    FootPrintRoof roof = e as FootPrintRoof;
+                    structure = roof.RoofType.GetCompoundStructure();
+                    break;
+                default:
+                    structure = null;
+                    break;
+            }
+
+            Autodesk.Revit.DB.Material material = doc.GetElement(structure.GetMaterialId(0)) as Autodesk.Revit.DB.Material;
+
+            return material;
+        }
+
+        public Uri GetLocationParam(Element e)
+        {
+            Uri paramValue = null;
+            
+            foreach (Parameter parameter in e.Parameters)
+            {
+                if (parameter.Definition.Name == "location")
+                {
+                    paramValue = new Uri(parameter.ToString(), UriKind.Absolute);
+                }
+            }
+            
+            return paramValue;
+        }
+
     }
         
 
@@ -274,7 +334,6 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         }
     }
 
-
     [Transaction(TransactionMode.Manual)]
     public class Command : IExternalCommand
     {
@@ -285,8 +344,25 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             Document doc = uidoc.Document;
 
             Select Selectorlist = new Select();
-            
+            MyApp.DbDoc = commandData.Application.ActiveUIDocument.Document;
+
             return Result.Succeeded;
+        }
+
+        public class MyApp : Autodesk.Revit.UI.IExternalApplication
+        {
+            public static Autodesk.Revit.DB.Document DbDoc; // The current database document
+
+            public Result OnShutdown(UIControlledApplication application)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Result OnStartup(UIControlledApplication application)
+            {
+                throw new NotImplementedException();
+            }
+
         }
     }
 }
