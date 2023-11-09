@@ -42,6 +42,11 @@
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Autodesk.IFC.Export.UI, Version=23.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Revit_All_Main_Versions_IFC_x64.2023.0.0\lib\net48\Autodesk.IFC.Export.UI.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="CefSharp, Version=92.0.260.0, Culture=neutral, PublicKeyToken=40c4b6fc221f4138, processorArchitecture=MSIL">
       <HintPath>..\packages\CefSharp.Common.92.0.260\lib\net452\CefSharp.dll</HintPath>
     </Reference>
@@ -60,8 +65,33 @@
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="Revit.IFC.Common, Version=23.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <HintPath>..\packages\Revit_All_Main_Versions_IFC_x64.2023.0.0\lib\net48\Revit.IFC.Common.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Revit.IFC.Export, Version=23.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <HintPath>..\packages\Revit_All_Main_Versions_IFC_x64.2023.0.0\lib\net48\Revit.IFC.Export.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Revit.IFC.Import, Version=23.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <HintPath>..\packages\Revit_All_Main_Versions_IFC_x64.2023.0.0\lib\net48\Revit.IFC.Import.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Revit.IFC.Import.Core, Version=23.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <HintPath>..\packages\Revit_All_Main_Versions_IFC_x64.2023.0.0\lib\net48\Revit.IFC.Import.Core.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="RevitAPI, Version=24.0.0.0, Culture=neutral, processorArchitecture=AMD64">
       <HintPath>..\packages\Revit_All_Main_Versions_API_x64.2024.0.0\lib\net48\RevitAPI.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="RevitAPIIFC, Version=23.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <HintPath>..\packages\Revit_All_Main_Versions_IFC_x64.2023.0.0\lib\net48\RevitAPIIFC.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
@@ -91,12 +121,21 @@
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UserInterfaceUtility, Version=23.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Revit_All_Main_Versions_IFC_x64.2023.0.0\lib\net48\UserInterfaceUtility.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="Wpf.Ui, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\WPF-UI.2.1.0\lib\net472\Wpf.Ui.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classifications\Classifier.cs" />
+    <Compile Include="Classifications\IFCClassificationMgr.cs" />
+    <Compile Include="Classifications\RevitClassificationHelper.cs" />
+    <Compile Include="Classifications\RevitMapping.cs" />
     <Compile Include="Commands\RelayCommand.cs" />
     <Compile Include="IfcJson\IfcJson.cs" />
     <Compile Include="IfcJson\IfcJsonConverter.cs" />
