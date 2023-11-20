@@ -36,6 +36,7 @@ namespace BsddRevitPlugin.Logic.IfcJson
         public string Type { get; set; }
 
         [JsonProperty("name")]
+        public string Name { get; set; }
     }
 
     public class IfcClassificationReference: Association
