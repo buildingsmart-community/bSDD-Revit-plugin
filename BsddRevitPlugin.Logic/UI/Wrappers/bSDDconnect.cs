@@ -14,6 +14,16 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Interop;
 using System.Windows.Shapes;
 using Document = Autodesk.Revit.DB.Document;
+using Autodesk.Revit.Attributes;
+using Autodesk.Revit.UI;
+using BsddRevitPlugin.Logic.Commands;
+using BsddRevitPlugin.Logic.UI.View;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Reflection;
+using System.Windows.Media.Imaging;
+using Path = System.IO.Path;
 
 namespace BsddRevitPlugin.Logic.UI.Wrappers
 {
@@ -201,7 +211,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
                 transaction.Commit();
             }
 
-            
+
 
             //    foreach (Element item in elemList)
             //    {
@@ -226,11 +236,13 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         Logger logger = LogManager.GetCurrentClassLogger();
 
 
+        string addinLocation = Assembly.GetExecutingAssembly().Location;
 
         public void Execute(UIApplication uiapp)
         {
 
-            var MyWindow = new bSDDSelector();
+            string addinDirectory = Path.GetDirectoryName(addinLocation);
+            var MyWindow = new bSDDSelector(addinDirectory);
             HwndSource hwndSource = HwndSource.FromHwnd(uiapp.MainWindowHandle);
             Window wnd = hwndSource.RootVisual as Window;
             if (wnd != null)

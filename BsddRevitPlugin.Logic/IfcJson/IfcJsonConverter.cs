@@ -18,30 +18,51 @@ namespace BsddRevitPlugin.Logic.IfcJson
 
             IfcData ifcData = new IfcData();
 
-            ifcData.HasAssociations = new List<Association>();
-            ifcData.IsDefinedBy = new List<IfcPropertySet>();
-
-            foreach (JObject item in jsonObject["hasAssociations"])
+            if (jsonObject["type"] != null)
             {
-                switch (item["type"].ToString())
+                ifcData.Type = (string)jsonObject["type"];
+            }
+            if (jsonObject["name"] != null)
+            {
+                ifcData.Name = (string)jsonObject["name"];
+            }
+            if (jsonObject["description"] != null)
+            {
+                ifcData.Description = (string)jsonObject["description"];
+            }
+            if (jsonObject["predefinedType"] != null)
+            {
+                ifcData.PredefinedType = (string)jsonObject["predefinedType"];
+            }
+
+            if (jsonObject["hasAssociations"] != null)
+            {
+                ifcData.HasAssociations = new List<Association>();
+                foreach (JObject item in jsonObject["hasAssociations"])
                 {
-                    case "IfcClassificationReference":
-                        ifcData.HasAssociations.Add(item.ToObject<IfcClassificationReference>());
-                        break;
-                    case "IfcMaterial":
-                        ifcData.HasAssociations.Add(item.ToObject<IfcMaterial>());
-                        break;
-                        
+                    switch (item["type"].ToString())
+                    {
+                        case "IfcClassificationReference":
+                            ifcData.HasAssociations.Add(item.ToObject<IfcClassificationReference>());
+                            break;
+                        case "IfcMaterial":
+                            ifcData.HasAssociations.Add(item.ToObject<IfcMaterial>());
+                            break;
+                    }
                 }
             }
 
-            foreach (JObject item in jsonObject["isDefinedBy"])
+            if (jsonObject["isDefinedBy"] != null)
             {
-                switch (item["type"].ToString())
+                ifcData.IsDefinedBy = new List<IfcPropertySet>();
+                foreach (JObject item in jsonObject["isDefinedBy"])
                 {
-                    case "IfcPropertySet":
-                        ifcData.IsDefinedBy.Add(item.ToObject<IfcPropertySet>());
-                        break;
+                    switch (item["type"].ToString())
+                    {
+                        case "IfcPropertySet":
+                            ifcData.IsDefinedBy.Add(item.ToObject<IfcPropertySet>());
+                            break;
+                    }
                 }
             }
 
