@@ -31,6 +31,8 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Windows.Media.Imaging;
 using Path = System.IO.Path;
+using CefSharp.Wpf;
+using Newtonsoft.Json;
 
 namespace BsddRevitPlugin.Logic.UI.Wrappers
 {
@@ -42,13 +44,17 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         static List<Element> elemList = new List<Element>();
         Select Selectorlist = new Select();
 
+        ChromiumWebBrowser browser;
+
         public void Execute(UIApplication uiapp)
         {
             //logger.Debug("hoi");
             elemList = Selectorlist.SelectElements(uiapp);
             ListAdjust lst = new ListAdjust();
             elemList = lst.ListFilter(elemList);
-            lst.elemToJSON(elemList);
+            MainData currentdata = lst.elemToJSON(elemList);
+            UpdateBsddSelection(currentdata);
+
 
             //foreach (Element item in elemList)
             //{
@@ -62,10 +68,24 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             //    }
             //}
         }
+        public void SetBrowser(ChromiumWebBrowser browserObject)
+        {
+            browser = browserObject;
+        }
 
         public string GetName()
         {
             return "";
+        }
+        private async void UpdateBsddSelection(MainData ifcData)
+        {
+            var jsonString = JsonConvert.SerializeObject(ifcData);
+            var jsFunctionCall = $"updateSelection({jsonString});";
+
+            if (browser.IsBrowserInitialized)
+            {
+                browser.ExecuteScriptAsync(jsFunctionCall);
+            }
         }
     }
 
@@ -139,124 +159,126 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             return elemListFiltered;
         }
 
-        public void elemToJSON(List<Element> elemList)
+        public MainData elemToJSON(List<Element> elemList)
         {
 
-            //of dit
-            string JSONstring = "[\r\n";
-            int totalCount = elemList.Count();
-            int count = 0;
+            ////of dit
+            //string JSONstring = "[\r\n";
+            //int totalCount = elemList.Count();
+            //int count = 0;
+
+            //foreach (Element item in elemList)
+            //{
+            //    JSONstring += "    {\r\n";
+            //    JSONstring += "        \"type\": \"" + GetParamValueByName("Export Type to IFC As", item) + "\",\r\n";
+            //    JSONstring += "        \"name\": \"" + GetParamValueByName("IfcName", item) + "\",\r\n";
+            //    JSONstring += "        \"description\": \"" + GetParamValueByName("IfcDescription", item) + "\",\r\n";
+            //    JSONstring += "        \"predefinedType\": \"" + GetParamValueByName("Type IFC Predefined Type", item) + "\",\r\n";
+            //    JSONstring += "        \"HasAssociations\":\r\n";
+            //    JSONstring += "        [\r\n";
+            //    JSONstring += "            {\r\n";
+            //    JSONstring += "                \"type\": \"IfcClassificationReference\",\r\n";
+            //    JSONstring += "                \"name\": \"" + GetParamValueByName("Assembly Description", item) + "\",\r\n";
+            //    JSONstring += "                \"location\": \"" + GetLocationParam(item) + "\",\r\n";
+            //    JSONstring += "                \"identification\": \"" + GetParamValueByName("Assembly Code", item) + "\",\r\n";
+            //    JSONstring += "                \"referencedSource\":\r\n";
+            //    JSONstring += "                {\r\n";
+            //    JSONstring += "                    \"type\": \"IfcClassification\",\r\n";
+            //    JSONstring += "                    \"name\": \"DigiBase Demo NL-SfB tabel 1\",\r\n";
+            //    JSONstring += "                    \"location\": \"" + GetLocationParam(item) + "\"\r\n";
+            //    JSONstring += "                }\r\n";
+            //    JSONstring += "            }";
+
+            //    int totalCount1 = item.GetMaterialIds(false).Count();
+            //    if (totalCount1 > 0)
+            //    {
+            //        JSONstring += ",\r\n";
+            //    }
+            //    else
+            //    {
+            //        JSONstring += "\r\n";
+            //    };
+            //    int count1 = 0;
+            //    foreach (ElementId m in item.GetMaterialIds(false))
+            //    {
+            //        JSONstring += "            {\r\n";
+            //        JSONstring += "                \"type\": \"IfcMaterial\",\r\n";
+            //        JSONstring += "                \"name\": \"" + GetParamValueByName("name", item) + "\",\r\n";
+            //        JSONstring += "                \"description\": \"" + GetParamValueByName("description", item) + "\"\r\n";
+            //        JSONstring += "            }";
+            //        if ((count1 + 1) == totalCount1)
+            //        {
+            //        }
+            //        else
+            //        {
+            //            JSONstring += ",";
+            //        }
+            //        count1++;
+            //        JSONstring += "\r\n";
+            //    }
+            //    JSONstring += "        ]\r\n";
+            //    JSONstring += "    }";
+            //    if ((count + 1) == totalCount)
+            //    {
+
+            //    }
+            //    else
+            //    {
+            //        JSONstring += ",";
+            //    };
+            //    count++;
+            //    JSONstring += "\r\n";
+            //}
+            //JSONstring += "]";
+            //string folder = @"C:\Temp\";
+            //string fileName = "List`1.json";
+            //string fullPath = folder + fileName;
+            //System.IO.File.WriteAllText(fullPath, JSONstring);
+
+            MainData mainData = new MainData();
+            List<IfcData> ifcDataLst = new List<IfcData>();
 
             foreach (Element item in elemList)
             {
-                JSONstring += "    {\r\n";
-                JSONstring += "        \"type\": \"" + GetParamValueByName("Export Type to IFC As", item) + "\",\r\n";
-                JSONstring += "        \"name\": \"" + GetParamValueByName("IfcName", item) + "\",\r\n";
-                JSONstring += "        \"description\": \"" + GetParamValueByName("IfcDescription", item) + "\",\r\n";
-                JSONstring += "        \"predefinedType\": \"" + GetParamValueByName("Type IFC Predefined Type", item) + "\",\r\n";
-                JSONstring += "        \"HasAssociations\":\r\n";
-                JSONstring += "        [\r\n";
-                JSONstring += "            {\r\n";
-                JSONstring += "                \"type\": \"IfcClassificationReference\",\r\n";
-                JSONstring += "                \"name\": \"" + GetParamValueByName("Assembly Description", item) + "\",\r\n";
-                JSONstring += "                \"location\": \"" + GetLocationParam(item) + "\",\r\n";
-                JSONstring += "                \"identification\": \"" + GetParamValueByName("Assembly Code", item) + "\",\r\n";
-                JSONstring += "                \"referencedSource\":\r\n";
-                JSONstring += "                {\r\n";
-                JSONstring += "                    \"type\": \"IfcClassification\",\r\n";
-                JSONstring += "                    \"name\": \"DigiBase Demo NL-SfB tabel 1\",\r\n";
-                JSONstring += "                    \"location\": \"" + GetLocationParam(item) + "\"\r\n";
-                JSONstring += "                }\r\n";
-                JSONstring += "            }";
-
-                int totalCount1 = item.GetMaterialIds(false).Count();
-                if( totalCount1 > 0 ) 
+                IfcData ifcData = new IfcData
                 {
-                    JSONstring += ",\r\n";
-                } else {
-                    JSONstring += "\r\n";
-                };
-                int count1 = 0;
-                foreach (ElementId m in item.GetMaterialIds(false))
-                {
-                    JSONstring += "            {\r\n";
-                    JSONstring += "                \"type\": \"IfcMaterial\",\r\n";
-                    JSONstring += "                \"name\": \"" + GetParamValueByName("name", item) + "\",\r\n";
-                    JSONstring += "                \"description\": \"" + GetParamValueByName("description", item) + "\"\r\n";
-                    JSONstring += "            }";
-                    if ((count1 + 1) == totalCount1)
+                    Type = GetParamValueByName("Export Type to IFC As", item),
+                    Name = GetParamValueByName("IfcName", item),
+                    Description = GetParamValueByName("IfcDescription", item),
+                    PredefinedType = GetParamValueByName("Type IFC Predefined Type", item),
+                    HasAssociations = new List<Association>
                     {
+                        new IfcClassificationReference
+                        {
+                            Type = "IfcClassificationReference",
+                            Name = GetParamValueByName("Assembly Description", item),
+                            Location = GetLocationParam(item),
+                            Identification = GetParamValueByName("Assembly Code", item),
+                            ReferencedSource = new IfcClassification
+                            {
+                                Type = "IfcClassification",
+                                Name = "DigiBase Demo NL-SfB tabel 1",
+                                Location = GetLocationParam(item)
+                            }
+                        },
+                        new IfcMaterial
+                        {
+                            //MaterialType = item.GetMaterialIds(false).First().ToString(),
+                            MaterialName = "MaterialName",//GetMaterialName(item, Command.MyApp.DbDoc),
+                            Description = "Description"//GetParamValueByName("Assembly Code", item)
+                        }
                     }
-                    else
-                    {
-                        JSONstring += ",";
-                    }
-                    count1++;
-                    JSONstring += "\r\n";
-                }
-                JSONstring += "        ]\r\n";
-                JSONstring += "    }";
-                if ((count + 1) == totalCount)
-                {
-
-                }
-                else
-                {
-                    JSONstring += ",";
                 };
-                count++;
-                JSONstring += "\r\n";
+
+                ifcDataLst.Add(ifcData);
+
+
             }
-            JSONstring += "]";
-            string folder = @"C:\Temp\";
-            string fileName = "List`1.json";
-            string fullPath = folder + fileName;
-            System.IO.File.WriteAllText(fullPath, JSONstring);
-        
-
-        //of dit
-        //List<IfcData> ifcDataLst = new List<IfcData>();
-
-        //foreach (Element item in elemList)
-        //{
-        //    IfcData ifcData = new IfcData
-        //    {
-        //        Type = GetParamValueByName("Export Type to IFC As", item),
-        //        Name = GetParamValueByName("IfcName", item),
-        //        Description = GetParamValueByName("IfcDescription", item),
-        //        PredefinedType = GetParamValueByName("Type IFC Predefined Type", item),
-        //        HasAssociations = new List<Association>
-        //        {
-        //            new IfcClassificationReference
-        //            {
-        //                Type = "IfcClassificationReference",
-        //                Name = GetParamValueByName("Assembly Description", item),
-        //                Location = GetLocationParam(item),
-        //                Identification = GetParamValueByName("Assembly Code", item),
-        //                ReferencedSource = new IfcClassification
-        //                {
-        //                    Type = "IfcClassification",
-        //                    Name = "DigiBase Demo NL-SfB tabel 1",
-        //                    Location = GetLocationParam(item)
-        //                }
-        //            },
-        //            new IfcMaterial
-        //            {
-        //                //MaterialType = item.GetMaterialIds(false).First().ToString(),
-        //                MaterialName = "MaterialName",//GetMaterialName(item, Command.MyApp.DbDoc),
-        //                Description = "Description"//GetParamValueByName("Assembly Code", item)
-        //            }
-        //        }
-        //    };
-
-        //    ifcDataLst.Add(ifcData);
-
-
-        //}
-        ////JObject json = JObject.Parse(JsonConvert.SerializeObject(ifcDataLst));
-
-        //var provider = new JsonBasedPersistenceProvider("C://temp");
-        //provider.Persist(ifcDataLst);
+            //JObject json = JObject.Parse(JsonConvert.SerializeObject(ifcDataLst));
+            mainData.IfcData = ifcDataLst;
+            var provider = new JsonBasedPersistenceProvider("C://temp");
+            provider.Persist(ifcDataLst);
+            return mainData;
         }
 
         public static string GetFamilyName(Element e)
@@ -316,10 +338,10 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
                             return p.AsValueString();
                         }
                     case StorageType.String:
-                        if(p.AsValueString() == "" || p.AsValueString() == null)
+                        if (p.AsValueString() == "" || p.AsValueString() == null)
                         {
                             return null;
-                        } 
+                        }
                         else
                         {
                             return p.AsString();
@@ -339,7 +361,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             Autodesk.Revit.DB.Material firstMaterial = null;
 
             // Reference to the Revit API Document
-            Document doc = DbDoc;            
+            Document doc = DbDoc;
 
             // Reference to the element you are interested in
             ElementId elementId = e.GetTypeId();
@@ -350,16 +372,16 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             //foreach (ElementId materialId in materialIds)
             //{
             //    firstMaterial = doc.GetElement(materialId) as Autodesk.Revit.DB.Material;
-                if (firstMaterial != null)
-                {
-                    // Found the first material, break out of the loop
-            //        break;
-                }
+            if (firstMaterial != null)
+            {
+                // Found the first material, break out of the loop
+                //        break;
+            }
             //}
 
             if (firstMaterial != null)
             {
-//                materialName = firstMaterial.Name;
+                //                materialName = firstMaterial.Name;
                 // You can access other properties of the material here
                 // For example, firstMaterial.Color, firstMaterial.Transparency, etc.
             }
@@ -374,7 +396,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         public Uri GetLocationParam(Element e)
         {
             Uri paramValue = null;
-            
+
             foreach (Parameter parameter in e.Parameters)
             {
                 if (parameter.Definition.Name == "location")
@@ -382,12 +404,12 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
                     paramValue = new Uri(parameter.ToString(), UriKind.Absolute);
                 }
             }
-            
+
             return paramValue;
         }
 
     }
-        
+
 
     public class EventTest : IExternalEventHandler
     {
@@ -456,14 +478,16 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         {
 
             string addinDirectory = Path.GetDirectoryName(addinLocation);
-            var MyWindow = new bSDDSelector(addinDirectory);
+            var bsddSearch = new BsddSearch(addinDirectory);
             HwndSource hwndSource = HwndSource.FromHwnd(uiapp.MainWindowHandle);
             Window wnd = hwndSource.RootVisual as Window;
             if (wnd != null)
             {
-                MyWindow.Owner = wnd;
-                //MyWindow.ShowInTaskbar = false;
-                MyWindow.Show();
+                bsddSearch.Owner = wnd;
+                //bsddSearch.ShowInTaskbar = false;
+                bsddSearch.Show();
+                bsddSearch.UpdateSelection(jsonData);
+
             }
         }
 
