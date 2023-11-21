@@ -10,6 +10,7 @@ using BsddRevitPlugin.Logic.IfcJson;
 using ASRR.Core.Persistence;
 using NLog;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls.Primitives;
@@ -20,7 +21,12 @@ using static System.Net.WebRequestMethods;
 using System.Xml.Linq;
 using System.Windows.Controls;
 using System.Windows.Media.Media3D;
+using System.IO;
 using CefSharp;
+using System.Windows.Forms;
+using Autodesk.Revit.DB.IFC;
+using System.Windows.Documents;
+using static System.Net.Mime.MediaTypeNames;
 
 
 namespace BsddRevitPlugin.Logic.UI.Wrappers
@@ -132,48 +138,122 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
         public void elemToJSON(List<Element> elemList)
         {
-            List<IfcData> ifcDataLst = new List<IfcData>();
+
+            //of dit
+            string JSONstring = "[\r\n";
+            int totalCount = elemList.Count();
+            int count = 0;
 
             foreach (Element item in elemList)
             {
-                HostObject HostItem = item as HostObject;
-                
-                IfcData ifcData = new IfcData
-                {
-                    Type = GetParamValueByName("Export Type to IFC As", item),
-                    Name = GetParamValueByName("IfcName", item),
-                    Description = GetParamValueByName("IfcDescription", item),
-                    PredefinedType = GetParamValueByName("Type IFC Predefined Type", item),
-                    HasAssociations = new List<Association>
-                    {
-                        new IfcClassificationReference
-                        {
-                            Type = item.Name,
-                            Name = GetParamValueByName("Assembly Description", item),
-                            Location = GetLocationParam(item),
-                            Identification = GetParamValueByName("Assembly Code", item),
-                            ReferencedSource = new IfcClassification
-                            {
-                                Type = item.Name,
-                                Name = GetFamilyName(item),
-                                Location = GetLocationParam(item)
-                            }
-                        },
-                        new IfcMaterial
-                        {
-                            //Type = HostItem.GetType().ToString(),
-                            Name = GetMaterial(item),
-                            Description = GetParamValueByName("Assembly Code", item)
-                        }
-                    }
-                };
-                
-                ifcDataLst.Add(ifcData);
-            }
-            //JObject json = JObject.Parse(JsonConvert.SerializeObject(ifcDataLst));
+                JSONstring += "    {\r\n";
+                JSONstring += "        \"type\": \"" + GetParamValueByName("Export Type to IFC As", item) + "\",\r\n";
+                JSONstring += "        \"name\": \"" + GetParamValueByName("IfcName", item) + "\",\r\n";
+                JSONstring += "        \"description\": \"" + GetParamValueByName("IfcDescription", item) + "\",\r\n";
+                JSONstring += "        \"predefinedType\": \"" + GetParamValueByName("Type IFC Predefined Type", item) + "\",\r\n";
+                JSONstring += "        \"HasAssociations\":\r\n";
+                JSONstring += "        [\r\n";
+                JSONstring += "            {\r\n";
+                JSONstring += "                \"type\": \"IfcClassificationReference\",\r\n";
+                JSONstring += "                \"name\": \"" + GetParamValueByName("Assembly Description", item) + "\",\r\n";
+                JSONstring += "                \"location\": \"" + GetLocationParam(item) + "\",\r\n";
+                JSONstring += "                \"identification\": \"" + GetParamValueByName("Assembly Code", item) + "\",\r\n";
+                JSONstring += "                \"referencedSource\":\r\n";
+                JSONstring += "                {\r\n";
+                JSONstring += "                    \"type\": \"IfcClassification\",\r\n";
+                JSONstring += "                    \"name\": \"DigiBase Demo NL-SfB tabel 1\",\r\n";
+                JSONstring += "                    \"location\": \"" + GetLocationParam(item) + "\"\r\n";
+                JSONstring += "                }\r\n";
+                JSONstring += "            }";
 
-            var provider = new JsonBasedPersistenceProvider("C://temp");
-            provider.Persist(ifcDataLst);
+                int totalCount1 = item.GetMaterialIds(false).Count();
+                if( totalCount1 > 0 ) 
+                {
+                    JSONstring += ",\r\n";
+                } else {
+                    JSONstring += "\r\n";
+                };
+                int count1 = 0;
+                foreach (ElementId m in item.GetMaterialIds(false))
+                {
+                    JSONstring += "            {\r\n";
+                    JSONstring += "                \"type\": \"IfcMaterial\",\r\n";
+                    JSONstring += "                \"name\": \"" + GetParamValueByName("name", item) + "\",\r\n";
+                    JSONstring += "                \"description\": \"" + GetParamValueByName("description", item) + "\"\r\n";
+                    JSONstring += "            }";
+                    if ((count1 + 1) == totalCount1)
+                    {
+                    }
+                    else
+                    {
+                        JSONstring += ",";
+                    }
+                    count1++;
+                    JSONstring += "\r\n";
+                }
+                JSONstring += "        ]\r\n";
+                JSONstring += "    }";
+                if ((count + 1) == totalCount)
+                {
+
+                }
+                else
+                {
+                    JSONstring += ",";
+                };
+                count++;
+                JSONstring += "\r\n";
+            }
+            JSONstring += "]";
+            string folder = @"C:\Temp\";
+            string fileName = "List`1.json";
+            string fullPath = folder + fileName;
+            System.IO.File.WriteAllText(fullPath, JSONstring);
+        
+
+        //of dit
+        //List<IfcData> ifcDataLst = new List<IfcData>();
+
+        //foreach (Element item in elemList)
+        //{
+        //    IfcData ifcData = new IfcData
+        //    {
+        //        Type = GetParamValueByName("Export Type to IFC As", item),
+        //        Name = GetParamValueByName("IfcName", item),
+        //        Description = GetParamValueByName("IfcDescription", item),
+        //        PredefinedType = GetParamValueByName("Type IFC Predefined Type", item),
+        //        HasAssociations = new List<Association>
+        //        {
+        //            new IfcClassificationReference
+        //            {
+        //                Type = "IfcClassificationReference",
+        //                Name = GetParamValueByName("Assembly Description", item),
+        //                Location = GetLocationParam(item),
+        //                Identification = GetParamValueByName("Assembly Code", item),
+        //                ReferencedSource = new IfcClassification
+        //                {
+        //                    Type = "IfcClassification",
+        //                    Name = "DigiBase Demo NL-SfB tabel 1",
+        //                    Location = GetLocationParam(item)
+        //                }
+        //            },
+        //            new IfcMaterial
+        //            {
+        //                //MaterialType = item.GetMaterialIds(false).First().ToString(),
+        //                MaterialName = "MaterialName",//GetMaterialName(item, Command.MyApp.DbDoc),
+        //                Description = "Description"//GetParamValueByName("Assembly Code", item)
+        //            }
+        //        }
+        //    };
+
+        //    ifcDataLst.Add(ifcData);
+
+
+        //}
+        ////JObject json = JObject.Parse(JsonConvert.SerializeObject(ifcDataLst));
+
+        //var provider = new JsonBasedPersistenceProvider("C://temp");
+        //provider.Persist(ifcDataLst);
         }
 
         public static string GetFamilyName(Element e)
@@ -189,49 +269,103 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             return elementType?.FamilyName ?? eId.ToString();
         }
 
-        public string GetParamValueByName(string name, Element e)
+        public string GetParamValueByName(String par, Element e)
         {
-            var paramValue = string.Empty;
-
-            foreach (Parameter parameter in e.Parameters)
+            Parameter p = e.LookupParameter(par);
+            if (p != null)
             {
-                if (parameter.Definition.Name == name)
+                switch (p.StorageType)
                 {
-                    paramValue = parameter.AsString();
+                    case StorageType.Double:
+                        if (p.AsValueString() == "" || p.AsValueString() == null)
+                        {
+                            return null;
+                        }
+                        else
+                        {
+                            return p.AsValueString();
+                        }
+                    case StorageType.ElementId:
+                        if (p.AsElementId().IntegerValue.ToString() == "" || p.AsElementId().IntegerValue.ToString() == null)
+                        {
+                            return null;
+                        }
+                        else
+                        {
+                            return p.AsElementId().IntegerValue.ToString();
+                        }
+                    case StorageType.Integer:
+                        if (p.AsValueString() == "" || p.AsValueString() == null)
+                        {
+                            return null;
+                        }
+                        else
+                        {
+                            return p.AsValueString();
+                        }
+                    case StorageType.None:
+                        if (p.AsValueString() == "" || p.AsValueString() == null)
+                        {
+                            return null;
+                        }
+                        else
+                        {
+                            return p.AsValueString();
+                        }
+                    case StorageType.String:
+                        if(p.AsValueString() == "" || p.AsValueString() == null)
+                        {
+                            return null;
+                        } 
+                        else
+                        {
+                            return p.AsString();
+                        }
+                    default: return "n/a";
                 }
             }
-            return paramValue;
+            else
+            {
+                return null;
+            }
         }
 
-        public Autodesk.Revit.DB.Material GetMaterial(Element e)
+        public string GetMaterialName(Element e, Document DbDoc)
         {
-            UIDocument uiDoc = new UIDocument(Command.MyApp.DbDoc);
-            Document doc = uiDoc.Document;
+            string materialName = "not defined1";
+            Autodesk.Revit.DB.Material firstMaterial = null;
 
-            Type tp = e.GetType();
-            CompoundStructure structure = null;
-            switch (tp.Name)
+            // Reference to the Revit API Document
+            Document doc = DbDoc;            
+
+            // Reference to the element you are interested in
+            ElementId elementId = e.GetTypeId();
+            //Element element = doc.GetElement(elementId);
+
+            //// Get the Material Id of the element
+            //ICollection<ElementId> materialIds = element.GetMaterialIds(false);
+            //foreach (ElementId materialId in materialIds)
+            //{
+            //    firstMaterial = doc.GetElement(materialId) as Autodesk.Revit.DB.Material;
+                if (firstMaterial != null)
+                {
+                    // Found the first material, break out of the loop
+            //        break;
+                }
+            //}
+
+            if (firstMaterial != null)
             {
-                case "Wall":
-                    Wall wall = e as Wall;
-                    structure = wall.WallType.GetCompoundStructure();
-                    break;
-                case "Floor":
-                    Floor floor = e as Floor;
-                    structure = floor.FloorType.GetCompoundStructure();
-                    break;
-                case "FootPrintRoof":
-                    FootPrintRoof roof = e as FootPrintRoof;
-                    structure = roof.RoofType.GetCompoundStructure();
-                    break;
-                default:
-                    structure = null;
-                    break;
+//                materialName = firstMaterial.Name;
+                // You can access other properties of the material here
+                // For example, firstMaterial.Color, firstMaterial.Transparency, etc.
+            }
+            else
+            {
+                materialName = "No material found1";
             }
 
-            Autodesk.Revit.DB.Material material = doc.GetElement(structure.GetMaterialId(0)) as Autodesk.Revit.DB.Material;
-
-            return material;
+            return materialName;
         }
 
         public Uri GetLocationParam(Element e)
@@ -339,12 +473,14 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
     {
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
+            //Select Selectorlist = new Select();
             UIApplication uiapp = commandData.Application;
             UIDocument uidoc = uiapp.ActiveUIDocument;
+            Autodesk.Revit.ApplicationServices.Application app = uiapp.Application;
             Document doc = uidoc.Document;
 
-            Select Selectorlist = new Select();
             MyApp.DbDoc = commandData.Application.ActiveUIDocument.Document;
+            MyApp.DbUiDoc = commandData.Application.ActiveUIDocument;
 
             return Result.Succeeded;
         }
@@ -352,6 +488,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         public class MyApp : Autodesk.Revit.UI.IExternalApplication
         {
             public static Autodesk.Revit.DB.Document DbDoc; // The current database document
+            public static Autodesk.Revit.UI.UIDocument DbUiDoc; // The current database UIdocument
 
             public Result OnShutdown(UIControlledApplication application)
             {
