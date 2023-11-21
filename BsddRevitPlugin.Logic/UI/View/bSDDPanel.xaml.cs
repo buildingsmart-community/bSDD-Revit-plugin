@@ -53,15 +53,10 @@ namespace BsddRevitPlugin.Logic.UI.View
             // Set the data context of the panel to an instance of ElementViewModel
             ElementViewModel elementViewModel = new ElementViewModel();
             this.DataContext = elementViewModel;
-            lbxSelection.ItemsSource = elementViewModel.Elems;
-
+            
             // Sort the list of elements by category, family, and type
-            CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(lbxSelection.ItemsSource);
             PropertyGroupDescription groupDescription = new PropertyGroupDescription("Category");
-            view.GroupDescriptions.Add(groupDescription);
-            view.SortDescriptions.Add(new SortDescription("Family", ListSortDirection.Ascending));
-            view.SortDescriptions.Add(new SortDescription("Type", ListSortDirection.Ascending));
-
+            
             // Initialize the events and external events
             SelectEHMS = new BSDDconnect.EventMakeSelection();
             SelectEHSA = new BSDDconnect.EventSelectAll();
@@ -153,20 +148,20 @@ namespace BsddRevitPlugin.Logic.UI.View
             // Raise the appropriate external event based on the selected item in the combo box
             if (((ComboBoxItem)(((ComboBox)sender).SelectedItem)).Content.ToString() == "Make selection")
             {
-                //SelectEEMS.Raise();
+                SelectEEMS.Raise();
                 //testExEvent.Raise
-                testExEvent2.Raise();
+                //testExEvent2.Raise();
 
 
                 ////Main.Instance.ShowbSDDSelector(commandData.Application);
             }
             else if (((ComboBoxItem)(((ComboBox)sender).SelectedItem)).Content.ToString() == "Select all")
             {
-                //SelectEESA.Raise();
+                SelectEESA.Raise();
             }
             else if (((ComboBoxItem)(((ComboBox)sender).SelectedItem)).Content.ToString() == "Select visible in view")
             {
-                //SelectEESV.Raise();
+                SelectEESV.Raise();
             };
         }
 

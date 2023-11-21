@@ -217,6 +217,12 @@
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\lib\assr\lib-asrr-core\ASRR.Core.csproj">
+      <Project>{12ea4456-8cd5-43ef-80c7-d70338c8b018}</Project>
+      <Name>ASRR.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
