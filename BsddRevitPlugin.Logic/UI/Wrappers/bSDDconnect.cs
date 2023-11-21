@@ -27,7 +27,10 @@ using System.Windows.Forms;
 using Autodesk.Revit.DB.IFC;
 using System.Windows.Documents;
 using static System.Net.Mime.MediaTypeNames;
-
+using System.Diagnostics;
+using System.Reflection;
+using System.Windows.Media.Imaging;
+using Path = System.IO.Path;
 
 namespace BsddRevitPlugin.Logic.UI.Wrappers
 {
@@ -422,7 +425,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
                 transaction.Commit();
             }
 
-            
+
 
             //    foreach (Element item in elemList)
             //    {
@@ -447,11 +450,13 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         Logger logger = LogManager.GetCurrentClassLogger();
 
 
+        string addinLocation = Assembly.GetExecutingAssembly().Location;
 
         public void Execute(UIApplication uiapp)
         {
 
-            var MyWindow = new bSDDSelector();
+            string addinDirectory = Path.GetDirectoryName(addinLocation);
+            var MyWindow = new bSDDSelector(addinDirectory);
             HwndSource hwndSource = HwndSource.FromHwnd(uiapp.MainWindowHandle);
             Window wnd = hwndSource.RootVisual as Window;
             if (wnd != null)
