@@ -1,5 +1,5 @@
 import * as $ from "react";
-import P, { createContext as dt, useContext as Me, useMemo as _l, useRef as H, useEffect as W, useState as z, useLayoutEffect as an, useCallback as Q, useId as bl, forwardRef as oe, cloneElement as Ze, Children as Ga, createElement as Bn } from "react";
+import P, { createContext as dt, useContext as Me, useMemo as _l, useRef as H, useEffect as B, useState as z, useLayoutEffect as an, useCallback as Q, useId as bl, forwardRef as oe, cloneElement as Ze, Children as Ga, createElement as Bn } from "react";
 import * as wl from "react-dom";
 import Ol, { flushSync as Pl, createPortal as $l } from "react-dom";
 function xl(e) {
@@ -1037,7 +1037,7 @@ function Tc({
 const uo = ["mousedown", "touchstart"];
 function Ic(e, t, r) {
   const n = H();
-  return W(() => {
+  return B(() => {
     const o = (a) => {
       const { target: i } = a ?? {};
       if (Array.isArray(r)) {
@@ -1067,7 +1067,7 @@ function ei(e, t, { getInitialValueInEffect: r } = {
   const [n, o] = z(
     r ? t : Ac(e, t)
   ), a = H();
-  return W(() => {
+  return B(() => {
     if ("matchMedia" in window)
       return a.current = window.matchMedia(e), o(a.current.matches), Dc(a.current, (i) => o(i.matches));
   }, [e]), n;
@@ -1075,15 +1075,15 @@ function ei(e, t, { getInitialValueInEffect: r } = {
 function Mc(e, t) {
   return ei("(prefers-color-scheme: dark)", e === "dark", t) ? "dark" : "light";
 }
-const yr = typeof document < "u" ? an : W;
+const yr = typeof document < "u" ? an : B;
 function $e(e, t) {
   const r = H(!1);
-  W(
+  B(
     () => () => {
       r.current = !1;
     },
     []
-  ), W(() => {
+  ), B(() => {
     if (r.current)
       return e();
     r.current = !0;
@@ -1195,7 +1195,7 @@ function Wc(e = !0) {
     },
     [e]
   );
-  return W(() => {
+  return B(() => {
     if (!e)
       return;
     t.current && setTimeout(() => n(t.current));
@@ -1276,9 +1276,9 @@ function Xc({
   ), c = Q(() => {
     i(t), at(t, r), e.clear();
   }, [e.clear, t]);
-  return W(() => (e.subscribe(l), e.unsubscribe), [e.subscribe, e.unsubscribe]), yr(() => {
+  return B(() => (e.subscribe(l), e.unsubscribe), [e.subscribe, e.unsubscribe]), yr(() => {
     at(e.get(t), r);
-  }, []), W(() => {
+  }, []), B(() => {
     var f;
     if (n)
       return at(n, r), () => {
@@ -1531,7 +1531,7 @@ function af({ keepTransitions: e } = {}) {
     () => o(s === "light" ? "dark" : "light"),
     [o, s]
   );
-  return W(
+  return B(
     () => () => {
       var c;
       (c = t.current) == null || c.call(t), window.clearTimeout(r.current);
@@ -1672,7 +1672,7 @@ function $f(e) {
     mih: C,
     mah: L,
     bgsz: T,
-    bgp: B,
+    bgp: W,
     bgr: ie,
     bga: se,
     pos: le,
@@ -1769,7 +1769,7 @@ function $f(e) {
     mih: C,
     mah: L,
     bgsz: T,
-    bgp: B,
+    bgp: W,
     bgr: ie,
     bga: se,
     pos: le,
@@ -3391,7 +3391,7 @@ const ed = (e, t, r) => {
     }
   };
 };
-var Rt = typeof document < "u" ? an : W;
+var Rt = typeof document < "u" ? an : B;
 function Ht(e, t) {
   if (e === t)
     return !0;
@@ -3534,7 +3534,7 @@ function td(e) {
     floatingStyles: S
   }), [f, N, R, E, S]);
 }
-var me = typeof document < "u" ? an : W;
+var me = typeof document < "u" ? an : B;
 let Hr = !1, rd = 0;
 const Wo = () => "floating-ui-" + rd++;
 function nd() {
@@ -3710,16 +3710,16 @@ function md(e, t) {
     function S(T) {
       if (clearTimeout(_.current), j.current = !1, p && !Yi(O.current) || d > 0 && Ct(g.current, "open") === 0)
         return;
-      const B = Ct(g.current, "open", O.current);
-      B ? _.current = setTimeout(() => {
+      const W = Ct(g.current, "open", O.current);
+      W ? _.current = setTimeout(() => {
         n(!0, T);
-      }, B) : n(!0, T);
+      }, W) : n(!0, T);
     }
     function C(T) {
       if (E())
         return;
       I.current();
-      const B = Oe(s);
+      const W = Oe(s);
       if (clearTimeout(x.current), h.current) {
         r || clearTimeout(_.current), w.current = h.current({
           ...e,
@@ -3731,8 +3731,8 @@ function md(e, t) {
           }
         });
         const se = w.current;
-        B.addEventListener("mousemove", se), I.current = () => {
-          B.removeEventListener("mousemove", se);
+        W.addEventListener("mousemove", se), I.current = () => {
+          W.removeEventListener("mousemove", se);
         };
         return;
       }
@@ -3763,8 +3763,8 @@ function md(e, t) {
       const L = Oe(s).body;
       if (L.setAttribute(Uo, ""), L.style.pointerEvents = "none", M.current = !0, ce(i) && s) {
         var S, C;
-        const T = i, B = v == null || (S = v.nodesRef.current.find((ie) => ie.id === y)) == null || (C = S.context) == null ? void 0 : C.elements.floating;
-        return B && (B.style.pointerEvents = ""), T.style.pointerEvents = "auto", s.style.pointerEvents = "auto", () => {
+        const T = i, W = v == null || (S = v.nodesRef.current.find((ie) => ie.id === y)) == null || (C = S.context) == null ? void 0 : C.elements.floating;
+        return W && (W.style.pointerEvents = ""), T.style.pointerEvents = "auto", s.style.pointerEvents = "auto", () => {
           T.style.pointerEvents = "", s.style.pointerEvents = "";
         };
       }
@@ -4285,7 +4285,7 @@ function Ji({
   positionDependencies: n
 }) {
   const [o, a] = z(0);
-  W(() => {
+  B(() => {
     if (t.refs.reference.current && t.refs.floating.current)
       return Zu(
         t.refs.reference.current,
@@ -4603,7 +4603,7 @@ function tp({
   };
   return $e(() => {
     y(n);
-  }, [n]), W(() => () => window.clearTimeout(v.current), []), {
+  }, [n]), B(() => () => window.clearTimeout(v.current), []), {
     transitionDuration: u,
     transitionStatus: d,
     transitionTimingFunction: r || "ease"
@@ -4944,7 +4944,7 @@ function Ve(e) {
     onClose: C,
     onOpen: L,
     onChange: T,
-    zIndex: B,
+    zIndex: W,
     radius: ie,
     shadow: se,
     id: le,
@@ -5061,7 +5061,7 @@ function Ve(e) {
         trapFocus: S,
         withinPortal: N,
         portalProps: D,
-        zIndex: B,
+        zIndex: W,
         radius: ie,
         shadow: se,
         closeOnEscape: R,
@@ -5902,7 +5902,7 @@ function ov({ open: e, close: t, openDelay: r, closeDelay: n }) {
   }, l = () => {
     i(), n === 0 || n === void 0 ? t() : a.current = window.setTimeout(t, n);
   };
-  return W(() => i, []), { openDropdown: s, closeDropdown: l };
+  return B(() => i, []), { openDropdown: s, closeDropdown: l };
 }
 const [av, zs] = cn(
   "HoverCard component was not found in the tree"
@@ -6137,7 +6137,7 @@ function Nv({
     },
     [s.reference]
   );
-  return W(() => {
+  return B(() => {
     if (l.floating.current) {
       const m = o.current;
       m.addEventListener("mousemove", d);
@@ -6241,7 +6241,7 @@ const Mv = {
     throw new Error(
       "[@mantine/core] Tooltip.Floating component children should be an element or a component that accepts ref, fragments, strings, numbers and other primitive values are not supported"
     );
-  const B = mt(C, i.ref, t), ie = (le) => {
+  const W = mt(C, i.ref, t), ie = (le) => {
     var ee, J;
     (J = (ee = i.props).onMouseEnter) == null || J.call(ee, le), D(le), T(!0);
   }, se = (le) => {
@@ -6263,7 +6263,7 @@ const Mv = {
     }),
     y
   )), Ze(i, Et(ft({}, i.props), {
-    [s]: B,
+    [s]: W,
     onMouseEnter: ie,
     onMouseLeave: se
   })));
@@ -6424,7 +6424,7 @@ const Va = {
     onClick: C,
     onMouseEnter: L,
     onMouseLeave: T,
-    inline: B,
+    inline: W,
     variant: ie,
     keepMounted: se,
     vars: le,
@@ -6477,7 +6477,7 @@ const Va = {
     arrowOffset: x,
     offset: typeof I == "number" ? I + (_ ? w / 2 : 0) : I,
     positionDependencies: [...S, o],
-    inline: B
+    inline: W
   }), Re = U({
     name: "Tooltip",
     props: r,
@@ -6894,7 +6894,7 @@ function Eg(e) {
 }
 function Sg(e) {
   const { category: t, opened: r, items: n } = e, [o, a] = z(!0), [i, s] = z(), [l, c] = z(null);
-  if (W(() => {
+  if (B(() => {
     (async () => {
       try {
         a(!0);
@@ -6936,10 +6936,19 @@ function Rg() {
   const [r, n] = z(), [o, a] = z(!0), [i, s] = z(null), [l, c] = z({}), f = (p) => {
     c((d) => ({
       ...d,
+      // @ts-ignore
       [p]: !d[p]
     }));
   };
-  if (W(() => {
+  if (B(() => {
+    (async () => {
+      try {
+        await CefSharp.BindObjectAsync("bsddBridge");
+      } catch (d) {
+        s(d.message);
+      }
+    })();
+  }, []), B(() => {
     (async () => {
       try {
         a(!0);
