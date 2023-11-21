@@ -136,7 +136,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
-    <None Include="Resources\bsddRecieveExample" />
     <None Include="Resources\ifcDataFromRevitExample.json" />
   </ItemGroup>
   <ItemGroup>

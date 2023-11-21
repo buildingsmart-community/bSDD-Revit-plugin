@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace BsddRevitPlugin.Logic.IfcJson
 {
     /// <summary>
-    /// Message data
+    /// Message data including the main domain and filter domains
     /// </summary>
     public class MainData
     {
@@ -14,7 +14,9 @@ namespace BsddRevitPlugin.Logic.IfcJson
         public string Name { get; set; }
 
         [JsonProperty("domain")]
-        public string Domain { get; set; }
+        public Uri Domain { get; set; }
+        [JsonProperty("filterDomains")]
+        public List<Uri> FilterDomains { get; set; }
 
         [JsonProperty("ifcData")]
         public List<IfcData> IfcData { get; set; }
