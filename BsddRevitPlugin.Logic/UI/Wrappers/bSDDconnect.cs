@@ -161,7 +161,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
         public MainData elemToJSON(List<Element> elemList)
         {
-
+            #region handmatig json vullen
             ////of dit
             //string JSONstring = "[\r\n";
             //int totalCount = elemList.Count();
@@ -234,6 +234,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             //string fileName = "List`1.json";
             //string fullPath = folder + fileName;
             //System.IO.File.WriteAllText(fullPath, JSONstring);
+            #endregion
 
             MainData mainData = new MainData();
             List<IfcData> ifcDataLst = new List<IfcData>();
@@ -261,12 +262,12 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
                                 Location = GetLocationParam(item)
                             }
                         },
-                        new IfcMaterial
-                        {
-                            //MaterialType = item.GetMaterialIds(false).First().ToString(),
-                            MaterialName = "MaterialName",//GetMaterialName(item, Command.MyApp.DbDoc),
-                            Description = "Description"//GetParamValueByName("Assembly Code", item)
-                        }
+                        //new IfcMaterial
+                        //{
+                        //    //MaterialType = item.GetMaterialIds(false).First().ToString(),
+                        //    MaterialName = "MaterialName",//GetMaterialName(item, Command.MyApp.DbDoc),
+                        //    Description = "Description"//GetParamValueByName("Assembly Code", item)
+                        //}
                     }
                 };
 
@@ -275,9 +276,14 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
             }
             //JObject json = JObject.Parse(JsonConvert.SerializeObject(ifcDataLst));
+
+            mainData.Name = "testIFC";
+            mainData.Domain = new Uri("https://search-test.bsdd.buildingsmart.org/uri/digibase/bim-basis-objecten");
+            mainData.FilterDomains.Add(new Uri("https://search-test.bsdd.buildingsmart.org/uri/digibase/bim-basis-objecten"));
+            mainData.FilterDomains.Add(new Uri("https://identifier.buildingsmart.org/uri/digibase/nlsfb"));
             mainData.IfcData = ifcDataLst;
             var provider = new JsonBasedPersistenceProvider("C://temp");
-            provider.Persist(ifcDataLst);
+            provider.Persist(mainData);
             return mainData;
         }
 
@@ -486,7 +492,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
                 bsddSearch.Owner = wnd;
                 //bsddSearch.ShowInTaskbar = false;
                 bsddSearch.Show();
-                bsddSearch.UpdateSelection(jsonData);
+                //bsddSearch.UpdateSelection(jsonData);
 
             }
         }
