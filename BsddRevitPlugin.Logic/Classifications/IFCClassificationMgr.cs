@@ -13,6 +13,8 @@ namespace BsddRevitPlugin.Logic.Classifications
 {
     public class IFCClassificationMgr
     {
+        // https://github.com/Autodesk/revit-ifc/blob/master/Source/Revit.IFC.Common/Extension/IFCClassificationMgr.cs
+
         // old schema
         private static Guid s_schemaIdV1 = new Guid("2CC3F098-1D06-4771-815D-D39128193A14");
 
