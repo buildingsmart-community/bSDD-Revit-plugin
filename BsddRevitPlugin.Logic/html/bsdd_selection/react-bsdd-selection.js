@@ -6930,8 +6930,9 @@ function Sg(e) {
 function Rg() {
   const [e, t] = z($g);
   window.updateSelection = (p) => {
+    console.log(p);
     const d = JSON.parse(p);
-    t(d);
+    console.log(d), t(d);
   };
   const [r, n] = z(), [o, a] = z(!0), [i, s] = z(null), [l, c] = z({}), f = (p) => {
     c((d) => ({
