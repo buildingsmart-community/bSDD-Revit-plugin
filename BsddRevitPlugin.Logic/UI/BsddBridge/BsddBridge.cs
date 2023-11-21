@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
 using Newtonsoft.Json;
+using System.Windows;
 using BSDDconnect = BsddRevitPlugin.Logic.UI.Wrappers;
 
 namespace BsddRevitPlugin.Logic.UI.BsddBridge
@@ -41,6 +42,35 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
 
             // Return the serialized JSON data for the IfcData object
             return JsonConvert.SerializeObject(ifcData);
+
+        }
+
+        /// <summary>
+        /// Opens the bSDD Search panel with the selected object parameters
+        /// </summary>
+        /// <param name="ifcJsonData">The IFC data to search.</param>
+        /// <returns></returns>
+        public string bsddSearch(string ifcJsonData)
+        {
+
+            testExEvent2.Raise();
+            // Create an instance of the IfcDataConverter class
+            var converter = new IfcJsonConverter();
+
+            // Deserialize the JSON data into an IfcData object using the IfcDataConverter
+            var ifcData = JsonConvert.DeserializeObject<IfcData>(ifcJsonData, converter);
+
+
+            // Return the serialized JSON data for the IfcData object
+            return JsonConvert.SerializeObject(ifcData);
+
+        }
+
+        public string Button_Click(string data)
+        {
+
+            // MessageBox.Show("Button was clicked.");
+            return data;
 
         }
     }
