@@ -15,13 +15,15 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using CefSharp;
+using BsddRevitPlugin.Logic.IfcJson;
+using Newtonsoft.Json;
 
 namespace BsddRevitPlugin.Logic.UI.View
 {
     /// <summary>
-    /// Interaction logic for bSDDSelector.xaml
+    /// Interaction logic for BsddSearch.xaml
     /// </summary>
-    public partial class bSDDSelector : Window
+    public partial class BsddSearch : Window
     {
 
         private readonly Document _doc;
@@ -32,7 +34,7 @@ namespace BsddRevitPlugin.Logic.UI.View
         BSDDconnect.EventTest testEvent;
         ExternalEvent SelectEEMS, SelectEESA, SelectEESV, testExEvent;
 
-        public bSDDSelector(string addinLocation)
+        public BsddSearch(string addinLocation)
         {
 
 
@@ -52,11 +54,51 @@ namespace BsddRevitPlugin.Logic.UI.View
         {
             Close();
         }
+
+        public async void ShowAndSendData(object data)
+        {
+            // Show the form
+            this.Show();
+
+            // Serialize the data to a JSON string
+            var jsonString = JsonConvert.SerializeObject(data);
+
+            // Create a JavaScript function call
+            var jsFunctionCall = $"myJavaScriptFunction({jsonString});";
+
+            // Wait for the browser to be initialized
+            if (!Browser.IsBrowserInitialized)
+            {
+                var tcs = new TaskCompletionSource<bool>();
+                EventHandler handler = null;
+                handler = (sender, args) =>
+                {
+                    Browser.IsBrowserInitializedChanged -= handler;
+                    tcs.SetResult(true);
+                };
+                Browser.IsBrowserInitializedChanged += handler;
+                await tcs.Task;
+            }
+
+            // Execute the JavaScript function
+            Browser.ExecuteScriptAsync(jsFunctionCall);
+        }
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             testExEvent.Raise();
             //EventHandlerTest.Raise("");
             MessageBox.Show("Button was clicked.");
+        }
+
+        public void UpdateSelection(MainData ifcData)
+        {
+            var jsonString = JsonConvert.SerializeObject(ifcData);
+            var jsFunctionCall = $"updateSelection({jsonString});";
+
+            if (Browser.IsBrowserInitialized)
+            {
+                Browser.ExecuteScriptAsync(jsFunctionCall);
+            }
         }
 
         void OnIsBrowserInitializedChanged(object sender, DependencyPropertyChangedEventArgs e)
