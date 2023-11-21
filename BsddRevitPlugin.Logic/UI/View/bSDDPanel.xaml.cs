@@ -9,6 +9,8 @@ using ComboBox = System.Windows.Controls.ComboBox;
 using System.ComponentModel;
 using System.Windows.Interop;
 using BSDDconnect = BsddRevitPlugin.Logic.UI.Wrappers;
+using CefSharp;
+using CefSharp.Wpf;
 
 /// <summary>
 /// Event handler for the selection method combo box. Clears the element manager and raises the appropriate external event based on the selected item in the combo box.
@@ -29,8 +31,6 @@ namespace BsddRevitPlugin.Logic.UI.View
         ExternalEvent SelectEEMS, SelectEESA, SelectEESV, testExEvent, testExEvent2;
 
 
-
-
         // Data fields
         private Guid m_targetGuid = new Guid("D7C963CE-B3CA-426A-8D51-6E8254D21158");
         private DockPosition m_position = DockPosition.Floating;
@@ -45,21 +45,18 @@ namespace BsddRevitPlugin.Logic.UI.View
             InitializeComponent();
 
             // Set the address of the CefSharp browser component to the index.html file of the plugin
-            Browser.Address = addinLocation + "/html/index.html";
+            Browser.Address = addinLocation + "/html/bsdd_selection/index.html";
             Browser.JavascriptObjectRepository.Register("bsddBridge", new BsddBridge.BsddBridge(), true);
+            Browser.IsBrowserInitializedChanged += OnIsBrowserInitializedChanged;
+
 
             // Set the data context of the panel to an instance of ElementViewModel
             ElementViewModel elementViewModel = new ElementViewModel();
             this.DataContext = elementViewModel;
-            lbxSelection.ItemsSource = elementViewModel.Elems;
-
+            
             // Sort the list of elements by category, family, and type
-            CollectionView view = (CollectionView)CollectionViewSource.GetDefaultView(lbxSelection.ItemsSource);
             PropertyGroupDescription groupDescription = new PropertyGroupDescription("Category");
-            view.GroupDescriptions.Add(groupDescription);
-            view.SortDescriptions.Add(new SortDescription("Family", ListSortDirection.Ascending));
-            view.SortDescriptions.Add(new SortDescription("Type", ListSortDirection.Ascending));
-
+            
             // Initialize the events and external events
             SelectEHMS = new BSDDconnect.EventMakeSelection();
             SelectEHSA = new BSDDconnect.EventSelectAll();
@@ -151,21 +148,29 @@ namespace BsddRevitPlugin.Logic.UI.View
             // Raise the appropriate external event based on the selected item in the combo box
             if (((ComboBoxItem)(((ComboBox)sender).SelectedItem)).Content.ToString() == "Make selection")
             {
-                //SelectEEMS.Raise();
+                SelectEEMS.Raise();
                 //testExEvent.Raise
-                testExEvent2.Raise();
+                //testExEvent2.Raise();
 
 
                 ////Main.Instance.ShowbSDDSelector(commandData.Application);
             }
             else if (((ComboBoxItem)(((ComboBox)sender).SelectedItem)).Content.ToString() == "Select all")
             {
-                //SelectEESA.Raise();
+                SelectEESA.Raise();
             }
             else if (((ComboBoxItem)(((ComboBox)sender).SelectedItem)).Content.ToString() == "Select visible in view")
             {
-                //SelectEESV.Raise();
+                SelectEESV.Raise();
             };
+        }
+
+        void OnIsBrowserInitializedChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (Browser.IsBrowserInitialized)
+            {
+                Browser.ShowDevTools();
+            }
         }
     }
 }
