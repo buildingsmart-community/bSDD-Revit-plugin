@@ -91,14 +91,15 @@ namespace BsddRevitPlugin.Common.Commands
                     exportOptions.AddOption("ExportSchedulesAsPsets", false.ToString());
                     exportOptions.AddOption("ExportSpecificSchedules", false.ToString());
 
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                     //exportOptions.AddOption("ExportUserDefinedPsets", false.ToString());
                     //exportOptions.AddOption("ExportUserDefinedPsetsFileName", "");
 
+                    exportOptions.AddOption("ExportInternalRevitPropertySets", true.ToString());
+
                     //exportOptions.AddOption("ExportUserDefinedParameterMapping", false.ToString());
                     //exportOptions.AddOption("ExportUserDefinedParameterMappingFileName", "");
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                     exportOptions.AddOption("TessellationLevelOfDetail", 0.5.ToString());
                     exportOptions.AddOption("ExportPartsAsBuildingElements", false.ToString());
@@ -112,6 +113,7 @@ namespace BsddRevitPlugin.Common.Commands
                     exportOptions.AddOption("UseOnlyTriangulation", false.ToString());
                     exportOptions.AddOption("UseTypeNameOnlyForIfcType", true.ToString());
                     exportOptions.AddOption("UseVisibleRevitNameAsEntityName", true.ToString());
+                    
                     //exportOptions.AddOption("SelectedSite", "MF");
                     //exportOptions.AddOption("SitePlacement", 0.ToString());
                     //exportOptions.AddOption("GeoRefCRSName", "");
