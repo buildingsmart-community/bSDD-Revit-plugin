@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Autodesk.Revit.DB;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
@@ -72,7 +73,10 @@ namespace BsddRevitPlugin.Logic.IfcJson
         public string Description { get; set; }
 
         [JsonProperty("name")]
-        public Autodesk.Revit.DB.Material Name { get; set; }
+        public string MaterialName { get; set; }
+
+        [JsonProperty("type")]
+        public string MaterialType { get; set; }
     }
 
     /// <summary>
