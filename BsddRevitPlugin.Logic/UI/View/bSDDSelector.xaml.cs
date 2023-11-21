@@ -14,6 +14,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using CefSharp;
 
 namespace BsddRevitPlugin.Logic.UI.View
 {
@@ -30,12 +31,17 @@ namespace BsddRevitPlugin.Logic.UI.View
         // Declaration of events and external events
         BSDDconnect.EventTest testEvent;
         ExternalEvent SelectEEMS, SelectEESA, SelectEESV, testExEvent;
-        
-        public bSDDSelector()
+
+        public bSDDSelector(string addinLocation)
         {
 
 
             InitializeComponent();
+
+            // Set the address of the CefSharp browser component to the index.html file of the plugin
+            Browser.Address = addinLocation + "/html/bsdd_search/index.html";
+            Browser.JavascriptObjectRepository.Register("bsddBridge", new BsddBridge.BsddBridge(), true);
+            Browser.IsBrowserInitializedChanged += OnIsBrowserInitializedChanged;
 
             // Initialize the events and external events
             testEvent = new BSDDconnect.EventTest();
@@ -51,6 +57,14 @@ namespace BsddRevitPlugin.Logic.UI.View
             testExEvent.Raise();
             //EventHandlerTest.Raise("");
             MessageBox.Show("Button was clicked.");
+        }
+
+        void OnIsBrowserInitializedChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (Browser.IsBrowserInitialized)
+            {
+                Browser.ShowDevTools();
+            }
         }
     }
 }
