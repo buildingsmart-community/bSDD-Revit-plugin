@@ -114,35 +114,35 @@ namespace BsddRevitPlugin.Logic.UI.View
             m_targetGuid = targetGuid;
         }
         
-        public async void ShowAndSendData(object data)
-        {
-            // Show the form
-            this.Show();
+        //public async void ShowAndSendData(object data)
+        //{
+        //     Show the form
+        //    this.Show();
 
-            // Serialize the data to a JSON string
-            var jsonString = JsonConvert.SerializeObject(data);
+        //     Serialize the data to a JSON string
+        //    var jsonString = JsonConvert.SerializeObject(data);
 
-            // Create a JavaScript function call
-            var jsFunctionCall = $"myJavaScriptFunction({jsonString});";
+        //     Create a JavaScript function call
+        //    var jsFunctionCall = $"myJavaScriptFunction({jsonString});";
 
-            // Wait for the browser to be initialized
-            if (!Browser.IsBrowserInitialized)
-            {
-                var tcs = new TaskCompletionSource<bool>();
-                EventHandler handler = null;
-                handler = (sender, args) =>
-                {
-                    Browser.IsBrowserInitializedChanged -= handler;
-                    tcs.SetResult(true);
-                };
-                Browser.IsBrowserInitializedChanged += handler;
-                await tcs.Task;
-            }
+        //     Wait for the browser to be initialized
+        //    if (!Browser.IsBrowserInitialized)
+        //    {
+        //        var tcs = new TaskCompletionSource<bool>();
+        //        EventHandler handler = null;
+        //        handler = (sender, args) =>
+        //        {
+        //            Browser.IsBrowserInitializedChanged -= handler;
+        //            tcs.SetResult(true);
+        //        };
+        //        Browser.IsBrowserInitializedChanged += handler;
+        //        await tcs.Task;
+        //    }
 
-            // Execute the JavaScript function
-            await Browser.ExecuteScriptAsync(jsFunctionCall);
+        //     Execute the JavaScript function
+        //    await Browser.ExecuteScriptAsync(jsFunctionCall);
 
-        }
+        //}
 
         // Event handlers
         private void PaneInfoButton_Click(object sender, RoutedEventArgs e)

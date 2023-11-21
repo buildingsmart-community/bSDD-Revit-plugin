@@ -16,10 +16,10 @@ namespace BsddRevitPlugin.Logic.IfcJson
         [JsonProperty("domain")]
         public Uri Domain { get; set; }
         [JsonProperty("filterDomains")]
-        public List<Uri> FilterDomains { get; set; }
+        public List<Uri> FilterDomains { get; set; } = new List<Uri>();
 
         [JsonProperty("ifcData")]
-        public List<IfcData> IfcData { get; set; }
+        public List<IfcData> IfcData { get; set; } = new List<IfcData>();
     }
 
     /// <summary>
