@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using Autodesk.Revit.Attributes;
@@ -23,12 +24,9 @@ namespace BsddRevitPlugin.Common.Commands
                 UIDocument uiDoc = uiApp.ActiveUIDocument;
                 Document doc = uiDoc.Document;
 
-                using (Transaction transaction = new Transaction(doc, "Export IFC with Namespace"))
+                using (Transaction transaction = new Transaction(doc, "Export IFC"))
                 {
-                           
-                     
                     string IFCversion = "IFC 2x3";
-                    string selectedFolderPath = "C:\\Users\\caoe\\";
 
                     // Start the IFC-transaction
                     transaction.Start("Export IFC");
@@ -129,13 +127,33 @@ namespace BsddRevitPlugin.Common.Commands
 
 
 
-                    // Export the IFC file
-                    doc.Export(selectedFolderPath, "Exported with Namespace", exportOptions);
+                    // Create a SaveFile Dialog to enable a location to export the IFC to
+                    SaveFileDialog saveFileDialog = new SaveFileDialog();
 
-                    // Commit the transaction
-                    transaction.Commit();
-                    TaskDialog.Show("IFC-Export", "An IFC-export was executed.");
-                            
+                    // Set properties of the SaveFileDialog
+                    //saveFileDialog.Filter = "IFC Files (*.ifc)|*.rvt|All Files (*.*)|*.*";
+                    saveFileDialog.Filter = "IFC Files (*.ifc)|*.ifc"; 
+                    saveFileDialog.FilterIndex = 1;
+                    saveFileDialog.RestoreDirectory = true;
+
+                    if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        // Get the selected file path
+                        string filePath = saveFileDialog.FileName;
+                        string fileName = Path.GetFileName(filePath); // Get the filename
+                        string directory = Path.GetDirectoryName(filePath); // Get the directory
+
+                        // Check if the file path is not empty
+                        if (!string.IsNullOrEmpty(filePath))
+                        {
+                            // Export the IFC file
+                            doc.Export(directory, fileName, exportOptions);
+
+                            // Commit the transaction
+                            transaction.Commit();
+                            TaskDialog.Show("IFC-Export", "An IFC-export was executed.");
+                        }
+                    }          
                 }
                     
                 

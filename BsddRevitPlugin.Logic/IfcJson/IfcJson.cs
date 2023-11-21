@@ -1,9 +1,27 @@
-﻿using Newtonsoft.Json;
+﻿using Autodesk.Revit.DB;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
 namespace BsddRevitPlugin.Logic.IfcJson
 {
+    /// <summary>
+    /// Message data including the main domain and filter domains
+    /// </summary>
+    public class MainData
+    {
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        [JsonProperty("domain")]
+        public Uri Domain { get; set; }
+        [JsonProperty("filterDomains")]
+        public List<Uri> FilterDomains { get; set; }
+
+        [JsonProperty("ifcData")]
+        public List<IfcData> IfcData { get; set; }
+    }
+
     /// <summary>
     /// Represents the bSDD data as an IFC object.
     /// </summary>
@@ -39,7 +57,7 @@ namespace BsddRevitPlugin.Logic.IfcJson
         public string Name { get; set; }
     }
 
-    public class IfcClassificationReference: Association
+    public class IfcClassificationReference : Association
     {
 
         [JsonProperty("location")]
@@ -51,10 +69,16 @@ namespace BsddRevitPlugin.Logic.IfcJson
         [JsonProperty("referencedSource")]
         public IfcClassification ReferencedSource { get; set; }
     }
-    public class IfcMaterial: Association
+    public class IfcMaterial : Association
     {
         [JsonProperty("description")]
         public string Description { get; set; }
+
+        [JsonProperty("name")]
+        public string MaterialName { get; set; }
+
+        [JsonProperty("type")]
+        public string MaterialType { get; set; }
     }
 
     /// <summary>
@@ -67,6 +91,7 @@ namespace BsddRevitPlugin.Logic.IfcJson
 
         [JsonProperty("name")]
         public string Name { get; set; }
+
         [JsonProperty("location")]
         public Uri Location { get; set; }
     }

@@ -120,6 +120,12 @@
     <Compile Include="Utilities\FileHandling.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="html\bsdd_search\react-bsdd-search.umd.cjs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="html\bsdd_selection\react-bsdd-selection.umd.cjs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="html\css\bootstrap.min.css.map">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -130,10 +136,21 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
-    <None Include="Resources\bsddRecieveExample" />
     <None Include="Resources\ifcDataFromRevitExample.json" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="html\bsdd_search\css\viewer.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="html\bsdd_search\index.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="html\bsdd_selection\index.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="html\bsdd_selection\style.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="html\css\bootstrap.min.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -182,6 +199,9 @@
     <Content Include="html\js\select2.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="html\search.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Page Include="UI\View\bSDDPanel.xaml">
@@ -196,6 +216,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\lib\assr\lib-asrr-core\ASRR.Core.csproj">
+      <Project>{12ea4456-8cd5-43ef-80c7-d70338c8b018}</Project>
+      <Name>ASRR.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
