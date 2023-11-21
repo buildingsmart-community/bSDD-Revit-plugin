@@ -15,11 +15,16 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         // Declaration of events and external events
         BSDDconnect.EventTest2 testEvent2;
         ExternalEvent testExEvent2;
+        BSDDconnect.EventTest3 testEvent3;
+        ExternalEvent testExEvent3;
         public BsddBridge()
         {
             // Initialize the events and external events
             testEvent2 = new BSDDconnect.EventTest2();
             testExEvent2 = ExternalEvent.Create(testEvent2);
+
+            testEvent3 = new BSDDconnect.EventTest3();
+            testExEvent3 = ExternalEvent.Create(testEvent3);
         }
 
         /// <summary>
@@ -36,9 +41,12 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             var converter = new IfcJsonConverter();
 
             // Deserialize the JSON data into an IfcData object using the IfcDataConverter
-            var ifcData = JsonConvert.DeserializeObject<IfcData>(ifcJsonData, converter);
+            var ifcData = JsonConvert.DeserializeObject<MainData>(ifcJsonData, converter);
 
             // TODO: Save the IfcData object to your desired location
+
+            testEvent3.SetData(ifcData);
+            testExEvent3.Raise();
 
             // Return the serialized JSON data for the IfcData object
             return JsonConvert.SerializeObject(ifcData);
@@ -59,6 +67,8 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
 
             // Deserialize the JSON data into an IfcData object using the IfcDataConverter
             var ifcData = JsonConvert.DeserializeObject<IfcData>(ifcJsonData, converter);
+
+
 
 
             // Return the serialized JSON data for the IfcData object
