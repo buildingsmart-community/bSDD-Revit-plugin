@@ -472,6 +472,30 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             return "";
         }
     }
+    public class EventTest3 : IExternalEventHandler
+    {
+        Logger logger = LogManager.GetCurrentClassLogger();
+
+        MainData sharedData;
+
+        public void SetData(MainData data2)
+        {
+            sharedData = data2;
+        }
+
+
+        public void Execute(UIApplication uiapp)
+        {
+            var JSONData = sharedData;
+            string json = JSONData.ToString();
+            TaskDialog.Show("Success", json);
+        }
+
+        public string GetName()
+        {
+            return "";
+        }
+    }
 
     [Transaction(TransactionMode.Manual)]
     public class Command : IExternalCommand
