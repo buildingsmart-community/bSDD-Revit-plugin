@@ -17,6 +17,8 @@ using System.Windows.Shapes;
 using CefSharp;
 using BsddRevitPlugin.Logic.IfcJson;
 using Newtonsoft.Json;
+using BsddRevitPlugin.Logic.UI.Wrappers;
+using System.Reflection;
 
 namespace BsddRevitPlugin.Logic.UI.View
 {
@@ -31,17 +33,21 @@ namespace BsddRevitPlugin.Logic.UI.View
         public static UIDocument UiDoc;
 
         // Declaration of events and external events
-        BSDDconnect.EventTest testEvent;
+        EventTest testEvent;
         ExternalEvent SelectEEMS, SelectEESA, SelectEESV, testExEvent;
 
-        public BsddSearch(string addinLocation)
+        public BsddSearch()
         {
 
 
             InitializeComponent();
 
+            string addinLocation = Assembly.GetExecutingAssembly().Location;
+            string addinDirectory = System.IO.Path.GetDirectoryName(addinLocation);
+
+
             // Set the address of the CefSharp browser component to the index.html file of the plugin
-            Browser.Address = addinLocation + "/html/bsdd_search/index.html";
+            Browser.Address = addinDirectory + "/html/bsdd_search/index.html";
             Browser.JavascriptObjectRepository.Register("bsddBridge", new BsddBridge.BsddBridge(), true);
             Browser.IsBrowserInitializedChanged += OnIsBrowserInitializedChanged;
 
