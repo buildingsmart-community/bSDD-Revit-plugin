@@ -1,3 +1,15 @@
+# Introduction
+This project is part of an opensource development of a series of consistent bSDD plugins and bSDD web UI.
+
+Subprojects:
+-	Web UI https://github.com/buildingsmart-community/bSDD-filter-UI
+-	Revit Plugin https://github.com/buildingsmart-community/bSDD-Revit-plugin
+-	Sketchup bSDD plugin https://github.com/DigiBase-VolkerWessels/SketchUp-bsDD-plugin
+-	Trimble Connect bSDD plugin (Not available yet)
+
+This project is initiated by Dutch contractors VolkerWessels and Heijmans. By starting this opensource development we believe we can help the industry structuring data. Proper usage of the buildingSMART Data Dictionary helps in getting consistent information in objects. Good information is the basis for further automation. 
+The idea of our development is that we inspire our industry to include bSDD in their processes and softwareproducts natively.
+
 # BsddRevitPlugin
 
 This is a community build tool. 
