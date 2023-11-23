@@ -106,6 +106,7 @@ namespace BsddRevitPlugin.Logic.UI.View
             if (Browser.IsBrowserInitialized)
             {
                 Browser.ShowDevTools();
+                Browser.ExecuteScriptAsync("CefSharp.BindObjectAsync('bsddBridge');");
             }
         }
     }

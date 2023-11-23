@@ -47,10 +47,10 @@ namespace BsddRevitPlugin.Logic.UI.View
             Browser.Address = addinLocation + "/html/bsdd_selection/index.html";
             Browser.JavascriptObjectRepository.Register("bsddBridge", new BsddBridge.BsddBridge(), true);
             Browser.IsBrowserInitializedChanged += OnIsBrowserInitializedChanged;
-            
+
             // Sort the list of elements by category, family, and type
             PropertyGroupDescription groupDescription = new PropertyGroupDescription("Category");
-            
+
             // Initialize the events and external events
             SelectEHMS = new BSDDconnect.EventMakeSelection();
             SelectEHMS.SetBrowser(Browser);
@@ -107,7 +107,7 @@ namespace BsddRevitPlugin.Logic.UI.View
             m_bottom = bottom;
             m_targetGuid = targetGuid;
         }
-        
+
         //public async void ShowAndSendData(object data)
         //{
         //     Show the form
@@ -195,6 +195,7 @@ namespace BsddRevitPlugin.Logic.UI.View
             if (Browser.IsBrowserInitialized)
             {
                 Browser.ShowDevTools();
+                Browser.ExecuteScriptAsync("CefSharp.BindObjectAsync('bsddBridge');");
             }
         }
     }
