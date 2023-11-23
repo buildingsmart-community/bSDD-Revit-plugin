@@ -20,6 +20,21 @@ namespace BsddRevitPlugin.Logic.IfcJson
 
         [JsonProperty("ifcData")]
         public List<IfcData> IfcData { get; set; } = new List<IfcData>();
+
+        public void setDomain(string domain) {
+            Domain = new Uri(domain);
+        }
+        public void addFilterDomain(string domain)
+        {
+            FilterDomains.Add(new Uri(domain));
+        }
+        public void setFilterDomains(List<string> domains)
+        {
+            foreach (string domain in domains)
+            {
+                FilterDomains.Add(new Uri(domain));
+            }
+        }
     }
 
     /// <summary>
