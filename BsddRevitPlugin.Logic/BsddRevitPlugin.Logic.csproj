@@ -112,7 +112,8 @@
     <Compile Include="UI\View\BsddSearch.xaml.cs">
       <DependentUpon>BsddSearch.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UI\Wrappers\bSDDconnect.cs" />
+    <Compile Include="UI\Wrappers\MethodsWrapped.cs" />
+    <Compile Include="UI\Wrappers\RevitEventWrapper.cs" />
     <Compile Include="Utilities\FileHandling.cs" />
   </ItemGroup>
   <ItemGroup>
