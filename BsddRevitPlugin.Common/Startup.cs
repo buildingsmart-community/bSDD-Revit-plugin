@@ -127,8 +127,8 @@ namespace BsddRevitPlugin.Common
         /// <param name="addinLocation">The location of the add-in.</param>
         private void RegisterDockPanel(UIControlledApplication app, string addinLocation)
         {
-            // Create a new bSDDPanel object and link it to the main window.
-            bSDDPanel MainDockableWindow = new bSDDPanel(addinLocation);
+            // Create a new BsddSelection object and link it to the main window.
+            BsddSelection MainDockableWindow = new BsddSelection(addinLocation);
             DockablePaneProviderData data = new DockablePaneProviderData();
 
             // Create a new DockablePane Id.

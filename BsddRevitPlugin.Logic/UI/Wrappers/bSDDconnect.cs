@@ -139,7 +139,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             {
                 try
                 {
-                    if (item.Category != null)
+                    if (item != null && item.Category != null)
                     {
                         if (
                         item.Category.Name != "Levels" &&
@@ -236,11 +236,20 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             //System.IO.File.WriteAllText(fullPath, JSONstring);
             #endregion
 
+            const string domain = "https://search-test.bsdd.buildingsmart.org/uri/digibase/bim-basis-objecten";
+            List<string> filterDomains = new List<string>(){
+                "https://search-test.bsdd.buildingsmart.org/uri/digibase/bim-basis-objecten",
+                "https://identifier.buildingsmart.org/uri/digibase/nlsfb"
+            };
+
             MainData mainData = new MainData();
             List<IfcData> ifcDataLst = new List<IfcData>();
 
             foreach (Element item in elemList)
             {
+                string code = GetParamValueByName("Assembly Code", item);
+                Uri domainUri = GetBsddDomainUri(domain);
+                Uri classificationUri = GetBsddClassificationUri(domainUri, code);
                 IfcData ifcData = new IfcData
                 {
                     Type = GetParamValueByName("Export Type to IFC As", item),
@@ -253,13 +262,13 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
                         {
                             Type = "IfcClassificationReference",
                             Name = GetParamValueByName("Assembly Description", item),
-                            Location = GetLocationParam(item),
-                            Identification = GetParamValueByName("Assembly Code", item),
+                            Location = classificationUri, // GetLocationParam(domain, item),
+                            Identification = code,
                             ReferencedSource = new IfcClassification
                             {
                                 Type = "IfcClassification",
                                 Name = "DigiBase Demo NL-SfB tabel 1",
-                                Location = GetLocationParam(item)
+                                Location = domainUri
                             }
                         },
                         //new IfcMaterial
@@ -278,9 +287,8 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             //JObject json = JObject.Parse(JsonConvert.SerializeObject(ifcDataLst));
 
             mainData.Name = "testIFC";
-            mainData.Domain = new Uri("https://search-test.bsdd.buildingsmart.org/uri/digibase/bim-basis-objecten");
-            mainData.FilterDomains.Add(new Uri("https://search-test.bsdd.buildingsmart.org/uri/digibase/bim-basis-objecten"));
-            mainData.FilterDomains.Add(new Uri("https://identifier.buildingsmart.org/uri/digibase/nlsfb"));
+            mainData.setDomain(domain);
+            mainData.setFilterDomains(filterDomains);
             mainData.IfcData = ifcDataLst;
             var provider = new JsonBasedPersistenceProvider("C://temp");
             provider.Persist(mainData);
@@ -399,11 +407,21 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             return materialName;
         }
 
-        public Uri GetLocationParam(Element e)
+        public Uri GetBsddDomainUri(string domain)
         {
-            Uri paramValue = null;
+            return new Uri(domain);
+        }
 
-            foreach (Parameter parameter in e.Parameters)
+        public Uri GetBsddClassificationUri(Uri domain, string code)
+        {
+            return new Uri(domain, code);
+        }
+
+        public Uri GetLocationParam(string domain, Element element)
+        {
+            Uri paramValue = new Uri(domain);
+
+            foreach (Parameter parameter in element.Parameters)
             {
                 if (parameter.Definition.Name == "location")
                 {

@@ -4,7 +4,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.Model;
-using BsddRevitPlugin.Logic.UI.ViewModel;
 using ComboBox = System.Windows.Controls.ComboBox;
 using System.ComponentModel;
 using System.Windows.Interop;
@@ -20,7 +19,7 @@ using CefSharp.Wpf;
 namespace BsddRevitPlugin.Logic.UI.View
 {
     // This class represents the main panel of the bSDD Revit plugin
-    public partial class bSDDPanel : Page, IDockablePaneProvider
+    public partial class BsddSelection : Page, IDockablePaneProvider
     {
         // Declaration of events and external events
         BSDDconnect.EventMakeSelection SelectEHMS;
@@ -40,7 +39,7 @@ namespace BsddRevitPlugin.Logic.UI.View
         private int m_bottom = 100;
 
         // Constructor
-        public bSDDPanel(string addinLocation)
+        public BsddSelection(string addinLocation)
         {
             InitializeComponent();
 
@@ -48,11 +47,6 @@ namespace BsddRevitPlugin.Logic.UI.View
             Browser.Address = addinLocation + "/html/bsdd_selection/index.html";
             Browser.JavascriptObjectRepository.Register("bsddBridge", new BsddBridge.BsddBridge(), true);
             Browser.IsBrowserInitializedChanged += OnIsBrowserInitializedChanged;
-
-
-            // Set the data context of the panel to an instance of ElementViewModel
-            ElementViewModel elementViewModel = new ElementViewModel();
-            this.DataContext = elementViewModel;
             
             // Sort the list of elements by category, family, and type
             PropertyGroupDescription groupDescription = new PropertyGroupDescription("Category");

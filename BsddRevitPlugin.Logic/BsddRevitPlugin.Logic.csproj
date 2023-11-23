@@ -106,15 +106,11 @@
     <Compile Include="Resources\IfcDataExample.cs" />
     <Compile Include="UI\BsddBridge\bSDDbridge.cs" />
     <Compile Include="UI\DockablePanel\Selectors.cs" />
-    <Compile Include="UI\ViewModel\ElementViewModel.cs" />
-    <Compile Include="UI\View\bSDDPanel.xaml.cs">
-      <DependentUpon>bSDDPanel.xaml</DependentUpon>
+    <Compile Include="UI\View\BsddSelection.xaml.cs">
+      <DependentUpon>BsddSelection.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UI\View\bSDDSelector.xaml.cs">
-      <DependentUpon>bSDDSelector.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="UI\View\CheckFamilyType.xaml.cs">
-      <DependentUpon>CheckFamilyType.xaml</DependentUpon>
+    <Compile Include="UI\View\BsddSearch.xaml.cs">
+      <DependentUpon>BsddSearch.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\Wrappers\bSDDconnect.cs" />
     <Compile Include="Utilities\FileHandling.cs" />
@@ -150,15 +146,11 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Page Include="UI\View\bSDDPanel.xaml">
+    <Page Include="UI\View\BsddSelection.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="UI\View\bSDDSelector.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="UI\View\CheckFamilyType.xaml">
+    <Page Include="UI\View\BsddSearch.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -168,6 +160,9 @@
       <Project>{12ea4456-8cd5-43ef-80c7-d70338c8b018}</Project>
       <Name>ASRR.Core</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="UI\ViewModel\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
