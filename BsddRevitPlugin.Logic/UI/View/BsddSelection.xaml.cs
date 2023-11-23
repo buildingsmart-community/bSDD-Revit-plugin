@@ -10,6 +10,8 @@ using System.Windows.Interop;
 using BSDDconnect = BsddRevitPlugin.Logic.UI.Wrappers;
 using CefSharp;
 using CefSharp.Wpf;
+using BsddRevitPlugin.Logic.UI.Wrappers;
+using System.Reflection;
 
 /// <summary>
 /// Event handler for the selection method combo box. Clears the element manager and raises the appropriate external event based on the selected item in the combo box.
@@ -26,7 +28,7 @@ namespace BsddRevitPlugin.Logic.UI.View
         BSDDconnect.EventSelectAll SelectEHSA;
         BSDDconnect.EventSelectView SelectEHSV;
         BSDDconnect.EventTest testEvent;
-        BSDDconnect.EventTest2 testEvent2;
+        BSDDconnect.EventHandlerBsddSearch testEvent2;
         ExternalEvent SelectEEMS, SelectEESA, SelectEESV, testExEvent, testExEvent2;
 
 
@@ -39,12 +41,15 @@ namespace BsddRevitPlugin.Logic.UI.View
         private int m_bottom = 100;
 
         // Constructor
-        public BsddSelection(string addinLocation)
+        public BsddSelection()
         {
             InitializeComponent();
 
+            string addinLocation = Assembly.GetExecutingAssembly().Location;
+            string addinDirectory = System.IO.Path.GetDirectoryName(addinLocation);
+
             // Set the address of the CefSharp browser component to the index.html file of the plugin
-            Browser.Address = addinLocation + "/html/bsdd_selection/index.html";
+            Browser.Address = addinDirectory + "/html/bsdd_selection/index.html";
             Browser.JavascriptObjectRepository.Register("bsddBridge", new BsddBridge.BsddBridge(), true);
             Browser.IsBrowserInitializedChanged += OnIsBrowserInitializedChanged;
 
@@ -57,7 +62,7 @@ namespace BsddRevitPlugin.Logic.UI.View
             SelectEHSA = new BSDDconnect.EventSelectAll();
             SelectEHSV = new BSDDconnect.EventSelectView();
             testEvent = new BSDDconnect.EventTest();
-            testEvent2 = new BSDDconnect.EventTest2();
+            testEvent2 = new BSDDconnect.EventHandlerBsddSearch();
             SelectEEMS = ExternalEvent.Create(SelectEHMS);
             SelectEESA = ExternalEvent.Create(SelectEHSA);
             SelectEESV = ExternalEvent.Create(SelectEHSV);

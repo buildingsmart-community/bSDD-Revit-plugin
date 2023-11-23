@@ -33,10 +33,13 @@ using System.Windows.Media.Imaging;
 using Path = System.IO.Path;
 using CefSharp.Wpf;
 using Newtonsoft.Json;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Windows.Threading;
 
 namespace BsddRevitPlugin.Logic.UI.Wrappers
 {
-    public class EventMakeSelection : IExternalEventHandler
+    public class EventMakeSelection : RevitEventWrapper<string>
     {
 
         Logger logger = LogManager.GetCurrentClassLogger();
@@ -46,7 +49,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
         ChromiumWebBrowser browser;
 
-        public void Execute(UIApplication uiapp)
+        public override void Execute(UIApplication uiapp, string args)
         {
             //logger.Debug("hoi");
             elemList = Selectorlist.SelectElements(uiapp);
@@ -73,10 +76,6 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             browser = browserObject;
         }
 
-        public string GetName()
-        {
-            return "";
-        }
         private async void UpdateBsddSelection(MainData ifcData)
         {
             var jsonString = JsonConvert.SerializeObject(ifcData);
@@ -89,33 +88,28 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         }
     }
 
-    public class EventSelectAll : IExternalEventHandler
+    public class EventSelectAll : RevitEventWrapper<string>
     {
         Logger logger = LogManager.GetCurrentClassLogger();
 
         static List<Element> elemList = new List<Element>();
         Select Selectorlist = new Select();
 
-        public void Execute(UIApplication uiapp)
+        public override void Execute(UIApplication uiapp, string args)
         {
             elemList = Selectorlist.AllElements(uiapp);
             ListAdjust lst = new ListAdjust();
             elemList = lst.ListFilter(elemList);
             lst.elemToJSON(elemList);
         }
-
-        public string GetName()
-        {
-            return "";
-        }
     }
 
-    public class EventSelectView : IExternalEventHandler
+    public class EventSelectView : RevitEventWrapper<string>
     {
         static List<Element> elemList = new List<Element>();
         Select Selectorlist = new Select();
 
-        public void Execute(UIApplication uiapp)
+        public override void Execute(UIApplication uiapp, string args)
         {
             elemList = Selectorlist.AllElementsView(uiapp);
             ListAdjust lst = new ListAdjust();
@@ -123,10 +117,6 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             lst.elemToJSON(elemList);
         }
 
-        public string GetName()
-        {
-            return "";
-        }
     }
 
     public class ListAdjust
@@ -435,7 +425,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
     }
 
 
-    public class EventTest : IExternalEventHandler
+    public class EventTest : RevitEventWrapper<string>
     {
         Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -443,7 +433,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         Select Selectorlist = new Select();
 
 
-        public void Execute(UIApplication uiapp)
+        public override void Execute(UIApplication uiapp, string args)
         {
             logger.Debug(elemList);
             Document doc = uiapp.ActiveUIDocument.Document;
@@ -483,26 +473,23 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             //    }
         }
 
-        public string GetName()
-        {
-            return "";
-        }
     }
 
 
 
-    public class EventTest2 : IExternalEventHandler
+    public class EventHandlerBsddSearch : IExternalEventHandler
     {
         Logger logger = LogManager.GetCurrentClassLogger();
 
-
-        string addinLocation = Assembly.GetExecutingAssembly().Location;
+        private static EventHandlerBsddSearch _instance;
+        private static readonly object InstanceLock = new object();
 
         public void Execute(UIApplication uiapp)
         {
 
-            string addinDirectory = Path.GetDirectoryName(addinLocation);
-            var bsddSearch = new BsddSearch(addinDirectory);
+            //string addinDirectory = Path.GetDirectoryName(addinLocation);
+            var bsddSearch = new BsddSearch();
+
             HwndSource hwndSource = HwndSource.FromHwnd(uiapp.MainWindowHandle);
             Window wnd = hwndSource.RootVisual as Window;
             if (wnd != null)
@@ -513,11 +500,93 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
                 //bsddSearch.UpdateSelection(jsonData);
 
             }
-        }
 
+            var uidoc = uiapp.ActiveUIDocument;
+            var doc = uidoc.Document;
+            var name = doc.Title;
+            var path = doc.PathName;
+
+            //Instance.ShowMainWindow(uiapp);
+        }
         public string GetName()
         {
             return "";
+        }
+
+    }
+
+
+    [Transaction(TransactionMode.Manual)]
+    public class OpenBsddSearchUiCommand : IExternalCommand
+    {
+        private static OpenBsddSearchUiCommand _instance;
+        private static readonly object InstanceLock = new object();
+
+        // ModelessForm instance
+        private BsddSearch _bsddSearchWindow;
+
+        // Separate thread to run Ui on
+        private Thread _uiThread;
+
+        private UIControlledApplication uicapp;
+
+        private static readonly Logger Log = LogManager.GetCurrentClassLogger();
+
+        public Result Execute(ExternalCommandData commandData, ref string message, ElementSet _)
+        {
+
+            var uiapp = commandData.Application;
+            var uidoc = uiapp.ActiveUIDocument;
+            var doc = uidoc.Document;
+            var name = doc.Title;
+            var path = doc.PathName;
+
+            return Execute(commandData.Application);
+        }
+
+        public Result Execute(UIApplication uiapp)
+        {
+            Instance.ShowMainWindow(uiapp);
+            //Do all sorts of shiny stuff with your command. 
+            return Result.Succeeded;
+        }
+
+        public void ShowMainWindow(UIApplication uiapp)
+        {
+            // If we do not have a thread started or has been terminated start a new one
+            if (!(_uiThread is null) && _uiThread.IsAlive) return;
+            
+
+            _uiThread = new Thread(() =>
+            {
+                SynchronizationContext.SetSynchronizationContext(
+                    new DispatcherSynchronizationContext(
+                        Dispatcher.CurrentDispatcher));
+                // The dialog becomes the owner responsible for disposing the objects given to it.
+                _bsddSearchWindow = new BsddSearch();
+                _bsddSearchWindow.Closed += (s, e) => Dispatcher.CurrentDispatcher.InvokeShutdown();
+                _bsddSearchWindow.Show();
+                Dispatcher.Run();
+            });
+
+            _uiThread.SetApartmentState(ApartmentState.STA);
+            _uiThread.IsBackground = true;
+            _uiThread.Start();
+        }
+
+        public void SetUIControlledApp(UIControlledApplication uicappObject)
+        {
+            uicapp = uicappObject;
+        }
+        public static OpenBsddSearchUiCommand Instance
+        {
+            get
+            {
+                lock (InstanceLock)
+                {
+                    return _instance ?? (_instance = new OpenBsddSearchUiCommand());
+                }
+            }
         }
     }
 
