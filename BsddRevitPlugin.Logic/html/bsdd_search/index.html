@@ -9,13 +9,16 @@
 
   <body>
     <div class="container-fluid h-100">
-      <div class="mt-3" id="bsdd">
-      </div>
+      <div class="mt-3" id="bsdd"></div>
     </div>
     <script type="module">
-      function callback(data) {
-        console.log(data);
-        document.getElementById('viewer').innerHTML = '<pre>' + JSON.stringify(data, undefined, 2) + '</pre>';
+      function callback(ifcProduct) {
+        console.log(ifcProduct);
+
+        // @ts-ignore
+        bsddBridge.save(JSON.stringify(ifcProduct)).then(function (actualResult) {
+          console.log('Sent to Revit', actualResult);
+        });
       }
 
       const config = {
