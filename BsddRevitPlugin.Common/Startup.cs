@@ -1,13 +1,13 @@
-﻿using Autodesk.Revit.Attributes;
+﻿using Autodesk.Revit.ApplicationServices;
+using Autodesk.Revit.Attributes;
+using Autodesk.Revit.DB.Events;
 using Autodesk.Revit.UI;
-using BsddRevitPlugin.Logic.Commands;
 using BsddRevitPlugin.Logic.UI.View;
+using BsddRevitPlugin.Logic.UI.Wrappers;
 using BsddRevitPlugin.Resources;
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Reflection;
-using System.Windows.Media.Imaging;
 
 namespace BsddRevitPlugin.Common
 {
@@ -35,18 +35,16 @@ namespace BsddRevitPlugin.Common
         /// <returns>A Result object indicating whether the startup was successful.</returns>
         public Result OnStartup(UIControlledApplication application)
         {
-            // Get the current add-in location
-            string addinLocation = Assembly.GetExecutingAssembly().Location;
-            string addinDirectory = Path.GetDirectoryName(addinLocation);
 
             // Register Dockable panel for Revit project when it is opened.
-            RegisterDockPanel(application, addinDirectory);
+            RegisterDockPanel(application);
 
             // Add ribbon buttons to the UI.
             AddRibbonButtons(application);
 
             // Open logs.
             Main.Instance.OpenLogs();
+
 
             return Result.Succeeded;
         }
@@ -68,7 +66,6 @@ namespace BsddRevitPlugin.Common
         //     var decoder = new BmpBitmapDecoder(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.Default);
         //     return decoder.Frames[0];
         // }
-
 
         /// <summary>
         /// This method adds ribbon buttons to the Revit UI.
@@ -124,11 +121,10 @@ namespace BsddRevitPlugin.Common
         /// This method registers a dockable panel for the Revit project.
         /// </summary>
         /// <param name="app">The UIControlledApplication object representing the Revit application.</param>
-        /// <param name="addinLocation">The location of the add-in.</param>
-        private void RegisterDockPanel(UIControlledApplication app, string addinLocation)
+        private void RegisterDockPanel(UIControlledApplication app)
         {
             // Create a new BsddSelection object and link it to the main window.
-            BsddSelection MainDockableWindow = new BsddSelection(addinLocation);
+            BsddSelection MainDockableWindow = new BsddSelection();
             DockablePaneProviderData data = new DockablePaneProviderData();
 
             // Create a new DockablePane Id.
