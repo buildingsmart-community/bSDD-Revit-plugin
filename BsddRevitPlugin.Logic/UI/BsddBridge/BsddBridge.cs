@@ -36,7 +36,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         /// </summary>
         /// <param name="ifcJsonData">The form data to save.</param>
         /// <returns>The response from the bSDD API.</returns>
-        public string Save(string ifcJsonData)
+        public string save(string ifcJsonData)
         {
 
             //OpenBsddSearchUiCommand a = new OpenBsddSearchUiCommand();
