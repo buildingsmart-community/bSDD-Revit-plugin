@@ -14,7 +14,7 @@ namespace BsddRevitPlugin.Logic.IfcJson
         public string Name { get; set; }
 
         [JsonProperty("domain")]
-        public Uri Domain { get; set; }
+        public Uri Domain { get; set; } = new Uri("");
         [JsonProperty("filterDomains")]
         public List<Uri> FilterDomains { get; set; } = new List<Uri>();
 
@@ -48,6 +48,12 @@ namespace BsddRevitPlugin.Logic.IfcJson
         [JsonProperty("name")]
         public string Name { get; set; }
 
+        [JsonProperty("familyNameAndTypeName")]
+        public string FamilyNameAndTypeName { get; set; }
+
+        [JsonProperty("typeId")]
+        public string TypeId { get; set; }
+
         [JsonProperty("description")]
         public string Description { get; set; }
 
@@ -76,7 +82,7 @@ namespace BsddRevitPlugin.Logic.IfcJson
     {
 
         [JsonProperty("location")]
-        public Uri Location { get; set; }
+        public Uri Location { get; set; } = new Uri("");
 
         [JsonProperty("identification")]
         public string Identification { get; set; }
@@ -108,7 +114,7 @@ namespace BsddRevitPlugin.Logic.IfcJson
         public string Name { get; set; }
 
         [JsonProperty("location")]
-        public Uri Location { get; set; }
+        public Uri Location { get; set; } = new Uri("");
     }
 
     /// <summary>
