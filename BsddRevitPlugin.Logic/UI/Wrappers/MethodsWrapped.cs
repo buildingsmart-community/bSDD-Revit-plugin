@@ -37,6 +37,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Threading;
 using static BsddRevitPlugin.Logic.Model.ElementsManager;
+using BsddRevitPlugin.Logic.UI.BsddBridge;
 
 namespace BsddRevitPlugin.Logic.UI.Wrappers
 {
@@ -171,27 +172,28 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
     }
 
 
-    public class EventHandlerBsddSearch : RevitEventWrapper<string> 
+    public class EventHandlerBsddSearch : RevitEventWrapper<string>
     {
         Logger logger = LogManager.GetCurrentClassLogger();
 
 
         // ModelessForm instance
         private Window wnd;
+        private BsddSearch _bsddSearch;
 
         public override void Execute(UIApplication uiapp, string args)
         {
 
             //string addinDirectory = Path.GetDirectoryName(addinLocation);
-            BsddSearch _bsddSearchWindow = new BsddSearch();
+            GlobalBsddSearch.bsddSearch = new BsddSearch();
 
             HwndSource hwndSource = HwndSource.FromHwnd(uiapp.MainWindowHandle);
             wnd = hwndSource.RootVisual as Window;
             if (wnd != null)
             {
-                _bsddSearchWindow.Owner = wnd;
+                GlobalBsddSearch.bsddSearch.Owner = wnd;
                 //bsddSearch.ShowInTaskbar = false;
-                _bsddSearchWindow.Show();
+                GlobalBsddSearch.bsddSearch.Show();
                 //bsddSearch.UpdateSelection(jsonData);
 
             }
@@ -200,10 +202,105 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             var name = doc.Title;
             var path = doc.PathName;
 
+            //BsddBridge.BsddBridge.SetWindow(BsddSearchWindow);
+            //BsddBridge.BsddBridge.SetParentWindow(wnd);
+
+            //_bsddSearch = BsddSearchWindow;
             //Instance.ShowMainWindow(uiapp);
         }
-    }
+        public void Close()
+        {
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                // Close or hide the window logic
+                this.Close(); // or this.Hide();
+            });
 
+        }
+
+    }
+    //public class EventHandlerBsddSearch : RevitEventWrapper<string>
+    //{
+    //    Logger logger = LogManager.GetCurrentClassLogger();
+
+    //    private static EventHandlerBsddSearch _instance;
+    //    private static readonly object InstanceLock = new object();
+
+    //    // ModelessForm instance
+    //    private BsddSearch _bsddSearchWindow;
+
+    //    // Separate thread to run Ui on
+    //    private Thread _uiThread;
+
+    //    // ModelessForm instance
+    //    private Window wnd;
+
+    //    public void Start(string args)
+    //    {
+    //        Raise(args);
+
+    //    }
+    //    public override void Execute(UIApplication uiapp, string args)
+    //    {
+
+    //        //string addinDirectory = Path.GetDirectoryName(addinLocation);
+    //        //BsddSearch BsddSearchWindow = new BsddSearch();
+
+    //        //HwndSource hwndSource = HwndSource.FromHwnd(uiapp.MainWindowHandle);
+    //        //wnd = hwndSource.RootVisual as Window;
+    //        //if (wnd != null)
+    //        //{
+    //        //    BsddSearchWindow.Owner = wnd;
+    //        //    //bsddSearch.ShowInTaskbar = false;
+    //        //    BsddSearchWindow.Show();
+    //        //    //bsddSearch.UpdateSelection(jsonData);
+
+    //        //}
+    //        var uidoc = uiapp.ActiveUIDocument;
+    //        var doc = uidoc.Document;
+    //        var name = doc.Title;
+    //        var path = doc.PathName;
+
+    //        //BsddBridge.BsddBridge.SetWindow(BsddSearchWindow);
+    //        //BsddBridge.BsddBridge.SetParentWindow(wnd);
+
+    //        Instance.ShowBsddSearchWindow(uiapp);
+    //    }
+
+    //    public void ShowBsddSearchWindow(UIApplication uiapp)
+    //    {
+    //        // If we do not have a thread started or has been terminated start a new one
+    //        if (!(_uiThread is null) && _uiThread.IsAlive) return;
+
+
+    //        _uiThread = new Thread(() =>
+    //        {
+    //            SynchronizationContext.SetSynchronizationContext(
+    //                new DispatcherSynchronizationContext(
+    //                    Dispatcher.CurrentDispatcher));
+    //            // The dialog becomes the owner responsible for disposing the objects given to it.
+    //            _bsddSearchWindow = new BsddSearch();
+    //            _bsddSearchWindow.Closed += (s, e) => Dispatcher.CurrentDispatcher.InvokeShutdown();
+    //            _bsddSearchWindow.Show();
+    //            Dispatcher.Run();
+    //        });
+
+    //        _uiThread.SetApartmentState(ApartmentState.STA);
+    //        _uiThread.IsBackground = true;
+    //        _uiThread.Start();
+    //    }
+
+    //    public static EventHandlerBsddSearch Instance
+    //    {
+    //        get
+    //        {
+    //            lock (InstanceLock)
+    //            {
+    //                return _instance ?? (_instance = new EventHandlerBsddSearch());
+    //            }
+    //        }
+    //    }
+    //}
 
     [Transaction(TransactionMode.Manual)]
     public class OpenBsddSearchUiCommand : IExternalCommand
