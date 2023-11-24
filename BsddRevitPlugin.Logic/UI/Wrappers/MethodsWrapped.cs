@@ -171,30 +171,30 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
     }
 
 
-    public class EventHandlerBsddSearch : RevitEventWrapper<string> // IExternalEventHandler
+    public class EventHandlerBsddSearch : RevitEventWrapper<string> 
     {
         Logger logger = LogManager.GetCurrentClassLogger();
 
-        private static EventHandlerBsddSearch _instance;
-        private static readonly object InstanceLock = new object();
+
+        // ModelessForm instance
+        private Window wnd;
 
         public override void Execute(UIApplication uiapp, string args)
         {
 
             //string addinDirectory = Path.GetDirectoryName(addinLocation);
-            bsddSearch = new BsddSearch();
+            BsddSearch _bsddSearchWindow = new BsddSearch();
 
             HwndSource hwndSource = HwndSource.FromHwnd(uiapp.MainWindowHandle);
-            Window wnd = hwndSource.RootVisual as Window;
+            wnd = hwndSource.RootVisual as Window;
             if (wnd != null)
             {
-                bsddSearch.Owner = wnd;
+                _bsddSearchWindow.Owner = wnd;
                 //bsddSearch.ShowInTaskbar = false;
-                bsddSearch.Show();
+                _bsddSearchWindow.Show();
                 //bsddSearch.UpdateSelection(jsonData);
 
             }
-
             var uidoc = uiapp.ActiveUIDocument;
             var doc = uidoc.Document;
             var name = doc.Title;
@@ -202,11 +202,6 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
             //Instance.ShowMainWindow(uiapp);
         }
-        //public string GetName()
-        //{
-        //    return "";
-        //}
-
     }
 
 

@@ -19,7 +19,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
     {
 
         // Declaration of events and external events
-        BSDDconnect.EventHandlerBsddSearch EventHandlerBsddSearch;
+        EventHandlerBsddSearch EventHandlerBsddSearch;
         ExternalEvent ExEventBsddSearch;
 
         public BsddBridge()
