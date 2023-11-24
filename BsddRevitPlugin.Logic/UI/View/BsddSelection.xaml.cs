@@ -4,13 +4,14 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.Model;
-using BsddRevitPlugin.Logic.UI.ViewModel;
 using ComboBox = System.Windows.Controls.ComboBox;
 using System.ComponentModel;
 using System.Windows.Interop;
 using BSDDconnect = BsddRevitPlugin.Logic.UI.Wrappers;
 using CefSharp;
 using CefSharp.Wpf;
+using BsddRevitPlugin.Logic.UI.Wrappers;
+using System.Reflection;
 
 /// <summary>
 /// Event handler for the selection method combo box. Clears the element manager and raises the appropriate external event based on the selected item in the combo box.
@@ -20,14 +21,14 @@ using CefSharp.Wpf;
 namespace BsddRevitPlugin.Logic.UI.View
 {
     // This class represents the main panel of the bSDD Revit plugin
-    public partial class bSDDPanel : Page, IDockablePaneProvider
+    public partial class BsddSelection : Page, IDockablePaneProvider
     {
         // Declaration of events and external events
         BSDDconnect.EventMakeSelection SelectEHMS;
         BSDDconnect.EventSelectAll SelectEHSA;
         BSDDconnect.EventSelectView SelectEHSV;
         BSDDconnect.EventTest testEvent;
-        BSDDconnect.EventTest2 testEvent2;
+        BSDDconnect.EventHandlerBsddSearch testEvent2;
         ExternalEvent SelectEEMS, SelectEESA, SelectEESV, testExEvent, testExEvent2;
 
 
@@ -40,29 +41,28 @@ namespace BsddRevitPlugin.Logic.UI.View
         private int m_bottom = 100;
 
         // Constructor
-        public bSDDPanel(string addinLocation)
+        public BsddSelection()
         {
             InitializeComponent();
 
+            string addinLocation = Assembly.GetExecutingAssembly().Location;
+            string addinDirectory = System.IO.Path.GetDirectoryName(addinLocation);
+
             // Set the address of the CefSharp browser component to the index.html file of the plugin
-            Browser.Address = addinLocation + "/html/bsdd_selection/index.html";
+            Browser.Address = addinDirectory + "/html/bsdd_selection/index.html";
             Browser.JavascriptObjectRepository.Register("bsddBridge", new BsddBridge.BsddBridge(), true);
             Browser.IsBrowserInitializedChanged += OnIsBrowserInitializedChanged;
 
-
-            // Set the data context of the panel to an instance of ElementViewModel
-            ElementViewModel elementViewModel = new ElementViewModel();
-            this.DataContext = elementViewModel;
-            
             // Sort the list of elements by category, family, and type
             PropertyGroupDescription groupDescription = new PropertyGroupDescription("Category");
-            
+
             // Initialize the events and external events
             SelectEHMS = new BSDDconnect.EventMakeSelection();
+            SelectEHMS.SetBrowser(Browser);
             SelectEHSA = new BSDDconnect.EventSelectAll();
             SelectEHSV = new BSDDconnect.EventSelectView();
             testEvent = new BSDDconnect.EventTest();
-            testEvent2 = new BSDDconnect.EventTest2();
+            testEvent2 = new BSDDconnect.EventHandlerBsddSearch();
             SelectEEMS = ExternalEvent.Create(SelectEHMS);
             SelectEESA = ExternalEvent.Create(SelectEHSA);
             SelectEESV = ExternalEvent.Create(SelectEHSV);
@@ -112,6 +112,36 @@ namespace BsddRevitPlugin.Logic.UI.View
             m_bottom = bottom;
             m_targetGuid = targetGuid;
         }
+
+        //public async void ShowAndSendData(object data)
+        //{
+        //     Show the form
+        //    this.Show();
+
+        //     Serialize the data to a JSON string
+        //    var jsonString = JsonConvert.SerializeObject(data);
+
+        //     Create a JavaScript function call
+        //    var jsFunctionCall = $"myJavaScriptFunction({jsonString});";
+
+        //     Wait for the browser to be initialized
+        //    if (!Browser.IsBrowserInitialized)
+        //    {
+        //        var tcs = new TaskCompletionSource<bool>();
+        //        EventHandler handler = null;
+        //        handler = (sender, args) =>
+        //        {
+        //            Browser.IsBrowserInitializedChanged -= handler;
+        //            tcs.SetResult(true);
+        //        };
+        //        Browser.IsBrowserInitializedChanged += handler;
+        //        await tcs.Task;
+        //    }
+
+        //     Execute the JavaScript function
+        //    await Browser.ExecuteScriptAsync(jsFunctionCall);
+
+        //}
 
         // Event handlers
         private void PaneInfoButton_Click(object sender, RoutedEventArgs e)
@@ -170,6 +200,7 @@ namespace BsddRevitPlugin.Logic.UI.View
             if (Browser.IsBrowserInitialized)
             {
                 Browser.ShowDevTools();
+                Browser.ExecuteScriptAsync("CefSharp.BindObjectAsync('bsddBridge');");
             }
         }
     }

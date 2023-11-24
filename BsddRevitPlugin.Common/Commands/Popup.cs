@@ -16,7 +16,7 @@ namespace BsddRevitPlugin.Common.Commands
     {
 
         ////// ModelessForm instance
-        ////private bSDDSelector _mainWindow;
+        ////private BsddSearch _mainWindow;
 
         ////// Separate thread to run Ui on
         ////private Thread _uiThread;
@@ -34,7 +34,7 @@ namespace BsddRevitPlugin.Common.Commands
             ////            new DispatcherSynchronizationContext(
             ////                Dispatcher.CurrentDispatcher));
             ////        // The dialog becomes the owner responsible for disposing the objects given to it.
-            ////        _mainWindow = new bSDDSelector();
+            ////        _mainWindow = new BsddSearch();
             ////        _mainWindow.Closed += (s, e) => Dispatcher.CurrentDispatcher.InvokeShutdown();
             ////        _mainWindow.Show();
             ////        Dispatcher.Run();
