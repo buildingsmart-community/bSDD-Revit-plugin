@@ -182,7 +182,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         {
 
             //string addinDirectory = Path.GetDirectoryName(addinLocation);
-            var bsddSearch = new BsddSearch();
+            bsddSearch = new BsddSearch();
 
             HwndSource hwndSource = HwndSource.FromHwnd(uiapp.MainWindowHandle);
             Window wnd = hwndSource.RootVisual as Window;
