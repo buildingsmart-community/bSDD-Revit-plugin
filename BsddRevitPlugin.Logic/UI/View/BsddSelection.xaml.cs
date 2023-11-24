@@ -26,8 +26,7 @@ namespace BsddRevitPlugin.Logic.UI.View
         EventMakeSelection SelectEHMS;
         EventSelectAll SelectEHSA;
         EventSelectView SelectEHSV;
-        EventHandlerBsddSearch testEvent2;
-        ExternalEvent SelectEEMS, SelectEESA, SelectEESV, testExEvent, testExEvent2;
+        ExternalEvent SelectEEMS, SelectEESA, SelectEESV;
 
 
         // Data fields
