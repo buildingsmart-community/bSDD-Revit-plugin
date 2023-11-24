@@ -10,7 +10,7 @@ using System.Xml.Linq;
 
 namespace BsddRevitPlugin.Logic.UI.DockablePanel
 {
-    class Select
+    public class Select
     {
         public List<Element> AllElementsView(UIApplication uiapp)
         {
