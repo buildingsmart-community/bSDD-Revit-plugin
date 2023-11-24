@@ -61,13 +61,13 @@ namespace BsddRevitPlugin.Logic.Model
                 Uri classificationUri = _getBsddClassificationUri(domainUri, code);
 
                 string loc_domain = GetParameterValue(elem, "bsdd_domain");
-                string loc_domainentry = GetParameterValue(elem, "bsdd_domainentry");
+                string loc_domainentry = GetParameterValue(elem, "bsdd_domain_entry");
 
                 Uri location_domain = new Uri("https://www.volkerwessels.nl");
                 Uri location_domain_entry = new Uri("https://www.volkerwessels.nl");
 
-                if (loc_domain != null) location_domain = new Uri(GetParameterValue(elem, loc_domain));
-                if (loc_domainentry != null) location_domain_entry = new Uri(GetParameterValue(elem, loc_domainentry));
+                if (loc_domain != null) location_domain = new Uri(loc_domain);
+                if (loc_domainentry != null) location_domain_entry = new Uri(loc_domainentry);
                 
 
 
