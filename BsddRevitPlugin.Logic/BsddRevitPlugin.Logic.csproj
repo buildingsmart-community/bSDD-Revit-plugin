@@ -100,7 +100,6 @@
     <Compile Include="Commands\RelayCommand.cs" />
     <Compile Include="IfcJson\IfcJson.cs" />
     <Compile Include="IfcJson\IfcJsonConverter.cs" />
-    <Compile Include="Model\Elements.cs" />
     <Compile Include="Model\ElementsManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\IfcDataExample.cs" />
@@ -160,6 +159,10 @@
     <ProjectReference Include="..\lib\assr\lib-asrr-core\ASRR.Core.csproj">
       <Project>{12ea4456-8cd5-43ef-80c7-d70338c8b018}</Project>
       <Name>ASRR.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\lib\assr\lib-asrr-revit-core\ASRR.Revit.Core.csproj">
+      <Project>{60ac09bd-db0e-40a9-b8a7-b0d40e7042e6}</Project>
+      <Name>ASRR.Revit.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

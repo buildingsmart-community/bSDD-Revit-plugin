@@ -32,13 +32,9 @@ namespace BsddRevitPlugin.Logic.UI.View
         public static UIApplication UiApp;
         public static UIDocument UiDoc;
 
-        // Declaration of events and external events
-        EventTest testEvent;
-        ExternalEvent SelectEEMS, SelectEESA, SelectEESV, testExEvent;
 
         public BsddSearch()
         {
-
 
             InitializeComponent();
 
@@ -51,9 +47,6 @@ namespace BsddRevitPlugin.Logic.UI.View
             Browser.JavascriptObjectRepository.Register("bsddBridge", new BsddBridge.BsddBridge(), true);
             Browser.IsBrowserInitializedChanged += OnIsBrowserInitializedChanged;
 
-            // Initialize the events and external events
-            testEvent = new BSDDconnect.EventTest();
-            testExEvent = ExternalEvent.Create(testEvent);
         }
 
         private void Window_Closed(object sender, EventArgs e)
@@ -89,12 +82,6 @@ namespace BsddRevitPlugin.Logic.UI.View
         //    // Execute the JavaScript function
         //    Browser.ExecuteScriptAsync(jsFunctionCall);
         //}
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            testExEvent.Raise();
-            //EventHandlerTest.Raise("");
-            MessageBox.Show("Button was clicked.");
-        }
 
         public void UpdateSelection(MainData ifcData)
         {
