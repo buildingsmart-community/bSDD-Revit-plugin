@@ -171,6 +171,30 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
     }
 
+    public class UpdateElementtypeWithIfcData : RevitEventWrapper<string>
+    {
+        Logger logger = LogManager.GetCurrentClassLogger();
+
+        IfcData ifcData;
+
+        public override void Execute(UIApplication uiapp, string args)
+        {
+            var uidoc = uiapp.ActiveUIDocument;
+            var doc = uidoc.Document;
+
+            var elemType = ifcData.FamilyNameAndTypeName;
+
+            // alle code van Casper
+            
+        }
+        public void SetIfcData(IfcData ifcDataObject)
+        {
+            ifcData = ifcDataObject;
+        }
+
+    }
+
+
 
     public class EventHandlerBsddSearch : RevitEventWrapper<string>
     {
@@ -210,12 +234,13 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         }
         public void Close()
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                // Close or hide the window logic
-                this.Close(); // or this.Hide();
-            });
-
+            //System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            //{
+            //    // Close or hide the window logic
+            //    this.Close(); // or this.Hide();
+            //});
+            wnd.Close();
+            GlobalBsddSearch.bsddSearch.Close();
         }
 
     }
