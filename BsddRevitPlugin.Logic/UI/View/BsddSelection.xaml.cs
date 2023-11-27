@@ -7,7 +7,6 @@ using BsddRevitPlugin.Logic.Model;
 using ComboBox = System.Windows.Controls.ComboBox;
 using System.ComponentModel;
 using System.Windows.Interop;
-using BSDDconnect = BsddRevitPlugin.Logic.UI.Wrappers;
 using CefSharp;
 using CefSharp.Wpf;
 using BsddRevitPlugin.Logic.UI.Wrappers;
@@ -24,12 +23,10 @@ namespace BsddRevitPlugin.Logic.UI.View
     public partial class BsddSelection : Page, IDockablePaneProvider
     {
         // Declaration of events and external events
-        BSDDconnect.EventMakeSelection SelectEHMS;
-        BSDDconnect.EventSelectAll SelectEHSA;
-        BSDDconnect.EventSelectView SelectEHSV;
-        BSDDconnect.EventTest testEvent;
-        BSDDconnect.EventHandlerBsddSearch testEvent2;
-        ExternalEvent SelectEEMS, SelectEESA, SelectEESV, testExEvent, testExEvent2;
+        EventMakeSelection SelectEHMS;
+        EventSelectAll SelectEHSA;
+        EventSelectView SelectEHSV;
+        ExternalEvent SelectEEMS, SelectEESA, SelectEESV;
 
 
         // Data fields
@@ -56,18 +53,20 @@ namespace BsddRevitPlugin.Logic.UI.View
             // Sort the list of elements by category, family, and type
             PropertyGroupDescription groupDescription = new PropertyGroupDescription("Category");
 
-            // Initialize the events and external events
-            SelectEHMS = new BSDDconnect.EventMakeSelection();
+            // Initialize the events
+            SelectEHMS = new EventMakeSelection();
+            SelectEHSA = new EventSelectAll();
+            SelectEHSV = new EventSelectView();
+
+            // Give current browser to event
             SelectEHMS.SetBrowser(Browser);
-            SelectEHSA = new BSDDconnect.EventSelectAll();
-            SelectEHSV = new BSDDconnect.EventSelectView();
-            testEvent = new BSDDconnect.EventTest();
-            testEvent2 = new BSDDconnect.EventHandlerBsddSearch();
+            SelectEHSA.SetBrowser(Browser);
+            SelectEHSV.SetBrowser(Browser);
+
+            // Initialize external events
             SelectEEMS = ExternalEvent.Create(SelectEHMS);
             SelectEESA = ExternalEvent.Create(SelectEHSA);
             SelectEESV = ExternalEvent.Create(SelectEHSV);
-            testExEvent = ExternalEvent.Create(testEvent);
-            testExEvent2 = ExternalEvent.Create(testEvent2);
 
             // Add the selection methods to the selection method combo box
             SM.Items.Add(new ComboBoxItem() { Content = "Selection method:", IsSelected = true, IsEnabled = false });
@@ -173,7 +172,7 @@ namespace BsddRevitPlugin.Logic.UI.View
         private void SM_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             // Clear the element manager
-            ElemManager.Clear();
+            //ElemManager.Clear();
 
             // Raise the appropriate external event based on the selected item in the combo box
             if (((ComboBoxItem)(((ComboBox)sender).SelectedItem)).Content.ToString() == "Make selection")
