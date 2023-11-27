@@ -52,7 +52,7 @@ namespace BsddRevitPlugin.Logic.IfcJson
         public string TypeName { get; set; }
 
         [JsonProperty("familyNameAndTypeName")]
-        public string familyNameAndTypeName { get; set; }
+        public string FamilyNameAndTypeName { get; set; }
 
         [JsonProperty("typeId")]
         public string TypeId { get; set; }

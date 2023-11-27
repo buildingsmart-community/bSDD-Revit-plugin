@@ -299,7 +299,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
                     Type = GetParamValueByName("Export Type to IFC As", item),
                     Name = GetFamilyName(item, GetParamValueByName("IfcName", item)),
                     TypeName = GetFamilyTypeName(item, GetParamValueByName("IfcType", item)),
-                    familyNameAndTypeName = GetFamilyName(item, GetParamValueByName("IfcName", item)) + " - " + GetFamilyTypeName(item, GetParamValueByName("IfcType", item)),
+                    FamilyNameAndTypeName = GetFamilyName(item, GetParamValueByName("IfcName", item)) + " - " + GetFamilyTypeName(item, GetParamValueByName("IfcType", item)),
                     TypeId = GetTypeId(item),
                     Description = GetParamValueByName("IfcDescription", item),
                     PredefinedType = GetParamValueByName("Type IFC Predefined Type", item),
