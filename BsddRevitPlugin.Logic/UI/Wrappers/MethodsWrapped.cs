@@ -227,7 +227,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
     {
         Logger logger = LogManager.GetCurrentClassLogger();
 
-        private static EventHandlerBsddSearch _instance;
+        private static EventHandlerBsddSearch2 _instance;
         private static readonly object InstanceLock = new object();
 
         // ModelessForm instance
@@ -294,13 +294,13 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             _uiThread.Start();
         }
 
-        public static EventHandlerBsddSearch Instance
+        public static EventHandlerBsddSearch2 Instance
         {
             get
             {
                 lock (InstanceLock)
                 {
-                    return _instance ?? (_instance = new EventHandlerBsddSearch());
+                    return _instance ?? (_instance = new EventHandlerBsddSearch2());
                 }
             }
         }
