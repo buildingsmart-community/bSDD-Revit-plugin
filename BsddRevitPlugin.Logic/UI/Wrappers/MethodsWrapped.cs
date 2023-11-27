@@ -219,90 +219,97 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         }
 
     }
-    //public class EventHandlerBsddSearch : RevitEventWrapper<string>
-    //{
-    //    Logger logger = LogManager.GetCurrentClassLogger();
 
-    //    private static EventHandlerBsddSearch _instance;
-    //    private static readonly object InstanceLock = new object();
+    /// <summary>
+    /// Tried to create an instance. This doesn't work yet
+    /// </summary>
+    public class EventHandlerBsddSearch2 : RevitEventWrapper<string>
+    {
+        Logger logger = LogManager.GetCurrentClassLogger();
 
-    //    // ModelessForm instance
-    //    private BsddSearch _bsddSearchWindow;
+        private static EventHandlerBsddSearch _instance;
+        private static readonly object InstanceLock = new object();
 
-    //    // Separate thread to run Ui on
-    //    private Thread _uiThread;
+        // ModelessForm instance
+        private BsddSearch _bsddSearchWindow;
 
-    //    // ModelessForm instance
-    //    private Window wnd;
+        // Separate thread to run Ui on
+        private Thread _uiThread;
 
-    //    public void Start(string args)
-    //    {
-    //        Raise(args);
+        // ModelessForm instance
+        private Window wnd;
 
-    //    }
-    //    public override void Execute(UIApplication uiapp, string args)
-    //    {
+        public void Start(string args)
+        {
+            Raise(args);
 
-    //        //string addinDirectory = Path.GetDirectoryName(addinLocation);
-    //        //BsddSearch BsddSearchWindow = new BsddSearch();
+        }
+        public override void Execute(UIApplication uiapp, string args)
+        {
 
-    //        //HwndSource hwndSource = HwndSource.FromHwnd(uiapp.MainWindowHandle);
-    //        //wnd = hwndSource.RootVisual as Window;
-    //        //if (wnd != null)
-    //        //{
-    //        //    BsddSearchWindow.Owner = wnd;
-    //        //    //bsddSearch.ShowInTaskbar = false;
-    //        //    BsddSearchWindow.Show();
-    //        //    //bsddSearch.UpdateSelection(jsonData);
+            //string addinDirectory = Path.GetDirectoryName(addinLocation);
+            //BsddSearch BsddSearchWindow = new BsddSearch();
 
-    //        //}
-    //        var uidoc = uiapp.ActiveUIDocument;
-    //        var doc = uidoc.Document;
-    //        var name = doc.Title;
-    //        var path = doc.PathName;
+            //HwndSource hwndSource = HwndSource.FromHwnd(uiapp.MainWindowHandle);
+            //wnd = hwndSource.RootVisual as Window;
+            //if (wnd != null)
+            //{
+            //    BsddSearchWindow.Owner = wnd;
+            //    //bsddSearch.ShowInTaskbar = false;
+            //    BsddSearchWindow.Show();
+            //    //bsddSearch.UpdateSelection(jsonData);
 
-    //        //BsddBridge.BsddBridge.SetWindow(BsddSearchWindow);
-    //        //BsddBridge.BsddBridge.SetParentWindow(wnd);
+            //}
+            var uidoc = uiapp.ActiveUIDocument;
+            var doc = uidoc.Document;
+            var name = doc.Title;
+            var path = doc.PathName;
 
-    //        Instance.ShowBsddSearchWindow(uiapp);
-    //    }
+            //BsddBridge.BsddBridge.SetWindow(BsddSearchWindow);
+            //BsddBridge.BsddBridge.SetParentWindow(wnd);
 
-    //    public void ShowBsddSearchWindow(UIApplication uiapp)
-    //    {
-    //        // If we do not have a thread started or has been terminated start a new one
-    //        if (!(_uiThread is null) && _uiThread.IsAlive) return;
+            Instance.ShowBsddSearchWindow(uiapp);
+        }
+
+        public void ShowBsddSearchWindow(UIApplication uiapp)
+        {
+            // If we do not have a thread started or has been terminated start a new one
+            if (!(_uiThread is null) && _uiThread.IsAlive) return;
 
 
-    //        _uiThread = new Thread(() =>
-    //        {
-    //            SynchronizationContext.SetSynchronizationContext(
-    //                new DispatcherSynchronizationContext(
-    //                    Dispatcher.CurrentDispatcher));
-    //            // The dialog becomes the owner responsible for disposing the objects given to it.
-    //            _bsddSearchWindow = new BsddSearch();
-    //            _bsddSearchWindow.Closed += (s, e) => Dispatcher.CurrentDispatcher.InvokeShutdown();
-    //            _bsddSearchWindow.Show();
-    //            Dispatcher.Run();
-    //        });
+            _uiThread = new Thread(() =>
+            {
+                SynchronizationContext.SetSynchronizationContext(
+                    new DispatcherSynchronizationContext(
+                        Dispatcher.CurrentDispatcher));
+                // The dialog becomes the owner responsible for disposing the objects given to it.
+                _bsddSearchWindow = new BsddSearch();
+                _bsddSearchWindow.Closed += (s, e) => Dispatcher.CurrentDispatcher.InvokeShutdown();
+                _bsddSearchWindow.Show();
+                Dispatcher.Run();
+            });
 
-    //        _uiThread.SetApartmentState(ApartmentState.STA);
-    //        _uiThread.IsBackground = true;
-    //        _uiThread.Start();
-    //    }
+            _uiThread.SetApartmentState(ApartmentState.STA);
+            _uiThread.IsBackground = true;
+            _uiThread.Start();
+        }
 
-    //    public static EventHandlerBsddSearch Instance
-    //    {
-    //        get
-    //        {
-    //            lock (InstanceLock)
-    //            {
-    //                return _instance ?? (_instance = new EventHandlerBsddSearch());
-    //            }
-    //        }
-    //    }
-    //}
+        public static EventHandlerBsddSearch Instance
+        {
+            get
+            {
+                lock (InstanceLock)
+                {
+                    return _instance ?? (_instance = new EventHandlerBsddSearch());
+                }
+            }
+        }
+    }
 
     [Transaction(TransactionMode.Manual)]
+    /// <summary>
+    /// This doesn't work yet
+    /// </summary>
     public class OpenBsddSearchUiCommand : IExternalCommand
     {
         private static OpenBsddSearchUiCommand _instance;
