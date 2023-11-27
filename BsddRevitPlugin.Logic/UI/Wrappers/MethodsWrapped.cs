@@ -38,6 +38,7 @@ using System.Threading;
 using System.Windows.Threading;
 using static BsddRevitPlugin.Logic.Model.ElementsManager;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
+using static NLog.LayoutRenderers.Wrappers.ReplaceLayoutRendererWrapper;
 
 namespace BsddRevitPlugin.Logic.UI.Wrappers
 {
@@ -167,6 +168,319 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             {
                 browser.ExecuteScriptAsync(jsFunctionCall);
             }
+        }
+
+    }
+
+    public class ListAdjust
+    {
+        public List<Element> ListFilter(List<Element> elemList)
+        {
+            List<Element> elemListFiltered = new List<Element>();
+
+            foreach (Element item in elemList)
+            {
+                try
+                {
+                    if (item != null && item.Category != null)
+                    {
+                        if (
+                        item.Category.Name != "Levels" &&
+                        item.Category.Name != "Location Data" &&
+                        item.Category.Name != "Model Groups" &&
+                        item.Category.Name != "RVT Links" &&
+                        item.Category.Name != "Family Symbol" &&
+                        item.Category.Name.Substring(System.Math.Max(0, item.Category.Name.Length - 4)) != ".dwg" &&
+                        item.Category.Name.Substring(System.Math.Max(0, item.Category.Name.Length - 4)) != ".pdf"
+                        )
+                        {
+                            elemListFiltered.Add(item);
+                        }
+                    }
+                }
+                catch { }
+            }
+            return elemListFiltered;
+        }
+
+        public MainData elemToJSON(List<Element> elemList)
+        {
+            #region handmatig json vullen
+            ////of dit
+            //string JSONstring = "[\r\n";
+            //int totalCount = elemList.Count();
+            //int count = 0;
+
+            //foreach (Element item in elemList)
+            //{
+            //    JSONstring += "    {\r\n";
+            //    JSONstring += "        \"type\": \"" + GetParamValueByName("Export Type to IFC As", item) + "\",\r\n";
+            //    JSONstring += "        \"name\": \"" + GetParamValueByName("IfcName", item) + "\",\r\n";
+            //    JSONstring += "        \"description\": \"" + GetParamValueByName("IfcDescription", item) + "\",\r\n";
+            //    JSONstring += "        \"predefinedType\": \"" + GetParamValueByName("Type IFC Predefined Type", item) + "\",\r\n";
+            //    JSONstring += "        \"HasAssociations\":\r\n";
+            //    JSONstring += "        [\r\n";
+            //    JSONstring += "            {\r\n";
+            //    JSONstring += "                \"type\": \"IfcClassificationReference\",\r\n";
+            //    JSONstring += "                \"name\": \"" + GetParamValueByName("Assembly Description", item) + "\",\r\n";
+            //    JSONstring += "                \"location\": \"" + GetLocationParam(item) + "\",\r\n";
+            //    JSONstring += "                \"identification\": \"" + GetParamValueByName("Assembly Code", item) + "\",\r\n";
+            //    JSONstring += "                \"referencedSource\":\r\n";
+            //    JSONstring += "                {\r\n";
+            //    JSONstring += "                    \"type\": \"IfcClassification\",\r\n";
+            //    JSONstring += "                    \"name\": \"DigiBase Demo NL-SfB tabel 1\",\r\n";
+            //    JSONstring += "                    \"location\": \"" + GetLocationParam(item) + "\"\r\n";
+            //    JSONstring += "                }\r\n";
+            //    JSONstring += "            }";
+
+            //    int totalCount1 = item.GetMaterialIds(false).Count();
+            //    if (totalCount1 > 0)
+            //    {
+            //        JSONstring += ",\r\n";
+            //    }
+            //    else
+            //    {
+            //        JSONstring += "\r\n";
+            //    };
+            //    int count1 = 0;
+            //    foreach (ElementId m in item.GetMaterialIds(false))
+            //    {
+            //        JSONstring += "            {\r\n";
+            //        JSONstring += "                \"type\": \"IfcMaterial\",\r\n";
+            //        JSONstring += "                \"name\": \"" + GetParamValueByName("name", item) + "\",\r\n";
+            //        JSONstring += "                \"description\": \"" + GetParamValueByName("description", item) + "\"\r\n";
+            //        JSONstring += "            }";
+            //        if ((count1 + 1) == totalCount1)
+            //        {
+            //        }
+            //        else
+            //        {
+            //            JSONstring += ",";
+            //        }
+            //        count1++;
+            //        JSONstring += "\r\n";
+            //    }
+            //    JSONstring += "        ]\r\n";
+            //    JSONstring += "    }";
+            //    if ((count + 1) == totalCount)
+            //    {
+
+            //    }
+            //    else
+            //    {
+            //        JSONstring += ",";
+            //    };
+            //    count++;
+            //    JSONstring += "\r\n";
+            //}
+            //JSONstring += "]";
+            //string folder = @"C:\Temp\";
+            //string fileName = "List`1.json";
+            //string fullPath = folder + fileName;
+            //System.IO.File.WriteAllText(fullPath, JSONstring);
+            #endregion
+
+            const string domain = "https://search-test.bsdd.buildingsmart.org/uri/digibase/bim-basis-objecten";
+            List<string> filterDomains = new List<string>(){
+                "https://search-test.bsdd.buildingsmart.org/uri/digibase/bim-basis-objecten",
+                "https://identifier.buildingsmart.org/uri/digibase/nlsfb"
+            };
+
+            MainData mainData = new MainData();
+            List<IfcData> ifcDataLst = new List<IfcData>();
+
+            foreach (Element item in elemList)
+            {
+                string code = GetParamValueByName("Assembly Code", item);
+                Uri domainUri = GetBsddDomainUri(domain);
+                Uri classificationUri = GetBsddClassificationUri(domainUri, code);
+                IfcData ifcData = new IfcData
+                {
+                    Type = GetParamValueByName("Export Type to IFC As", item),
+                    Name = GetFamilyName(item, GetParamValueByName("IfcName", item)),
+                    TypeName = GetFamilyTypeName(item, GetParamValueByName("IfcType", item)),
+                    familyNameAndTypeName = GetFamilyName(item, GetParamValueByName("IfcName", item)) + " - " + GetFamilyTypeName(item, GetParamValueByName("IfcType", item)),
+                    TypeId = GetTypeId(item),
+                    Description = GetParamValueByName("IfcDescription", item),
+                    PredefinedType = GetParamValueByName("Type IFC Predefined Type", item),
+                    HasAssociations = new List<Association>
+                    {
+                        new IfcClassificationReference
+                        {
+                            Type = "IfcClassificationReference",
+                            Name = GetParamValueByName("Assembly Description", item),
+                            Location = classificationUri, // GetLocationParam(domain, item),
+                            Identification = code,
+                            ReferencedSource = new IfcClassification
+                            {
+                                Type = "IfcClassification",
+                                Name = "DigiBase Demo NL-SfB tabel 1",
+                                Location = domainUri
+                            }
+                        },
+                        //new IfcMaterial
+                        //{
+                        //    //MaterialType = item.GetMaterialIds(false).First().ToString(),
+                        //    MaterialName = "MaterialName",//GetMaterialName(item, Command.MyApp.DbDoc),
+                        //    Description = "Description"//GetParamValueByName("Assembly Code", item)
+                        //}
+                    }
+                };
+
+                ifcDataLst.Add(ifcData);
+
+
+            }
+            //JObject json = JObject.Parse(JsonConvert.SerializeObject(ifcDataLst));
+
+            mainData.Name = "testIFC";
+            mainData.setDomain(domain);
+            mainData.setFilterDomains(filterDomains);
+            mainData.IfcData = ifcDataLst;
+            var provider = new JsonBasedPersistenceProvider("C://temp");
+            provider.Persist(mainData);
+            return mainData;
+        }
+
+        public static string GetFamilyName(Element e, string IfcName)
+        {
+            if (IfcName != null && IfcName != "")
+            {
+                return IfcName;
+            }
+            else
+            {
+                try
+                {
+                    ElementId eId = e.Id;
+                    if (eId == null) return "";
+                    var elementType = e.Document.GetElement(eId) as ElementType;
+                    return elementType.FamilyName;
+                }
+                catch
+                {
+                    return "";
+                }
+            }         
+        }
+
+        public static string GetTypeId(Element e)
+        {
+            try
+            {
+                ElementId eId = e.Id;
+                if (eId == null) return "";
+                return eId.ToString();
+            }
+            catch
+            {
+                return "";
+            }
+        }
+
+    public static string GetFamilyTypeName(Element e, string IfcType)
+        {
+            if (IfcType != null && IfcType != "")
+            {
+                return IfcType;
+            }
+            else
+            {
+                try
+                {
+                    return e.Name;
+                }
+                catch 
+                {
+                    return "";
+                }
+            }
+        }
+
+        public string GetParamValueByName(String par, Element e)
+        {
+            Parameter p = e.LookupParameter(par);
+            if (p != null)
+            {
+                switch (p.StorageType)
+                {
+                    case StorageType.Double:
+                        if (p.AsValueString() == "" || p.AsValueString() == null)
+                        {
+                            return null;
+                        }
+                        else
+                        {
+                            return p.AsValueString();
+                        }
+                    case StorageType.ElementId:
+                        if (p.AsElementId().IntegerValue.ToString() == "" || p.AsElementId().IntegerValue.ToString() == null)
+                        {
+                            return null;
+                        }
+                        else
+                        {
+                            return p.AsElementId().IntegerValue.ToString();
+                        }
+                    case StorageType.Integer:
+                        if (p.AsValueString() == "" || p.AsValueString() == null)
+                        {
+                            return null;
+                        }
+                        else
+                        {
+                            return p.AsValueString();
+                        }
+                    case StorageType.None:
+                        if (p.AsValueString() == "" || p.AsValueString() == null)
+                        {
+                            return null;
+                        }
+                        else
+                        {
+                            return p.AsValueString();
+                        }
+                    case StorageType.String:
+                        if (p.AsValueString() == "" || p.AsValueString() == null)
+                        {
+                            return null;
+                        }
+                        else
+                        {
+                            return p.AsString();
+                        }
+                    default: return "n/a";
+                }
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public Uri GetBsddDomainUri(string domain)
+        {
+            return new Uri(domain);
+        }
+
+        public Uri GetBsddClassificationUri(Uri domain, string code)
+        {
+            return new Uri(domain, code);
+        }
+
+        public Uri GetLocationParam(string domain, Element element)
+        {
+            Uri paramValue = new Uri(domain);
+
+            foreach (Parameter parameter in element.Parameters)
+            {
+                if (parameter.Definition.Name == "location")
+                {
+                    paramValue = new Uri(parameter.ToString(), UriKind.Absolute);
+                }
+            }
+
+            return paramValue;
         }
 
     }
