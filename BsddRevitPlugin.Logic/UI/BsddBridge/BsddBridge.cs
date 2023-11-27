@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using System.IO;
 using System.Reflection;
 using System.Windows;
+using UIFramework;
 using BSDDconnect = BsddRevitPlugin.Logic.UI.Wrappers;
 
 namespace BsddRevitPlugin.Logic.UI.BsddBridge
@@ -15,22 +16,41 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
     /// <summary>
     /// Provides functionality to interact with the bSDD components.
     /// </summary>
-    public class BsddBridge
+    public static class BsddBridgeSave
+    {
+
+        public static EventHandlerBsddSearch _eventHandlerBsddSearchSave;
+    }
+        public class BsddBridge
     {
 
         // Declaration of events and external events
-        BSDDconnect.EventHandlerBsddSearch EventHandlerBsddSearch;
+        EventHandlerBsddSearch eventHandlerBsddSearch;
+        UpdateElementtypeWithIfcData updateElementtypeWithIfcData;
         ExternalEvent ExEventBsddSearch;
+        ExternalEvent ExEventUpdateElement;
+
+       
+        private static BsddSearch _bsddSearch;
+        private static Window _bsddSearchParent;
 
         public BsddBridge()
         {
             // Initialize the events and external events
             //EventHandlerBsddSearch = EventHandlerBsddSearchUI;
-            EventHandlerBsddSearch = new EventHandlerBsddSearch();
-            ExEventBsddSearch = ExternalEvent.Create(EventHandlerBsddSearch);
-
+            eventHandlerBsddSearch = new EventHandlerBsddSearch();
+            ExEventBsddSearch = ExternalEvent.Create(eventHandlerBsddSearch);
+            updateElementtypeWithIfcData = new UpdateElementtypeWithIfcData();
+            ExEventUpdateElement = ExternalEvent.Create(updateElementtypeWithIfcData);
         }
-
+        public static void SetWindow(BsddSearch bsddSearch)
+        {
+           // _bsddSearch = bsddSearch;
+        }
+        public static void SetParentWindow(Window bsddSearchParent)
+        {
+             _bsddSearchParent = bsddSearchParent;
+        }
         /// <summary>
         /// Saves the data returned from the bSDD API.
         /// </summary>
@@ -53,6 +73,18 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
 
             // TODO: Save the IfcData object to your desired location
 
+            //BsddBridgeSave._eventHandlerBsddSearchSave.Close();
+
+            updateElementtypeWithIfcData.SetIfcData(ifcData);
+            ExEventUpdateElement.Raise();
+
+            // TODO: Close the window
+
+            // GlobalBsddSearch.bsddSearch.Close();
+            //_bsddSearchParent.Close();
+
+
+
             // Return the serialized JSON data for the IfcData object
             return JsonConvert.SerializeObject(ifcData);
 
@@ -68,15 +100,20 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         /// <returns></returns>
         public string bsddSearch(string ifcJsonData)
         {
-      //      uicapp.ControlledApplication
-      //.ApplicationInitialized
-      //  += ControlledApplication_ApplicationInitialized;
+            //      uicapp.ControlledApplication
+            //.ApplicationInitialized
+            //  += ControlledApplication_ApplicationInitialized;
 
             //uicapp.ControlledApplication.ApplicationInitialized += ControlledApplication_ApplicationInitialized;
             //var command = new OpenBsddSearchUiCommand();
             //command.Execute();
 
-            ExEventBsddSearch.Raise();
+
+            BsddBridgeSave._eventHandlerBsddSearchSave = eventHandlerBsddSearch;
+            eventHandlerBsddSearch.Raise("openBridge");
+            //ExEventBsddSearch.Raise();
+
+
 
             // Create an instance of the IfcDataConverter class
             var converter = new IfcJsonConverter();
@@ -85,6 +122,8 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             var ifcData = JsonConvert.DeserializeObject<IfcData>(ifcJsonData, converter);
 
 
+
+            //EventHandlerBsddSearch.Raise(_bsddSearch);
             // Return the serialized JSON data for the IfcData object
             return JsonConvert.SerializeObject(ifcData);
 
@@ -111,4 +150,9 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
 
         }
     }
-}
+
+    public static class GlobalBsddSearch
+    {
+        public static BsddSearch bsddSearch { get; set; }
+    }
+    }
