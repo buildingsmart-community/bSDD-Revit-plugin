@@ -16,12 +16,19 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
     /// <summary>
     /// Provides functionality to interact with the bSDD components.
     /// </summary>
-    public class BsddBridge
+    public static class BsddBridgeSave
+    {
+
+        public static EventHandlerBsddSearch _eventHandlerBsddSearchSave;
+    }
+        public class BsddBridge
     {
 
         // Declaration of events and external events
-        EventHandlerBsddSearch EventHandlerBsddSearch;
+        EventHandlerBsddSearch eventHandlerBsddSearch;
+        UpdateElementtypeWithIfcData updateElementtypeWithIfcData;
         ExternalEvent ExEventBsddSearch;
+        ExternalEvent ExEventUpdateElement;
 
        
         private static BsddSearch _bsddSearch;
@@ -31,9 +38,10 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         {
             // Initialize the events and external events
             //EventHandlerBsddSearch = EventHandlerBsddSearchUI;
-            EventHandlerBsddSearch = new EventHandlerBsddSearch();
-            ExEventBsddSearch = ExternalEvent.Create(EventHandlerBsddSearch);
-            
+            eventHandlerBsddSearch = new EventHandlerBsddSearch();
+            ExEventBsddSearch = ExternalEvent.Create(eventHandlerBsddSearch);
+            updateElementtypeWithIfcData = new UpdateElementtypeWithIfcData();
+            ExEventUpdateElement = ExternalEvent.Create(updateElementtypeWithIfcData);
         }
         public static void SetWindow(BsddSearch bsddSearch)
         {
@@ -65,12 +73,16 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
 
             // TODO: Save the IfcData object to your desired location
 
+            //BsddBridgeSave._eventHandlerBsddSearchSave.Close();
+
+            updateElementtypeWithIfcData.SetIfcData(ifcData);
+            ExEventUpdateElement.Raise();
+
             // TODO: Close the window
 
-            GlobalBsddSearch.bsddSearch.Close();
-
+            // GlobalBsddSearch.bsddSearch.Close();
             //_bsddSearchParent.Close();
-            //_bsddSearch.Close();
+
 
 
             // Return the serialized JSON data for the IfcData object
@@ -95,10 +107,13 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             //uicapp.ControlledApplication.ApplicationInitialized += ControlledApplication_ApplicationInitialized;
             //var command = new OpenBsddSearchUiCommand();
             //command.Execute();
-           
 
 
-            ExEventBsddSearch.Raise();
+            BsddBridgeSave._eventHandlerBsddSearchSave = eventHandlerBsddSearch;
+            eventHandlerBsddSearch.Raise("openBridge");
+            //ExEventBsddSearch.Raise();
+
+
 
             // Create an instance of the IfcDataConverter class
             var converter = new IfcJsonConverter();
