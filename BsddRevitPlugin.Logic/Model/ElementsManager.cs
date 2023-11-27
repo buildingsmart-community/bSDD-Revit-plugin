@@ -3,6 +3,7 @@ using ASRR.Core.Persistence;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
+using CefSharp;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -76,8 +77,9 @@ namespace BsddRevitPlugin.Logic.Model
                     Type = GetTypeParameterValue(doc, elem, "Export Type to IFC As"),
                     //Name = GetTypeParameterValue(doc, elem, "IfcName"),
                     Name = GetFamilyName(doc, elem) + " - " + GetTypeName(doc, elem),
-                    FamilyNameAndTypeName = GetFamilyName(doc, elem) + " - " + GetTypeName(doc, elem),
-                    TypeId = elem.Id.ToString(),
+                    //FamilyNameAndTypeName = GetFamilyName(doc, elem) + " - " + GetTypeName(doc, elem),
+                    FamilyNameAndTypeName = GetFamilyName(doc, elem, GetTypeParameterValue(doc, elem, "IfcName")) + " - " + GetTypeName(doc, elem, GetTypeParameterValue(doc,  elem, "IfcType")),
+                    TypeId = GetTypeId(elem),
                     Description = GetParameterValue(elem, "Description"),
                     PredefinedType = GetTypeParameterValue(doc, elem, "Type IFC Predefined Type"),
                     HasAssociations = new List<Association>
@@ -143,32 +145,93 @@ namespace BsddRevitPlugin.Logic.Model
         }
         public static string GetFamilyName(Document doc, Element e)
         {
-            //ElementId eId = e.GetTypeId(); 
-            ElementId eId = e.Id; 
-            ElementType elementType = (ElementType)doc.GetElement(eId) as ElementType; 
-            
-            return elementType.FamilyName;
+
+            try
+            {
+                ElementId eId = e.Id;
+                ElementType elementType = (ElementType)doc.GetElement(eId) as ElementType;
+
+                return elementType.FamilyName;
+            }
+            catch
+            {
+                return "";
+            }
+        }
+        public static string GetFamilyName(Document doc, Element e, string IfcName)
+        {
+            if (IfcName != null && IfcName != "")
+            {
+                return IfcName;
+            }
+            else
+            {
+                try
+                {
+                    ElementId eId = e.Id;
+                    ElementType elementType = (ElementType)doc.GetElement(eId) as ElementType;
+
+                    return elementType.FamilyName;
+                }
+                catch
+                {
+                    return "";
+                }
+            }
+
+           
         }
         public static string GetTypeName(Document doc, Element e)
         {
-            //ElementId eId = e.GetTypeId();
-            ElementId eId = e.Id;
-            ElementType elementType = (ElementType)doc.GetElement(eId) as ElementType;
-           
-            return elementType.Name;
-        }
-        public static string GetFamilyName(Element e)
-        {
-            Logger logger = LogManager.GetCurrentClassLogger();
+            try
+            {
+                //ElementId eId = e.GetTypeId();
+                ElementId eId = e.Id;
+                ElementType elementType = (ElementType)doc.GetElement(eId) as ElementType;
 
-            var eId = e?.GetTypeId();
-            logger.Debug("0000");
-            if (eId == null) return "1";
-            logger.Debug("1111");
-            var elementType = e.Document.GetElement(eId) as ElementType;
-            logger.Debug("2222");
-            return elementType?.FamilyName ?? eId.ToString();
+                return elementType.Name;
+            }
+            catch
+            {
+                return "";
+            }
         }
+        public static string GetTypeName(Document doc, Element e, string IfcType)
+        {
+            if (IfcType != null && IfcType != "")
+            {
+                return IfcType;
+            }
+            else
+            {
+                try
+                {
+                    //ElementId eId = e.GetTypeId();
+                    ElementId eId = e.Id;
+                    ElementType elementType = (ElementType)doc.GetElement(eId) as ElementType;
+
+                    return elementType.Name;
+                }
+                catch
+                {
+                    return "";
+                }
+            }
+        }
+        public static string GetTypeId(Element e)
+        {
+            try
+            {
+                ElementId eId = e.Id;
+                if (eId == null) return "";
+                return eId.ToString();
+            }
+            catch
+            {
+                return "";
+            }
+        }
+       
 
         public static string GetMaterialName(Element e, Document DbDoc)
         {
