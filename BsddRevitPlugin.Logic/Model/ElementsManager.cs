@@ -8,6 +8,7 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using static ASRR.Revit.Core.Elements.Parameters.Dto.RevitParameter;
+using static ASRR.Revit.Core.Utilities.Collector;
 
 
 namespace BsddRevitPlugin.Logic.Model
@@ -42,6 +43,44 @@ namespace BsddRevitPlugin.Logic.Model
             }
             return elemListFiltered;
         }
+        public static void SetIfcDataToRevit(Document doc, IfcData ifcData)
+        {
+            string nlfsbCode = "";
+            foreach(var association in ifcData.HasAssociations)
+            {
+                switch (association)
+                {
+                    case IfcClassificationReference ifcClassificationReference:
+                        // do something with ifcClassificationReference
+                        if (ifcClassificationReference.ReferencedSource.Name == "NL-SfB 2005")
+                        {
+                            nlfsbCode = ifcClassificationReference.Identification;
+                        }
+                        break;
+                    case IfcMaterial ifcMaterial:
+                        // do something with ifcMaterial
+                        break;
+
+                }
+              
+            }
+
+            using (Transaction tx = new Transaction(doc))
+            {
+                tx.Start("Param");
+
+                int idInt = Convert.ToInt32(ifcData.Tag);
+                ElementId id = new ElementId(idInt);
+                Element elem = doc.GetElement(id);
+
+                Parameter p = elem.get_Parameter(BuiltInParameter.UNIFORMAT_CODE);
+                var paramset = p.Set(nlfsbCode);
+
+                //SetTypeParameterValue(doc, elem, "Assembly Code", nlfsbCode);
+
+                tx.Commit();
+            }
+        }
         public static MainData SelectionToJson(Document doc, List<Element> elemList)
         {
 
@@ -57,7 +96,7 @@ namespace BsddRevitPlugin.Logic.Model
             foreach (Element elem in elemList)
             {
 
-                string code = GetTypeParameterValue(doc, elem, "Assembly Code");
+                string code = elem.get_Parameter(BuiltInParameter.UNIFORMAT_CODE).AsString();
                 Uri domainUri = _getBsddDomainUri(domain);
                 Uri classificationUri = _getBsddClassificationUri(domainUri, code);
 
@@ -78,8 +117,8 @@ namespace BsddRevitPlugin.Logic.Model
                     //Name = GetTypeParameterValue(doc, elem, "IfcName"),
                     Name = GetFamilyName(doc, elem) + " - " + GetTypeName(doc, elem),
                     //FamilyNameAndTypeName = GetFamilyName(doc, elem) + " - " + GetTypeName(doc, elem),
-                    FamilyNameAndTypeName = GetFamilyName(doc, elem, GetTypeParameterValue(doc, elem, "IfcName")) + " - " + GetTypeName(doc, elem, GetTypeParameterValue(doc,  elem, "IfcType")),
-                    TypeId = GetTypeId(elem),
+                    //FamilyNameAndTypeName = GetFamilyName(doc, elem, GetTypeParameterValue(doc, elem, "IfcName")) + " - " + GetTypeName(doc, elem, GetTypeParameterValue(doc,  elem, "IfcType")),
+                    Tag = GetTypeId(elem),
                     Description = GetParameterValue(elem, "Description"),
                     PredefinedType = GetTypeParameterValue(doc, elem, "Type IFC Predefined Type"),
                     HasAssociations = new List<Association>
@@ -100,7 +139,7 @@ namespace BsddRevitPlugin.Logic.Model
                         new IfcClassificationReference
                         {
                             Type = "IfcClassificationReference",
-                            Name = GetTypeParameterValue(doc, elem,"Assembly Description"),
+                            Name = elem.get_Parameter(BuiltInParameter.UNIFORMAT_DESCRIPTION).AsString(),
                             Location = classificationUri, 
                             Identification = GetTypeParameterValue(doc, elem, "Assembly Code"),
                             ReferencedSource = new IfcClassification

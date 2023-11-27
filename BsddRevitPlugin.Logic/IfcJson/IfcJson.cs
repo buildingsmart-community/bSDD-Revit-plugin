@@ -51,11 +51,8 @@ namespace BsddRevitPlugin.Logic.IfcJson
         [JsonProperty("typename")]
         public string TypeName { get; set; }
 
-        [JsonProperty("familyNameAndTypeName")]
-        public string FamilyNameAndTypeName { get; set; }
-
-        [JsonProperty("typeId")]
-        public string TypeId { get; set; }
+        [JsonProperty("tag")]
+        public string Tag { get; set; }
 
         [JsonProperty("description")]
         public string Description { get; set; }

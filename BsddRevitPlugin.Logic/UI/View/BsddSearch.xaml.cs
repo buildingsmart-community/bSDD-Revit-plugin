@@ -44,7 +44,11 @@ namespace BsddRevitPlugin.Logic.UI.View
 
             // Set the address of the CefSharp browser component to the index.html file of the plugin
             Browser.Address = addinDirectory + "/html/bsdd_search/index.html";
-            Browser.JavascriptObjectRepository.Register("bsddBridge", new BsddBridge.BsddBridge(), true);
+            var bridgeSearch = new BsddBridge.BsddSearchBridge();
+            bridgeSearch.SetParentWindow(this);
+            var bridgeSelection = new BsddBridge.BsddSelectionBridge();
+            bridgeSelection.SetParentWindow(this);
+            Browser.JavascriptObjectRepository.Register("bsddBridge", bridgeSearch, true);
             Browser.IsBrowserInitializedChanged += OnIsBrowserInitializedChanged;
 
         }
