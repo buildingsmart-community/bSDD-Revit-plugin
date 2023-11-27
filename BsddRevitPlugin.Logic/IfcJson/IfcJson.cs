@@ -48,6 +48,15 @@ namespace BsddRevitPlugin.Logic.IfcJson
         [JsonProperty("name")]
         public string Name { get; set; }
 
+        [JsonProperty("typename")]
+        public string TypeName { get; set; }
+
+        [JsonProperty("familyNameAndTypeName")]
+        public string familyNameAndTypeName { get; set; }
+
+        [JsonProperty("typeId")]
+        public string TypeId { get; set; }
+
         [JsonProperty("description")]
         public string Description { get; set; }
 

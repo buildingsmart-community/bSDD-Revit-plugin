@@ -36,6 +36,7 @@ using Newtonsoft.Json;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Threading;
+using static NLog.LayoutRenderers.Wrappers.ReplaceLayoutRendererWrapper;
 
 namespace BsddRevitPlugin.Logic.UI.Wrappers
 {
@@ -136,6 +137,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
                         item.Category.Name != "Location Data" &&
                         item.Category.Name != "Model Groups" &&
                         item.Category.Name != "RVT Links" &&
+                        item.Category.Name != "Family Symbol" &&
                         item.Category.Name.Substring(System.Math.Max(0, item.Category.Name.Length - 4)) != ".dwg" &&
                         item.Category.Name.Substring(System.Math.Max(0, item.Category.Name.Length - 4)) != ".pdf"
                         )
@@ -243,7 +245,10 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
                 IfcData ifcData = new IfcData
                 {
                     Type = GetParamValueByName("Export Type to IFC As", item),
-                    Name = GetParamValueByName("IfcName", item),
+                    Name = GetFamilyName(item, GetParamValueByName("IfcName", item)),
+                    TypeName = GetFamilyTypeName(item, GetParamValueByName("IfcType", item)),
+                    familyNameAndTypeName = GetFamilyName(item, GetParamValueByName("IfcName", item)) + " - " + GetFamilyTypeName(item, GetParamValueByName("IfcType", item)),
+                    TypeId = GetTypeId(item),
                     Description = GetParamValueByName("IfcDescription", item),
                     PredefinedType = GetParamValueByName("Type IFC Predefined Type", item),
                     HasAssociations = new List<Association>
@@ -285,17 +290,59 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             return mainData;
         }
 
-        public static string GetFamilyName(Element e)
+        public static string GetFamilyName(Element e, string IfcName)
         {
-            Logger logger = LogManager.GetCurrentClassLogger();
+            if (IfcName != null && IfcName != "")
+            {
+                return IfcName;
+            }
+            else
+            {
+                try
+                {
+                    ElementId eId = e.Id;
+                    if (eId == null) return "";
+                    var elementType = e.Document.GetElement(eId) as ElementType;
+                    return elementType.FamilyName;
+                }
+                catch
+                {
+                    return "";
+                }
+            }         
+        }
 
-            var eId = e?.GetTypeId();
-            logger.Debug("0000");
-            if (eId == null) return "1";
-            logger.Debug("1111");
-            var elementType = e.Document.GetElement(eId) as ElementType;
-            logger.Debug("2222");
-            return elementType?.FamilyName ?? eId.ToString();
+        public static string GetTypeId(Element e)
+        {
+            try
+            {
+                ElementId eId = e.Id;
+                if (eId == null) return "";
+                return eId.ToString();
+            }
+            catch
+            {
+                return "";
+            }
+        }
+
+    public static string GetFamilyTypeName(Element e, string IfcType)
+        {
+            if (IfcType != null && IfcType != "")
+            {
+                return IfcType;
+            }
+            else
+            {
+                try
+                {
+                    return e.Name;
+                }
+                catch 
+                {
+                    return "";
+                }
+            }
         }
 
         public string GetParamValueByName(String par, Element e)
@@ -357,44 +404,6 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             {
                 return null;
             }
-        }
-
-        public string GetMaterialName(Element e, Document DbDoc)
-        {
-            string materialName = "not defined1";
-            Autodesk.Revit.DB.Material firstMaterial = null;
-
-            // Reference to the Revit API Document
-            Document doc = DbDoc;
-
-            // Reference to the element you are interested in
-            ElementId elementId = e.GetTypeId();
-            //Element element = doc.GetElement(elementId);
-
-            //// Get the Material Id of the element
-            //ICollection<ElementId> materialIds = element.GetMaterialIds(false);
-            //foreach (ElementId materialId in materialIds)
-            //{
-            //    firstMaterial = doc.GetElement(materialId) as Autodesk.Revit.DB.Material;
-            if (firstMaterial != null)
-            {
-                // Found the first material, break out of the loop
-                //        break;
-            }
-            //}
-
-            if (firstMaterial != null)
-            {
-                //                materialName = firstMaterial.Name;
-                // You can access other properties of the material here
-                // For example, firstMaterial.Color, firstMaterial.Transparency, etc.
-            }
-            else
-            {
-                materialName = "No material found1";
-            }
-
-            return materialName;
         }
 
         public Uri GetBsddDomainUri(string domain)
