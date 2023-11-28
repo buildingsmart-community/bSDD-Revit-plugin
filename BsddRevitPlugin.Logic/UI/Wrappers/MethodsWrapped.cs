@@ -167,8 +167,6 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             var doc = uidoc.Document;
 
             SetIfcDataToRevit(doc, ifcData);
-
-            // alle code van Casper
         }
         public void SetIfcData(IfcData ifcDataObject)
         {
