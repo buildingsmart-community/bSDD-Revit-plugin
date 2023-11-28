@@ -19,6 +19,7 @@ using BsddRevitPlugin.Logic.IfcJson;
 using Newtonsoft.Json;
 using BsddRevitPlugin.Logic.UI.Wrappers;
 using System.Reflection;
+using BsddRevitPlugin.Logic.UI.BsddBridge;
 
 namespace BsddRevitPlugin.Logic.UI.View
 {
@@ -87,7 +88,7 @@ namespace BsddRevitPlugin.Logic.UI.View
         //    Browser.ExecuteScriptAsync(jsFunctionCall);
         //}
 
-        public void UpdateSelection(MainData ifcData)
+        public void UpdateSelection(BsddBridgeData ifcData)
         {
             var jsonString = JsonConvert.SerializeObject(ifcData);
             var jsFunctionCall = $"updateSelection({jsonString});";
