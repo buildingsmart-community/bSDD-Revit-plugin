@@ -114,10 +114,7 @@ namespace BsddRevitPlugin.Logic.Model
                 IfcData ifcData = new IfcData
                 {
                     Type = GetTypeParameterValue(doc, elem, "Export Type to IFC As"),
-                    //Name = GetTypeParameterValue(doc, elem, "IfcName"),
-                    Name = GetFamilyName(doc, elem) + " - " + GetTypeName(doc, elem),
-                    //FamilyNameAndTypeName = GetFamilyName(doc, elem) + " - " + GetTypeName(doc, elem),
-                    //FamilyNameAndTypeName = GetFamilyName(doc, elem, GetTypeParameterValue(doc, elem, "IfcName")) + " - " + GetTypeName(doc, elem, GetTypeParameterValue(doc,  elem, "IfcType")),
+                    Name = GetFamilyName(doc, elem, GetTypeParameterValue(doc, elem, "IfcName")) + " - " + GetTypeName(doc, elem, GetTypeParameterValue(doc, elem, "IfcType")),
                     Tag = GetTypeId(elem),
                     Description = GetParameterValue(elem, "Description"),
                     PredefinedType = GetTypeParameterValue(doc, elem, "Type IFC Predefined Type"),
