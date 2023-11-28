@@ -2,6 +2,7 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
+using BsddRevitPlugin.Logic.UI.BsddBridge;
 using BsddRevitPlugin.Logic.UI.DockablePanel;
 using BsddRevitPlugin.Logic.UI.View;
 using CefSharp;
@@ -42,7 +43,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             elemList = ListFilter(elemList);
 
             // Pack data into json format
-            MainData selectionData = SelectionToJson(doc, elemList);
+            BsddBridgeData selectionData = SelectionToJson(doc, elemList);
 
             // Send MainData to BsddSelection html
             UpdateBsddSelection(selectionData);
@@ -53,7 +54,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             browser = browserObject;
         }
 
-        private async void UpdateBsddSelection(MainData ifcData)
+        private async void UpdateBsddSelection(BsddBridgeData ifcData)
         {
             var jsonString = JsonConvert.SerializeObject(ifcData);
             var jsFunctionCall = $"updateSelection({jsonString});";
@@ -85,7 +86,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             elemList = ListFilter(elemList);
 
             // Pack data into json format
-            MainData selectionData = SelectionToJson(doc, elemList);
+            BsddBridgeData selectionData = SelectionToJson(doc, elemList);
 
             // Send MainData to BsddSelection html
             UpdateBsddSelection(selectionData);
@@ -94,7 +95,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         {
             browser = browserObject;
         }
-        private async void UpdateBsddSelection(MainData ifcData)
+        private async void UpdateBsddSelection(BsddBridgeData ifcData)
         {
             var jsonString = JsonConvert.SerializeObject(ifcData);
             var jsFunctionCall = $"updateSelection({jsonString});";
@@ -127,7 +128,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             elemList = ListFilter(elemList);
 
             // Pack data into json format
-            MainData selectionData = SelectionToJson(doc, elemList);
+            BsddBridgeData selectionData = SelectionToJson(doc, elemList);
 
             // Send MainData to BsddSelection html
             UpdateBsddSelection(selectionData);
@@ -136,7 +137,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         {
             browser = browserObject;
         }
-        private async void UpdateBsddSelection(MainData ifcData)
+        private async void UpdateBsddSelection(BsddBridgeData ifcData)
         {
             var jsonString = JsonConvert.SerializeObject(ifcData);
             var jsFunctionCall = $"updateSelection({jsonString});";

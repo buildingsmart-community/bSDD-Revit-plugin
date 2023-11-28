@@ -103,6 +103,7 @@
     <Compile Include="Model\ElementsManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\IfcDataExample.cs" />
+    <Compile Include="UI\BsddBridge\BsddBridgeData.cs" />
     <Compile Include="UI\BsddBridge\BsddSearchBridge.cs" />
     <Compile Include="UI\BsddBridge\BsddSelectionBridge.cs" />
     <Compile Include="UI\DockablePanel\Selectors.cs" />

@@ -5,67 +5,70 @@ using System.Collections.Generic;
 
 namespace BsddRevitPlugin.Logic.IfcJson
 {
-    /// <summary>
-    /// Message data including the main domain and filter domains
-    /// </summary>
-    public class MainData
-    {
-        [JsonProperty("name")]
-        public string Name { get; set; }
-
-        [JsonProperty("domain")]
-        public Uri Domain { get; set; }
-        [JsonProperty("filterDomains")]
-        public List<Uri> FilterDomains { get; set; } = new List<Uri>();
-
-        [JsonProperty("ifcData")]
-        public List<IfcData> IfcData { get; set; } = new List<IfcData>();
-
-        public void setDomain(string domain) {
-            Domain = new Uri(domain);
-        }
-        public void addFilterDomain(string domain)
-        {
-            FilterDomains.Add(new Uri(domain));
-        }
-        public void setFilterDomains(List<string> domains)
-        {
-            foreach (string domain in domains)
-            {
-                FilterDomains.Add(new Uri(domain));
-            }
-        }
-    }
 
     /// <summary>
     /// Represents the bSDD data as an IFC object.
+    /// based on IfcTypeProduct:
+    /// https://ifc43-docs.standards.buildingsmart.org/IFC/RELEASE/IFC4x3/HTML/lexical/IfcTypeProduct.htm
     /// </summary>
     public class IfcData
     {
+        /// <summary>
+        /// IfcJson parameter for the IFC entity type.
+        /// </summary>
         [JsonProperty("type")]
         public string Type { get; set; }
 
-        [JsonProperty("name")]
-        public string Name { get; set; }
-
+        /// <summary>
+        /// TODO: Not part of IFC schema
+        /// </summary>
         [JsonProperty("typename")]
         public string TypeName { get; set; }
 
-        [JsonProperty("tag")]
-        public string Tag { get; set; }
+        /// <summary>
+        /// Optional name for use by the participating software systems or users. For some subtypes of IfcRoot
+        /// the insertion of the Name attribute may be required. This would be enforced by a where rule.
+        /// </summary>
+        [JsonProperty("name")]
+        public string Name { get; set; }
 
+        /// <summary>
+        /// Optional description, provided for exchanging informative comments.
+        /// </summary>
         [JsonProperty("description")]
         public string Description { get; set; }
 
+        /// <summary>
+        /// The tag (or label) identifier at the particular instance of a product, e.g. the serial number,
+        /// or the position number. It is the identifier at the occurrence level.
+        /// </summary>
+        [JsonProperty("tag")]
+        public string Tag { get; set; }
+
+        /// <summary>
+        /// Identifies the predefined types of an element from which the type required may be set.
+        /// Not part of IfcTypeProduct, but used in many supertypes
+        /// </summary>
         [JsonProperty("predefinedType")]
         public string PredefinedType { get; set; }
 
+        /// <summary>
+        /// Reference to the relationship objects, that associates external references or other resource
+        /// definitions to the object. Examples are the association to library, documentation or classification.
+        /// I our case mainly IfcClassificationReference and IfcMaterial
+        /// </summary>
         [JsonProperty("hasAssociations")]
         public List<Association> HasAssociations { get; set; }
 
+        /// <summary>
+        /// TODO: for types this should be HasPropertySets, IsDefinedBy is for instances
+        /// Set of relationships to property set definitions attached to this object. Those statically or
+        /// dynamically defined properties contain alphanumeric information content that further defines the object.
+        /// </summary>
         [JsonProperty("isDefinedBy")]
         public List<IfcPropertySet> IsDefinedBy { get; set; }
     }
+
     /// <summary>
     /// Represents a reference to an IFC classification.
     /// </summary>

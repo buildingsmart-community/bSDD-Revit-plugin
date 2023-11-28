@@ -3,6 +3,7 @@ using ASRR.Core.Persistence;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
+using BsddRevitPlugin.Logic.UI.BsddBridge;
 using CefSharp;
 using NLog;
 using System;
@@ -81,7 +82,7 @@ namespace BsddRevitPlugin.Logic.Model
                 tx.Commit();
             }
         }
-        public static MainData SelectionToJson(Document doc, List<Element> elemList)
+        public static BsddBridgeData SelectionToJson(Document doc, List<Element> elemList)
         {
 
             const string domain = "https://search-test.bsdd.buildingsmart.org/uri/digibase/bim-basis-objecten";
@@ -90,7 +91,7 @@ namespace BsddRevitPlugin.Logic.Model
                 "https://identifier.buildingsmart.org/uri/digibase/nlsfb"
             };
 
-            MainData mainData = new MainData();
+            var mainData = new BsddBridgeData();
             List<IfcData> ifcDataLst = new List<IfcData>();
 
             foreach (Element elem in elemList)
