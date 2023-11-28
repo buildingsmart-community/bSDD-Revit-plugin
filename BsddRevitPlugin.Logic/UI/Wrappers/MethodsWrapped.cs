@@ -139,7 +139,11 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         }
         private async void UpdateBsddSelection(BsddBridgeData ifcData)
         {
-            var jsonString = JsonConvert.SerializeObject(ifcData);
+            var settings = new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore
+            };
+            var jsonString = JsonConvert.SerializeObject(ifcData, settings);
             var jsFunctionCall = $"updateSelection({jsonString});";
 
             if (browser.IsBrowserInitialized)
@@ -183,20 +187,22 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         // ModelessForm instance
         private Window wnd;
         private BsddSearch _bsddSearch;
+        private BsddBridgeData _bsddBridgeData;
 
         public override void Execute(UIApplication uiapp, string args)
         {
 
             //string addinDirectory = Path.GetDirectoryName(addinLocation);
-            BsddSearch bsddSearch = new BsddSearch();
+            _bsddSearch = new BsddSearch();
+            _bsddSearch.UpdateBsddBridgeData(_bsddBridgeData);
 
             HwndSource hwndSource = HwndSource.FromHwnd(uiapp.MainWindowHandle);
             wnd = hwndSource.RootVisual as Window;
             if (wnd != null)
             {
-                bsddSearch.Owner = wnd;
+                _bsddSearch.Owner = wnd;
                 //bsddSearch.ShowInTaskbar = false;
-                bsddSearch.Show();
+                _bsddSearch.Show();
                 //bsddSearch.UpdateSelection(jsonData);
 
             }
@@ -204,6 +210,11 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             var doc = uidoc.Document;
             var name = doc.Title;
             var path = doc.PathName;
+        }
+
+        public void setBsddBridgeData(BsddBridgeData bsddBridgeData)
+        {
+            _bsddBridgeData = bsddBridgeData;
         }
 
     }
