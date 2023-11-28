@@ -69,6 +69,9 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
 
             // Deserialize the JSON data into an IfcData object using the IfcDataConverter
             var ifcData = JsonConvert.DeserializeObject<IfcData>(ifcJsonData, converter);
+            var bsddBridgeData = new BsddBridgeData();
+            bsddBridgeData.IfcData.Add(ifcData);
+            eventHandlerBsddSearch.setBsddBridgeData(bsddBridgeData);
 
             //EventHandlerBsddSearch.Raise(_bsddSearch);
             // Return the serialized JSON data for the IfcData object

@@ -32,7 +32,7 @@ namespace BsddRevitPlugin.Logic.UI.View
         private readonly Document _doc;
         public static UIApplication UiApp;
         public static UIDocument UiDoc;
-
+        private BsddBridgeData _inputBsddBridgeData;
 
         public BsddSearch()
         {
@@ -88,6 +88,12 @@ namespace BsddRevitPlugin.Logic.UI.View
         //    Browser.ExecuteScriptAsync(jsFunctionCall);
         //}
 
+
+        public void UpdateBsddBridgeData(BsddBridgeData bsddBridgeData)
+        {
+            _inputBsddBridgeData = bsddBridgeData;
+        }
+
         public void UpdateSelection(BsddBridgeData ifcData)
         {
             var jsonString = JsonConvert.SerializeObject(ifcData);
@@ -104,7 +110,15 @@ namespace BsddRevitPlugin.Logic.UI.View
             if (Browser.IsBrowserInitialized)
             {
                 Browser.ShowDevTools();
-                Browser.ExecuteScriptAsync("CefSharp.BindObjectAsync('bsddBridge');");
+                var jsonString = JsonConvert.SerializeObject(_inputBsddBridgeData.IfcData[0]);
+
+                // Initialize the bridge and set the initial IfcEntity
+                var script = @"
+                    CefSharp.BindObjectAsync('bsddBridge').then(() => {
+                        window.globalIfcEntity = " + jsonString + @";
+                    });
+                ";
+                Browser.ExecuteScriptAsync(script);
             }
         }
     }
