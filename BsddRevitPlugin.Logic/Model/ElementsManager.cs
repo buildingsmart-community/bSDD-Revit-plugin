@@ -47,6 +47,7 @@ namespace BsddRevitPlugin.Logic.Model
         public static void SetIfcDataToRevit(Document doc, IfcData ifcData)
         {
             string nlfsbCode = "";
+            string description = "";
             foreach(var association in ifcData.HasAssociations)
             {
                 switch (association)
@@ -56,6 +57,10 @@ namespace BsddRevitPlugin.Logic.Model
                         if (ifcClassificationReference.ReferencedSource.Name == "NL-SfB 2005")
                         {
                             nlfsbCode = ifcClassificationReference.Identification;
+                        }
+                        else if (ifcClassificationReference.ReferencedSource.Name == "VolkerWessels Bouw & vastgoed")
+                        {
+                            description = ifcClassificationReference.Identification;
                         }
                         break;
                     case IfcMaterial ifcMaterial:
@@ -77,7 +82,7 @@ namespace BsddRevitPlugin.Logic.Model
                 Parameter p = elem.get_Parameter(BuiltInParameter.UNIFORMAT_CODE);
                 var paramset = p.Set(nlfsbCode);
 
-                //SetTypeParameterValue(doc, elem, "Assembly Code", nlfsbCode);
+                SetParameterValue(elem, "Description", description);
 
                 tx.Commit();
             }
