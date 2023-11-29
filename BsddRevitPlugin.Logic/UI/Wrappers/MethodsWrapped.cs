@@ -117,15 +117,19 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             elemList = lst.ListFilter(elemList);
             lst.elemToJSON(elemList);
         }
-
     }
 
     public class ListAdjust
     {
+        Logger logger = LogManager.GetCurrentClassLogger();
+
         public List<Element> ListFilter(List<Element> elemList)
         {
             List<Element> elemListFiltered = new List<Element>();
 
+
+            string typeId;
+            List<string> idList = new List<string>();
             foreach (Element item in elemList)
             {
                 try
@@ -137,17 +141,53 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
                         item.Category.Name != "Location Data" &&
                         item.Category.Name != "Model Groups" &&
                         item.Category.Name != "RVT Links" &&
-                        item.Category.Name != "Family Symbol" &&
                         item.Category.Name.Substring(System.Math.Max(0, item.Category.Name.Length - 4)) != ".dwg" &&
                         item.Category.Name.Substring(System.Math.Max(0, item.Category.Name.Length - 4)) != ".pdf"
                         )
                         {
-                            elemListFiltered.Add(item);
+                            //dubble elementen verwijderen
+                            typeId = GetTypeId(item);
+                            bool chk = !idList.Any();
+                            logger.Debug("Aantal: " + idList.Count());
+                            logger.Debug("TypeId: " + typeId);
+                            int count = idList.Count();
+                            int number = 1;
+                            foreach (string result in idList)
+                            {
+                                // do something with each item
+                                logger.Debug("result: " + result);
+                                if (count == number)
+                                {
+                                    // do something different with the last item
+                                    if (result != typeId)
+                                    {
+                                        idList.Add(typeId);
+                                        elemListFiltered.Add(item);
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    // do something different with every item but the last
+                                    if (result == typeId)
+                                    {
+                                        break;
+                                    }
+                                }
+                                number++;
+                            }
+                            if (idList.Count() == 0)
+                            {
+                                idList.Add(typeId);
+                                elemListFiltered.Add(item);
+                            }
                         }
                     }
                 }
                 catch { }
             }
+            
+            elemListFiltered = elemListFiltered.Distinct().ToList();
             return elemListFiltered;
         }
 
