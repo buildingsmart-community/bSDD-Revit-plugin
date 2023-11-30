@@ -19,6 +19,7 @@ using BsddRevitPlugin.Logic.IfcJson;
 using Newtonsoft.Json;
 using BsddRevitPlugin.Logic.UI.Wrappers;
 using System.Reflection;
+using BsddRevitPlugin.Logic.UI.BsddBridge;
 
 namespace BsddRevitPlugin.Logic.UI.View
 {
@@ -31,7 +32,7 @@ namespace BsddRevitPlugin.Logic.UI.View
         private readonly Document _doc;
         public static UIApplication UiApp;
         public static UIDocument UiDoc;
-
+        private BsddBridgeData _inputBsddBridgeData;
 
         public BsddSearch()
         {
@@ -44,7 +45,11 @@ namespace BsddRevitPlugin.Logic.UI.View
 
             // Set the address of the CefSharp browser component to the index.html file of the plugin
             Browser.Address = addinDirectory + "/html/bsdd_search/index.html";
-            Browser.JavascriptObjectRepository.Register("bsddBridge", new BsddBridge.BsddBridge(), true);
+            var bridgeSearch = new BsddBridge.BsddSearchBridge();
+            bridgeSearch.SetParentWindow(this);
+            var bridgeSelection = new BsddBridge.BsddSelectionBridge();
+            bridgeSelection.SetParentWindow(this);
+            Browser.JavascriptObjectRepository.Register("bsddBridge", bridgeSearch, true);
             Browser.IsBrowserInitializedChanged += OnIsBrowserInitializedChanged;
 
         }
@@ -83,7 +88,13 @@ namespace BsddRevitPlugin.Logic.UI.View
         //    Browser.ExecuteScriptAsync(jsFunctionCall);
         //}
 
-        public void UpdateSelection(MainData ifcData)
+
+        public void UpdateBsddBridgeData(BsddBridgeData bsddBridgeData)
+        {
+            _inputBsddBridgeData = bsddBridgeData;
+        }
+
+        public void UpdateSelection(BsddBridgeData ifcData)
         {
             var jsonString = JsonConvert.SerializeObject(ifcData);
             var jsFunctionCall = $"updateSelection({jsonString});";
@@ -99,7 +110,15 @@ namespace BsddRevitPlugin.Logic.UI.View
             if (Browser.IsBrowserInitialized)
             {
                 Browser.ShowDevTools();
-                Browser.ExecuteScriptAsync("CefSharp.BindObjectAsync('bsddBridge');");
+                var jsonString = JsonConvert.SerializeObject(_inputBsddBridgeData.IfcData[0]);
+
+                // Initialize the bridge and set the initial IfcEntity
+                var script = @"
+                    CefSharp.BindObjectAsync('bsddBridge').then(() => {
+                        window.globalIfcEntity = " + jsonString + @";
+                    });
+                ";
+                Browser.ExecuteScriptAsync(script);
             }
         }
     }
