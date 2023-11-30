@@ -1,4 +1,5 @@
-﻿using Autodesk.Revit.Attributes;
+﻿using ASRR.Core.Persistence;
+using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
@@ -11,6 +12,7 @@ using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Interop;
@@ -322,7 +324,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
                     Type = GetParamValueByName("Export Type to IFC As", item),
                     Name = GetFamilyName(item, GetParamValueByName("IfcName", item)),
                     TypeName = GetFamilyTypeName(item, GetParamValueByName("IfcType", item)),
-                    familyNameAndTypeName = GetFamilyName(item, GetParamValueByName("IfcName", item)) + " - " + GetFamilyTypeName(item, GetParamValueByName("IfcType", item)),
+                    // familyNameAndTypeName = GetFamilyName(item, GetParamValueByName("IfcName", item)) + " - " + GetFamilyTypeName(item, GetParamValueByName("IfcType", item)),
                     TypeId = GetTypeId(item),
                     Description = GetParamValueByName("IfcDescription", item),
                     PredefinedType = GetParamValueByName("Type IFC Predefined Type", item),
