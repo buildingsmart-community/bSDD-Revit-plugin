@@ -96,6 +96,8 @@ namespace BsddRevitPlugin.Common.Commands
                     //exportOptions.AddOption("ExportUserDefinedPsets", false.ToString());
                     //exportOptions.AddOption("ExportUserDefinedPsetsFileName", "");
 
+                    exportOptions.AddOption("ExportInternalRevitPropertySets", true.ToString());
+
                     //exportOptions.AddOption("ExportUserDefinedParameterMapping", false.ToString());
                     //exportOptions.AddOption("ExportUserDefinedParameterMappingFileName", "");
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
