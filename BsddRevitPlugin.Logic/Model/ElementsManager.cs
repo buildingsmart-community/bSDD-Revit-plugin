@@ -1,12 +1,12 @@
 ﻿
 using ASRR.Core.Persistence;
 using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
-using CefSharp;
+using BsddRevitPlugin.Logic.UI.BsddBridge;
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using static ASRR.Revit.Core.Elements.Parameters.Dto.RevitParameter;
 
 
@@ -17,8 +17,13 @@ namespace BsddRevitPlugin.Logic.Model
 
         public static List<Element> ListFilter(List<Element> elemList)
         {
+            Logger logger = LogManager.GetCurrentClassLogger();
+
             List<Element> elemListFiltered = new List<Element>();
 
+
+            string typeId;
+            List<string> idList = new List<string>();
             foreach (Element item in elemList)
             {
                 try
@@ -34,15 +39,95 @@ namespace BsddRevitPlugin.Logic.Model
                         item.Category.Name.Substring(System.Math.Max(0, item.Category.Name.Length - 4)) != ".pdf"
                         )
                         {
-                            elemListFiltered.Add(item);
+                            //dubble elementen verwijderen
+                            typeId = GetTypeId(item);
+                            bool chk = !idList.Any();
+                            logger.Debug("Aantal: " + idList.Count());
+                            logger.Debug("TypeId: " + typeId);
+                            int count = idList.Count();
+                            int number = 1;
+                            foreach (string result in idList)
+                            {
+                                // do something with each item
+                                logger.Debug("result: " + result);
+                                if (count == number)
+                                {
+                                    // do something different with the last item
+                                    if (result != typeId)
+                                    {
+                                        idList.Add(typeId);
+                                        elemListFiltered.Add(item);
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    // do something different with every item but the last
+                                    if (result == typeId)
+                                    {
+                                        break;
+                                    }
+                                }
+                                number++;
+                            }
+                            if (idList.Count() == 0)
+                            {
+                                idList.Add(typeId);
+                                elemListFiltered.Add(item);
+                            }
                         }
                     }
                 }
                 catch { }
             }
+
+            elemListFiltered = elemListFiltered.Distinct().ToList();
             return elemListFiltered;
         }
-        public static MainData SelectionToJson(Document doc, List<Element> elemList)
+        public static void SetIfcDataToRevit(Document doc, IfcData ifcData)
+        {
+            string nlfsbCode = "";
+            string description = "";
+            foreach (var association in ifcData.HasAssociations)
+            {
+                switch (association)
+                {
+                    case IfcClassificationReference ifcClassificationReference:
+                        // do something with ifcClassificationReference
+                        if (ifcClassificationReference.ReferencedSource.Name == "NL-SfB 2005")
+                        {
+                            nlfsbCode = ifcClassificationReference.Identification;
+                        }
+                        else if (ifcClassificationReference.ReferencedSource.Name == "VolkerWessels Bouw & vastgoed")
+                        {
+                            description = ifcClassificationReference.Identification;
+                        }
+                        break;
+                    case IfcMaterial ifcMaterial:
+                        // do something with ifcMaterial
+                        break;
+
+                }
+
+            }
+
+            using (Transaction tx = new Transaction(doc))
+            {
+                tx.Start("Param");
+
+                int idInt = Convert.ToInt32(ifcData.Tag);
+                ElementId id = new ElementId(idInt);
+                Element elem = doc.GetElement(id);
+
+                Parameter p = elem.get_Parameter(BuiltInParameter.UNIFORMAT_CODE);
+                var paramset = p.Set(nlfsbCode);
+
+                SetParameterValue(elem, "Description", description);
+
+                tx.Commit();
+            }
+        }
+        public static BsddBridgeData SelectionToJson(Document doc, List<Element> elemList)
         {
 
             const string domain = "https://search-test.bsdd.buildingsmart.org/uri/digibase/bim-basis-objecten";
@@ -51,13 +136,13 @@ namespace BsddRevitPlugin.Logic.Model
                 "https://identifier.buildingsmart.org/uri/digibase/nlsfb"
             };
 
-            MainData mainData = new MainData();
+            var mainData = new BsddBridgeData();
             List<IfcData> ifcDataLst = new List<IfcData>();
 
             foreach (Element elem in elemList)
             {
 
-                string code = GetTypeParameterValue(doc, elem, "Assembly Code");
+                string code = elem.get_Parameter(BuiltInParameter.UNIFORMAT_CODE).AsString();
                 Uri domainUri = _getBsddDomainUri(domain);
                 Uri classificationUri = _getBsddClassificationUri(domainUri, code);
 
@@ -69,17 +154,14 @@ namespace BsddRevitPlugin.Logic.Model
 
                 if (loc_domain != null) location_domain = new Uri(loc_domain);
                 if (loc_domainentry != null) location_domain_entry = new Uri(loc_domainentry);
-                
+
 
 
                 IfcData ifcData = new IfcData
                 {
                     Type = GetTypeParameterValue(doc, elem, "Export Type to IFC As"),
-                    //Name = GetTypeParameterValue(doc, elem, "IfcName"),
-                    Name = GetFamilyName(doc, elem) + " - " + GetTypeName(doc, elem),
-                    //FamilyNameAndTypeName = GetFamilyName(doc, elem) + " - " + GetTypeName(doc, elem),
-                    FamilyNameAndTypeName = GetFamilyName(doc, elem, GetTypeParameterValue(doc, elem, "IfcName")) + " - " + GetTypeName(doc, elem, GetTypeParameterValue(doc,  elem, "IfcType")),
-                    TypeId = GetTypeId(elem),
+                    Name = GetFamilyName(doc, elem, GetTypeParameterValue(doc, elem, "IfcName")) + " - " + GetTypeName(doc, elem, GetTypeParameterValue(doc, elem, "IfcType")),
+                    Tag = GetTypeId(elem),
                     Description = GetParameterValue(elem, "Description"),
                     PredefinedType = GetTypeParameterValue(doc, elem, "Type IFC Predefined Type"),
                     HasAssociations = new List<Association>
@@ -100,8 +182,8 @@ namespace BsddRevitPlugin.Logic.Model
                         new IfcClassificationReference
                         {
                             Type = "IfcClassificationReference",
-                            Name = GetTypeParameterValue(doc, elem,"Assembly Description"),
-                            Location = classificationUri, 
+                            Name = elem.get_Parameter(BuiltInParameter.UNIFORMAT_DESCRIPTION).AsString(),
+                            Location = classificationUri,
                             Identification = GetTypeParameterValue(doc, elem, "Assembly Code"),
                             ReferencedSource = new IfcClassification
                             {
@@ -179,7 +261,7 @@ namespace BsddRevitPlugin.Logic.Model
                 }
             }
 
-           
+
         }
         public static string GetTypeName(Document doc, Element e)
         {
@@ -231,7 +313,7 @@ namespace BsddRevitPlugin.Logic.Model
                 return "";
             }
         }
-       
+
 
         public static string GetMaterialName(Element e, Document DbDoc)
         {

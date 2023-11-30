@@ -26,17 +26,17 @@ namespace BsddRevitPlugin.Logic.IfcJson
             {
                 ifcData.Name = (string)jsonObject["name"];
             }
-            if (jsonObject["familyAndTypeName"] != null)
-            {
-                ifcData.FamilyNameAndTypeName = (string)jsonObject["familyAndTypeName"];
-            }
             if (jsonObject["typeId"] != null)
             {
-                ifcData.TypeId = (string)jsonObject["typeId"];
+                ifcData.Tag = (string)jsonObject["typeId"];
             }
             if (jsonObject["description"] != null)
             {
                 ifcData.Description = (string)jsonObject["description"];
+            }
+            if (jsonObject["tag"] != null)
+            {
+                ifcData.Tag = (string)jsonObject["tag"];
             }
             if (jsonObject["predefinedType"] != null)
             {
