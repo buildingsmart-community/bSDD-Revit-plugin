@@ -15,12 +15,6 @@ The idea of our development is that we inspire our industry to include bSDD in t
 This is a community build tool. 
 It is not an official buildingSMART International initiative.
 
-This plugin uses CEFsharp that's also used by Revit internally, therefore the version used must always match the Revit version:
-* 2024: CEFsharp version 105.3.390
-* 2023: CEFsharp version 92.0.260
-* 2020: CEFsharp version 65.0.1
-* 2019: CEFsharp version 57.0.0
-
 <!-- TOC -->
 * [Internal NuGet Packages](#internal-nuget-packages)
 * [TODO](#todo)
