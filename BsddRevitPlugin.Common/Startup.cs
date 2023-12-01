@@ -1,9 +1,6 @@
-﻿using Autodesk.Revit.ApplicationServices;
-using Autodesk.Revit.Attributes;
-using Autodesk.Revit.DB.Events;
+﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.UI.View;
-using BsddRevitPlugin.Logic.UI.Wrappers;
 using BsddRevitPlugin.Resources;
 using System;
 using System.Diagnostics;
@@ -89,30 +86,25 @@ namespace BsddRevitPlugin.Common
                 // tab already exists
             }
 
-            // Create the main button.
-            PushButtonData pbd = new PushButtonData("Popup", "Click Me", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.Popup");
-            PushButtonData pbd1 = new PushButtonData("IFCexporter", "IFC export", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.IFCexporter");
-            PushButtonData pbd2 = new PushButtonData("ParameterChange", "Parameters\raanpassen", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.ParameterAanpassen");
-            PushButtonData pbddp = new PushButtonData("Show/Hide", "Show/Hide selector", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.ShowDockableWindow");
             RibbonPanel panel = application.CreateRibbonPanel(eTabName, "bSDD");
-            PushButton pb = panel.AddItem(pbd) as PushButton;
-            PushButton pb1 = panel.AddItem(pbd1) as PushButton;
-            PushButton pb2 = panel.AddItem(pbd2) as PushButton;
-            PushButton pbdp = panel.AddItem(pbddp) as PushButton;
 
-            // Set button tooltips.
-            pb.ToolTip = "This is a sample Revit button";
-            pbdp.ToolTip = "Show/hide bSDD selection panel";
+            // Create IFC export button.
+            PushButtonData ifcExportButtonData = new PushButtonData("IFCexporter", "IFC export", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.IFCexporter");
+            PushButton ifcExportButton = panel.AddItem(ifcExportButtonData) as PushButton;
+            ifcExportButton.ToolTip = "Export to IFC using bSDD settings";
+            ifcExportButton.LargeImage = ResourceImage.GetIcon("IfcExport.ico");
 
-            // Set button images.
-            pb.LargeImage = ResourceImage.GetIcon("bsdd-label.png");
-            pb1.ToolTip = "This is a sample Revit button";
-            pb1.LargeImage = ResourceImage.GetIcon("bsdd-label.png");
-            pb2.ToolTip = "This is a sample Revit button";
-            pb2.LargeImage = ResourceImage.GetIcon("bsdd-label.png");
+            // Create parameter change button.
+            PushButtonData parameterChangeButtonData = new PushButtonData("ParameterChange", "Parameters\raanpassen", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.ParameterAanpassen");
+            PushButton parameterChangeButton = panel.AddItem(parameterChangeButtonData) as PushButton;
+            parameterChangeButton.ToolTip = "This is a sample Revit button";
+            parameterChangeButton.LargeImage = ResourceImage.GetIcon("bsdd-label.ico");
 
-            pbdp.ToolTip = "Show/hide bSDD selection panel";
-            pbdp.LargeImage = ResourceImage.GetIcon("bsdd-label.png");
+            // Create selection panel toggle button.
+            PushButtonData selectionPanelButtonData = new PushButtonData("Show/Hide", "Show/Hide selector", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.ShowDockableWindow");
+            PushButton selectionPanelButton = panel.AddItem(selectionPanelButtonData) as PushButton;
+            selectionPanelButton.ToolTip = "Show/hide bSDD selection panel";
+            selectionPanelButton.LargeImage = ResourceImage.GetIcon("BsddLabel.ico");
         }
 
         #region DockablePanel
