@@ -1,7 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">
+      $(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
     <SharedGUID>14acabb0-3d60-422e-9ce9-a4bc644393e3</SharedGUID>
   </PropertyGroup>
@@ -13,7 +14,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Commands\ParameterAanpassen.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Commands\Popup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Commands\DockablePanel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Commands\IFCexporter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Main.cs" />
