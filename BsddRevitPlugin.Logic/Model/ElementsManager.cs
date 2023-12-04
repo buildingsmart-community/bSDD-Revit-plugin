@@ -130,10 +130,10 @@ namespace BsddRevitPlugin.Logic.Model
         public static BsddBridgeData SelectionToJson(Document doc, List<Element> elemList)
         {
 
-            const string domain = "https://search-test.bsdd.buildingsmart.org/uri/digibase/bim-basis-objecten";
+            const string domain = "https://identifier.buildingsmart.org/uri/digibase/bim-basis-objecten";
             List<string> filterDomains = new List<string>(){
-                "https://search-test.bsdd.buildingsmart.org/uri/digibase/bim-basis-objecten",
-                "https://identifier.buildingsmart.org/uri/digibase/nlsfb"
+                "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3",
+                "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021"
             };
 
             var mainData = new BsddBridgeData();
