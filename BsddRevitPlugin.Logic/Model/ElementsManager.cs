@@ -112,9 +112,25 @@ namespace BsddRevitPlugin.Logic.Model
 
             //}
 
-            string nlfsbCodevalue = "";
-            string nlfsbCodeparam = "Assembly Code";
-            string description = "";
+            string nlfsbValue = "";
+            string basisproductValue = "";
+            string ifcEntityValue = "";
+            string ifcPredefinedtypeValue = "";
+
+            const string nlfsbParameter = "Assembly Code";
+            const string basisproductParameter = "Description";
+            const string ifcEntityParameter = "Export Type to IFC As";
+            const string ifcPredefinedtypeParameter = "Type IFC Predefined Type";
+
+            if (ifcData.Type != null)
+            {
+                ifcEntityValue = ifcData.Type;
+            }
+            if (ifcData.PredefinedType != null)
+            {
+                ifcPredefinedtypeValue = ifcData.PredefinedType;
+            }
+
             foreach (var association in ifcData.HasAssociations)
             {
                 switch (association)
@@ -123,17 +139,18 @@ namespace BsddRevitPlugin.Logic.Model
                         // do something with ifcClassificationReference
                         if (ifcClassificationReference.ReferencedSource.Name == "DigiBase Demo NL-SfB tabel 1") 
                         {
-                            nlfsbCodevalue = ifcClassificationReference.Identification;
+                            nlfsbValue = ifcClassificationReference.Identification;
                         }
                         else if (ifcClassificationReference.ReferencedSource.Name == "NL-SfB 2005")
                         {
-                            nlfsbCodevalue = ifcClassificationReference.Identification;
+                            nlfsbValue = ifcClassificationReference.Identification;
                         }
-                        else if (ifcClassificationReference.ReferencedSource.Name == "VolkerWessels Bouw & vastgoed")
+                        else if (ifcClassificationReference.ReferencedSource.Name == "BIM Basis Objecten")
                         {
-                            description = ifcClassificationReference.Identification;
+                            basisproductValue = ifcClassificationReference.Identification;
                         }
                         break;
+
                     case IfcMaterial ifcMaterial:
                         // do something with ifcMaterial
                         break;
@@ -163,56 +180,30 @@ namespace BsddRevitPlugin.Logic.Model
 
                     if (!typeparameter.IsReadOnly)
                     {
-                        if (paramName == nlfsbCodeparam)
+                        switch (paramName)
                         {
-                            string parametervalue = nlfsbCodevalue;
-                            logger.Debug($"parametervalue = {parametervalue}");
-                            typeparameter.Set(parametervalue);
+                            case nlfsbParameter:
+                                logger.Debug("NL/SfB: " + nlfsbValue.ToString());
+                                typeparameter.Set(nlfsbValue);
+                                break;
+                            case basisproductParameter:
+                                logger.Debug("BasisProduct: " + basisproductValue.ToString());
+                                typeparameter.Set(basisproductValue);
+                                break;
+                            case ifcEntityParameter:
+                                logger.Debug("IfcEntity: " + ifcEntityValue.ToString());
+                                typeparameter.Set(ifcEntityValue);
+                                break;
+                            case ifcPredefinedtypeParameter:
+                                logger.Debug("IfcPredefinedtype: " + ifcPredefinedtypeValue.ToString());
+                                typeparameter.Set(ifcPredefinedtypeValue);
+                                break;
                         }
                     }
-
-                    //if (!typeparameter.IsReadOnly)
-                    //{
-
-                        //if (values.ContainsKey(paramName))
-                        //{
-                        //    string parametervalue = values[paramName];
-                        //    typeparameter.Set(parametervalue);
-                        //    //TaskDialog.Show("Success", paramName + ": " + parametervalue);
-                        //}
-
-                        //string test = parameter.Definition.GetDataType().ToString();
-                        //TaskDialog.Show("Success", parameter.AsValueString());
-                        //parameter.Set("Aanpassen parameters");
-                    //}
-                    //if (typeparameter.Definition.Name == )
                 }
-
-
-
-
-
-                //Parameter p = elementType.get_Parameter(BuiltInParameter.UNIFORMAT_CODE);
-                //var paramset = p.Set(nlfsbCode);
-                //SetParameterValue(elementType, "Description", description);
 
                 tx.Commit();
             }
-            //using (Transaction tx = new Transaction(doc))
-            //{
-            //    tx.Start("Param");
-
-            //    int idInt = Convert.ToInt32(ifcData.Tag);
-            //    ElementId id = new ElementId(idInt);
-            //    Element elem = doc.GetElement(id);
-
-            //    Parameter p = elem.get_Parameter(BuiltInParameter.UNIFORMAT_CODE);
-            //    var paramset = p.Set(nlfsbCode);
-
-            //    SetParameterValue(elem, "Description", description);
-
-            //    tx.Commit();
-            //}
         }
         public static BsddBridgeData SelectionToJson(Document doc, List<Element> elemList)
         {
