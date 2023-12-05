@@ -2,6 +2,7 @@
 using Revit.IFC.Common.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace BsddRevitPlugin.Logic.Classifications
 {
@@ -29,34 +30,43 @@ namespace BsddRevitPlugin.Logic.Classifications
             /// Initialization of the Classification Tab when there is saved item
             bool hasSavedItem = BsddRevitPlugin.Logic.Classifications.IFCClassificationMgr.GetSavedClassifications(document, null, out m_oldClassificationList);
 
-            foreach (var classification in m_oldClassificationList)
+            foreach (var oldClassification in m_oldClassificationList)
             {
-
-                m_newClassificationList.Add(classification);
+                m_newClassificationList.Add(oldClassification);
+                //oldClassification.ClassificationName;
             }
 
             foreach (var classification in classifications)
             {
-                IFCClassification m_newClassification = new IFCClassification();
-                m_newClassification.ClassificationFieldName = classification.ClassificationFieldName;
-                if (m_newClassification.ClassificationEditionDate <= DateTime.MinValue || m_newClassification.ClassificationEditionDate >= DateTime.MaxValue)
+                if (m_newClassificationList.Any(c => c.ClassificationName == classification.ClassificationName))
                 {
-                    DateTime today = DateTime.Now;
-                    m_newClassification.ClassificationEditionDate = today;
-                }
-                m_newClassification.ClassificationSource = "bsddplugin";
-                m_newClassification.ClassificationEdition = "v1";
-                m_newClassification.ClassificationName = classification.ClassificationName;
-                m_newClassificationList.Add(m_newClassification);
 
-                if (!m_newClassification.IsUnchanged(m_savedClassification))
+                }
+                else
                 {
-                    if (!m_newClassification.AreMandatoryFieldsFilled())
+                    IFCClassification m_newClassification = new IFCClassification();
+                    m_newClassification.ClassificationFieldName = classification.ClassificationFieldName;
+                    if (m_newClassification.ClassificationEditionDate <= DateTime.MinValue || m_newClassification.ClassificationEditionDate >= DateTime.MaxValue)
                     {
-                        fillMandatoryFields(m_newClassification);
-
+                        DateTime today = DateTime.Now;
+                        m_newClassification.ClassificationEditionDate = today;
                     }
+                    m_newClassification.ClassificationSource = "bsddplugin";
+                    m_newClassification.ClassificationEdition = "v1";
+                    m_newClassification.ClassificationName = classification.ClassificationName;
+
+                    if (!m_newClassification.IsUnchanged(m_savedClassification))
+                    {
+                        if (!m_newClassification.AreMandatoryFieldsFilled())
+                        {
+                            fillMandatoryFields(m_newClassification);
+
+                        }
+                    }
+
+                    m_newClassificationList.Add(m_newClassification);
                 }
+               
             }
 
 
