@@ -121,7 +121,11 @@ namespace BsddRevitPlugin.Logic.Model
                 {
                     case IfcClassificationReference ifcClassificationReference:
                         // do something with ifcClassificationReference
-                        if (ifcClassificationReference.ReferencedSource.Name == "DigiBase Demo NL-SfB tabel 1")
+                        if (ifcClassificationReference.ReferencedSource.Name == "DigiBase Demo NL-SfB tabel 1") 
+                        {
+                            nlfsbCodevalue = ifcClassificationReference.Identification;
+                        }
+                        else if (ifcClassificationReference.ReferencedSource.Name == "NL-SfB 2005")
                         {
                             nlfsbCodevalue = ifcClassificationReference.Identification;
                         }
@@ -162,7 +166,7 @@ namespace BsddRevitPlugin.Logic.Model
                         if (paramName == nlfsbCodeparam)
                         {
                             string parametervalue = nlfsbCodevalue;
-                            logger.Debug(parametervalue);
+                            logger.Debug($"parametervalue = {parametervalue}");
                             typeparameter.Set(parametervalue);
                         }
                     }
