@@ -1,0 +1,202 @@
+[
+    {
+        "uri": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3",
+        "revitParameterName": "IfcExportType",
+        "revitParameterGuid": "765c61bc-7588-4846-bfef-befb28681767"
+    },
+    {
+        "uri": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/Name",
+        "revitParameterName": "IfcName",
+        "revitParameterGuid": "d6ddeaaa-ca8a-4602-a2db-5ed247c66beb"
+    },
+    {
+        "uri": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/Description",
+        "revitParameterName": "IfcDescription",
+        "revitParameterId": "b794a8a9-d913-4933-80ff-c5fbd0a7fb85"
+    },
+    {
+        "uri": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/AcousticRating",
+        "revitParameterName": "AcousticRating",
+        "revitParameterGuid": "8d2dd2df-37b8-4b80-bf2d-efaff4598891"
+    },
+    {
+        "uri": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/AirPressurization",
+        "revitParameterName": "AirPressurization",
+        "revitParameterGuid": "f005afcd-aaa6-4923-a373-faba548a86c8"
+    },
+    {
+        "uri": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/Compartmentation",
+        "revitParameterName": "Compartmentation",
+        "revitParameterGuid": "894d3df7-abdc-4a41-9324-7dcc079d7429"
+    },
+    {
+        "uri": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/FireRating",
+        "revitParameterName": "FireRating",
+        "revitParameterGuid": "6af66917-fcb5-441c-8e47-1ec63ce387fa"
+    },
+    {
+        "uri": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/GlazingAreaFraction",
+        "revitParameterName": "GlazingAreaFraction",
+        "revitParameterGuid": "883423f3-68e5-4be2-a190-d1442eeb1c41"
+    },
+    {
+        "uri": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/HandicapAccessible",
+        "revitParameterName": "HandicapAccessible",
+        "revitParameterGuid": "adfbce83-8427-4d83-ac18-a43e96a7660d"
+    },
+    {
+        "uri": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/Infiltration",
+        "revitParameterName": "Infiltration",
+        "revitParameterGuid": "ad9744f3-f3db-4287-a24a-6f3bd9846308"
+    },
+    {
+        "uri": "https://search.bsdd.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/IsExternal",
+        "revitParameterName": "IsExternal",
+        "revitParameterGuid": "576da907-5f75-40ce-a0c1-572ca690fc1b"
+    },
+    {
+        "uri": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/IsLaminated",
+        "revitParameterName": "IsLaminated",
+        "revitParameterGuid": "76c2bff1-2d38-45a0-ba99-4fef380c122c"
+    },
+    {
+        "uri": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/IsTempered",
+        "revitParameterName": "IsTempered",
+        "revitParameterGuid": "98dc21c6-a2aa-450f-ab06-0b0c4b0c321a"
+    },
+    {
+        "uri": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/LoadBearing",
+        "revitParameterName": "LoadBearing",
+        "revitParameterGuid": "61ac94f8-e1d0-4ce1-987e-19ce530dbb9e"
+    },
+    {
+        "uri": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/OccupancyType",
+        "revitParameterName": "OccupancyType",
+        "revitParameterGuid": "c8ee89f6-d57f-45b1-8955-7b93fbdacf2e"
+    },
+    {
+        "uri": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/PubliclyAccessible",
+        "revitParameterName": "PubliclyAccessible",
+        "revitParameterGuid": "720b39ff-7d08-434d-91a2-7259078c18d9"
+    },
+    {
+        "uri": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/RequiredSlope",
+        "revitParameterName": "RequiredSlope",
+        "revitParameterGuid": "8d4589ee-639f-464d-bf52-c8b72bf652a6"
+    },
+    {
+        "uri": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/SelfClosing",
+        "revitParameterName": "SelfClosing",
+        "revitParameterGuid": "732cd6f6-de01-49ba-96c3-25314f46314f"
+    },
+    {
+        "uri": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/SmokeStop",
+        "revitParameterName": "SmokeStop",
+        "revitParameterGuid": "f4fd14f7-9aa1-4260-9da8-3a7c3d747f79"
+    },
+    {
+        "uri": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/SprinklerProtection",
+        "revitParameterName": "SprinklerProtection",
+        "revitParameterGuid": "72fef7c2-4b82-4cda-8fdc-5134dcb3c2db"
+    },
+    {
+        "uri": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/SurfaceSpreadOfFlame",
+        "revitParameterName": "SurfaceSpreadOfFlame",
+        "revitParameterGuid": "bb7dd6dd-7886-49f7-a85f-b6c1a949efd3"
+    },
+    {
+        "uri": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ThermalTransmittanceSummer",
+        "revitParameterName": "ThermalTransmittanceSummer",
+        "revitParameterGuid": "9010cbc7-bbf0-4fb7-b9ff-76b13e7989a9"
+    },
+    {
+        "uri": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ThermalTransmittanceWinter",
+        "revitParameterName": "ThermalTransmittanceWinter",
+        "revitParameterGuid": "e5ae0aeb-ded2-4392-b443-0b0c973aaedd"
+    },
+    {
+        "uri": "https://search.bsdd.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/YearOfConstruction",
+        "revitParameterName": "YearOfConstruction",
+        "revitParameterGuid": "744b80dc-4619-46b3-9bed-bb341f1b974c"
+    },
+    {
+        "uri": "https://search-test.bsdd.buildingsmart.org/uri/digibase/basisbouwproducten/0.1",
+        "revitParameterName": "IfcDescription",
+        "revitParameterId": "b794a8a9-d913-4933-80ff-c5fbd0a7fb85"
+    },
+    {
+        "uri": "https://search-test.bsdd.buildingsmart.org/uri/digibase/bim-basis-objecten/0.1",
+        "revitParameterName": "IfcDescription",
+        "revitParameterId": "b794a8a9-d913-4933-80ff-c5fbd0a7fb85"
+    },
+    {
+        "uri": "https://search-test.bsdd.buildingsmart.org/uri/digibase/volkerwesselsbv/0.1",
+        "revitParameterName": "IfcDescription",
+        "revitParameterId": "b794a8a9-d913-4933-80ff-c5fbd0a7fb85"
+    },
+    {
+        "uri": "https://search-test.bsdd.buildingsmart.org/uri/digibase/digibasebouwlagen/0.1",
+        "revitParameterName": "IfcName",
+        "revitParameterId": "d6ddeaaa-ca8a-4602-a2db-5ed247c66beb"
+    },
+    {
+        "uri": "https://search-test.bsdd.buildingsmart.org/uri/digibase/digibasedemoifctranslation/0.1",
+        "revitParameterName": "IfcExportType",
+        "revitParameterGuid": "765c61bc-7588-4846-bfef-befb28681767"
+    },
+    {
+        "uri": "https://search-test.bsdd.buildingsmart.org/uri/digibase/digibasedemoifcnl/0.1",
+        "revitParameterName": "IfcExportType",
+        "revitParameterGuid": "765c61bc-7588-4846-bfef-befb28681767"
+    },
+    {
+        "uri": "https://search-test.bsdd.buildingsmart.org/uri/digibase/nen2699/0.1",
+        "revitParameterName": "AssemblyCode",
+        "revitParameterGuid": ""
+    },
+    {
+        "uri": "https://search-test.bsdd.buildingsmart.org/uri/digibase/nlsfb/12.2021",
+        "revitParameterName": "AssemblyCode",
+        "revitParameterGuid": ""
+    },
+    {
+        "uri": "https://search-test.bsdd.buildingsmart.org/uri/digibase/stabu2hoofdstukkenserie01/03.2022",
+        "revitParameterName": "AssemblyCode",
+        "revitParameterGuid": ""
+    },
+    {
+        "uri": "",
+        "revitParameterName": "GrossAreaPlanned",
+        "revitParameterId": "20aa38dd-5ed9-4871-bcd6-12481ee15f62"
+    },
+    {
+        "uri": "",
+        "revitParameterName": "LiningDepth",
+        "revitParameterId": "d37439db-b0f6-4c66-89f4-73efcb6f227b"
+    },
+    {
+        "uri": "",
+        "revitParameterName": "SpaceHumidity",
+        "revitParameterId": "b29882cd-08e2-4541-b54c-cd5c9ec234c5"
+    },
+    {
+        "uri": "",
+        "revitParameterName": "bouwblok",
+        "revitParameterGuid": "17c38229-18ab-4370-b184-c5492442c681"
+    },
+    {
+        "uri": "",
+        "revitParameterName": "bouwdeel",
+        "revitParameterGuid": "a2ef01ee-ff77-4e17-8d7e-2a0f6f925d70"
+    },
+    {
+        "uri": "",
+        "revitParameterName": "bouwnummer",
+        "revitParameterGuid": "01351e68-3435-44c5-84c9-68878ea1154f"
+    },
+    {
+        "uri": "",
+        "revitParameterName": "woningtype",
+        "revitParameterGuid": "51570bcc-4fdb-4699-939d-198abd2d36bb"
+    }
+]
