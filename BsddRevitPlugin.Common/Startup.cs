@@ -98,10 +98,10 @@ namespace BsddRevitPlugin.Common
             PushButtonData parameterChangeButtonData = new PushButtonData("ParameterChange", "Parameters\raanpassen", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.ParameterAanpassen");
             PushButton parameterChangeButton = panel.AddItem(parameterChangeButtonData) as PushButton;
             parameterChangeButton.ToolTip = "This is a sample Revit button";
-            parameterChangeButton.LargeImage = ResourceImage.GetIcon("bsdd-label.ico");
+            parameterChangeButton.LargeImage = ResourceImage.GetIcon("BsddLabel.ico");
 
             // Create selection panel toggle button.
-            PushButtonData selectionPanelButtonData = new PushButtonData("Show/Hide", "Show/Hide selector", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.ShowDockableWindow");
+            PushButtonData selectionPanelButtonData = new PushButtonData("Show/Hide", "bSDD selection", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.ShowDockableWindow");
             PushButton selectionPanelButton = panel.AddItem(selectionPanelButtonData) as PushButton;
             selectionPanelButton.ToolTip = "Show/hide bSDD selection panel";
             selectionPanelButton.LargeImage = ResourceImage.GetIcon("BsddLabel.ico");
