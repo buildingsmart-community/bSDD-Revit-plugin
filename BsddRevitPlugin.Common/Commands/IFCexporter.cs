@@ -5,7 +5,10 @@ using System.Windows.Forms;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-
+using BsddRevitPlugin.Logic.Classifications;
+using BsddRevitPlugin.Logic.UI.DockablePanel;
+using static BsddRevitPlugin.Logic.Classifications.Classifier;
+using CefSharp.DevTools.Page;
 
 namespace BsddRevitPlugin.Common.Commands
 {
@@ -23,14 +26,43 @@ namespace BsddRevitPlugin.Common.Commands
                 UIApplication uiApp = commandData.Application;
                 UIDocument uiDoc = uiApp.ActiveUIDocument;
                 Document doc = uiDoc.Document;
+                Select select = new Select();
+
+                //List<Element> elems = select.SelectElements(uiApp);
+                RevitClassificationHelper revitClassificationHelper = new RevitClassificationHelper(doc);
+                List<bSDD_Classification> bSDD_Classifications = new List<bSDD_Classification>();   
+                bSDD_Classification bSDD_Classification = new bSDD_Classification(new string[] { "", "Descriptiontekst" }, "testIfcCLass", "Description");
+                bSDD_Classification bSDD_Classification2 = new bSDD_Classification(new string[] { "", "Modeltekst" }, "test222IfcCLass", "Model");
+                bSDD_Classification bSDD_Classification3 = new bSDD_Classification(new string[] { "", "Bedrijven" }, "test333IfcCLass", "Bedrijf");
+
+                bSDD_Classifications.Add(bSDD_Classification);
+                bSDD_Classifications.Add(bSDD_Classification2);
+                bSDD_Classifications.Add(bSDD_Classification3);
+
+
+
+                Transaction transaction1 = new Transaction(doc, "updateClassifications");
+                revitClassificationHelper.writeClassifications(transaction1, bSDD_Classifications);
+
+                //foreach (var classification in bSDD_Classifications)
+                //{
+                //    Transaction transaction = new Transaction(doc, classification.ClassificationName);
+                //    revitClassificationHelper.writeClassification(transaction, classification);
+                //}
+
+
+                Document do2 = uiDoc.Document;
 
                 using (Transaction transaction = new Transaction(doc, "Export IFC"))
                 {
+                    
+
+
                     string IFCversion = "IFC 2x3";
 
                     // Start the IFC-transaction
                     transaction.Start("Export IFC");
-
+                   
                     // Start IFC Export Options
                     IFCExportOptions exportOptions = new IFCExportOptions();
 

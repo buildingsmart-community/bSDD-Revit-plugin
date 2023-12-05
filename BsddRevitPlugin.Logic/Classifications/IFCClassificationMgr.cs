@@ -193,7 +193,7 @@ namespace BsddRevitPlugin.Logic.Classifications
             if (schema != null)
             {
                 //Transaction transaction = new Transaction(document, "Update saved IFC classifications");
-                //transaction.Start();
+                transaction.Start();
 
                 IList<DataStorage> oldSavedClassification = GetClassificationInStorage(document, schema);
                 if (oldSavedClassification.Count > 0)
@@ -223,9 +223,10 @@ namespace BsddRevitPlugin.Logic.Classifications
                     if (classification.ClassificationLocation != null) entIFCClassification.Set<string>(s_ClassificationLocation, classification.ClassificationLocation.ToString());
                     if (classification.ClassificationFieldName != null) entIFCClassification.Set<string>(s_ClassificationFieldName, classification.ClassificationFieldName.ToString());
                     classificationStorage.SetEntity(entIFCClassification);
+                   
                 }
 
-                //transaction.Commit();
+                transaction.Commit();
             }
         }
 

@@ -15,13 +15,15 @@ namespace BsddRevitPlugin.Logic.Classifications
     {
         public class bSDD_Classification 
         {
-            public bSDD_Classification(string[] keys, string value)
+            public bSDD_Classification(string[] keys, string value, string classificationFieldName)
             {
                 this.ClassificationName = keys[1];
                 this.Value = value;
+                this.ClassificationFieldName = classificationFieldName;
             }
             public string ClassificationName { get; set; }
             public string Value { get; set; }
+            public string ClassificationFieldName { get; set; }
         }
 
         public static void ClassifyElement(Document doc, bSDD_Classification classification, Parameter parameter)
