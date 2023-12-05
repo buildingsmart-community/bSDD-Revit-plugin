@@ -21,9 +21,9 @@ namespace BsddRevitPlugin.Resources
 
             BitmapImage image = new BitmapImage();
 
-            image.BeginInit();
-            image.StreamSource = stream;
-            image.EndInit();
+            //image.BeginInit();
+            //image.StreamSource = stream;
+            //image.EndInit();
 
             return image;
         }

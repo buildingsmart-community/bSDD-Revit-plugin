@@ -86,7 +86,34 @@ namespace BsddRevitPlugin.Logic.Model
         }
         public static void SetIfcDataToRevit(Document doc, IfcData ifcData)
         {
-            string nlfsbCode = "";
+            Logger logger = LogManager.GetCurrentClassLogger();
+            //string nlfsbCode = "";
+            //string description = "";
+            //foreach (var association in ifcData.HasAssociations)
+            //{
+            //    switch (association)
+            //    {
+            //        case IfcClassificationReference ifcClassificationReference:
+            //            // do something with ifcClassificationReference
+            //            if (ifcClassificationReference.ReferencedSource.Name == "NL-SfB 2005")
+            //            {
+            //                nlfsbCode = ifcClassificationReference.Identification;
+            //            }
+            //            else if (ifcClassificationReference.ReferencedSource.Name == "VolkerWessels Bouw & vastgoed")
+            //            {
+            //                description = ifcClassificationReference.Identification;
+            //            }
+            //            break;
+            //        case IfcMaterial ifcMaterial:
+            //            // do something with ifcMaterial
+            //            break;
+
+            //    }
+
+            //}
+
+            string nlfsbCodevalue = "";
+            string nlfsbCodeparam = "Assembly Code";
             string description = "";
             foreach (var association in ifcData.HasAssociations)
             {
@@ -94,9 +121,9 @@ namespace BsddRevitPlugin.Logic.Model
                 {
                     case IfcClassificationReference ifcClassificationReference:
                         // do something with ifcClassificationReference
-                        if (ifcClassificationReference.ReferencedSource.Name == "NL-SfB 2005")
+                        if (ifcClassificationReference.ReferencedSource.Name == "DigiBase Demo NL-SfB tabel 1")
                         {
-                            nlfsbCode = ifcClassificationReference.Identification;
+                            nlfsbCodevalue = ifcClassificationReference.Identification;
                         }
                         else if (ifcClassificationReference.ReferencedSource.Name == "VolkerWessels Bouw & vastgoed")
                         {
@@ -108,24 +135,80 @@ namespace BsddRevitPlugin.Logic.Model
                         break;
 
                 }
-
             }
 
             using (Transaction tx = new Transaction(doc))
             {
-                tx.Start("Param");
+                tx.Start("Update Parameters");
+
+                List<Parameter> typeparameters = new List<Parameter>();
 
                 int idInt = Convert.ToInt32(ifcData.Tag);
-                ElementId id = new ElementId(idInt);
-                Element elem = doc.GetElement(id);
+                ElementId typeId = new ElementId(idInt);
+                Element elementType = doc.GetElement(typeId);
 
-                Parameter p = elem.get_Parameter(BuiltInParameter.UNIFORMAT_CODE);
-                var paramset = p.Set(nlfsbCode);
+                foreach (Parameter typeparameter in elementType.Parameters)
+                {
+                    typeparameters.Add(typeparameter);
+                }
 
-                SetParameterValue(elem, "Description", description);
+                foreach (Parameter typeparameter in typeparameters)
+                {
+                    string paramName = typeparameter.Definition.Name;
+                    //TaskDialog.Show("Success", paramName);
+
+                    if (!typeparameter.IsReadOnly)
+                    {
+                        if (paramName == nlfsbCodeparam)
+                        {
+                            string parametervalue = nlfsbCodevalue;
+                            logger.Debug(parametervalue);
+                            typeparameter.Set(parametervalue);
+                        }
+                    }
+
+                    //if (!typeparameter.IsReadOnly)
+                    //{
+
+                        //if (values.ContainsKey(paramName))
+                        //{
+                        //    string parametervalue = values[paramName];
+                        //    typeparameter.Set(parametervalue);
+                        //    //TaskDialog.Show("Success", paramName + ": " + parametervalue);
+                        //}
+
+                        //string test = parameter.Definition.GetDataType().ToString();
+                        //TaskDialog.Show("Success", parameter.AsValueString());
+                        //parameter.Set("Aanpassen parameters");
+                    //}
+                    //if (typeparameter.Definition.Name == )
+                }
+
+
+
+
+
+                //Parameter p = elementType.get_Parameter(BuiltInParameter.UNIFORMAT_CODE);
+                //var paramset = p.Set(nlfsbCode);
+                //SetParameterValue(elementType, "Description", description);
 
                 tx.Commit();
             }
+            //using (Transaction tx = new Transaction(doc))
+            //{
+            //    tx.Start("Param");
+
+            //    int idInt = Convert.ToInt32(ifcData.Tag);
+            //    ElementId id = new ElementId(idInt);
+            //    Element elem = doc.GetElement(id);
+
+            //    Parameter p = elem.get_Parameter(BuiltInParameter.UNIFORMAT_CODE);
+            //    var paramset = p.Set(nlfsbCode);
+
+            //    SetParameterValue(elem, "Description", description);
+
+            //    tx.Commit();
+            //}
         }
         public static BsddBridgeData SelectionToJson(Document doc, List<Element> elemList)
         {
