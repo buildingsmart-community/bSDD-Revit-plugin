@@ -47,7 +47,7 @@ namespace BsddRevitPlugin.Logic.UI.View
 
             // Set the address of the CefSharp browser component to the index.html file of the plugin
             Browser.Address = addinDirectory + "/html/bsdd_selection/index.html";
-            Browser.JavascriptObjectRepository.Register("bsddBridge", new BsddBridge.BsddBridge(), true);
+            Browser.JavascriptObjectRepository.Register("bsddBridge", new BsddBridge.BsddSelectionBridge(), true);
             Browser.IsBrowserInitializedChanged += OnIsBrowserInitializedChanged;
 
             // Sort the list of elements by category, family, and type
