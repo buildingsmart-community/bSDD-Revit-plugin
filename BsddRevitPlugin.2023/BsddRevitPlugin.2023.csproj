@@ -106,7 +106,8 @@
   <Import Project="..\BsddRevitPlugin.Common\BsddRevitPlugin.Common.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>if $(ConfigurationName) == Debug xcopy /Y /E "$(TargetDir)" "$(AppData)\Autodesk\Revit\Addins\2023\"</PostBuildEvent>
+    <PostBuildEvent>if $(ConfigurationName) == Debug xcopy /Y /E "$(TargetDir)" "$(AppData)\Autodesk\Revit\Addins\2023\BsddRevitPlugin\"
+if $(ConfigurationName) == Debug xcopy /Y /E "$(TargetDir)\BsddRevitPlugin.addin" "$(AppData)\Autodesk\Revit\Addins\2023\"</PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
