@@ -42,6 +42,14 @@ namespace BsddRevitPlugin.Common.Commands
                         {
                             // TYPEPARAMETERS //
                             List<Parameter> typeparameters = new List<Parameter>();
+
+
+
+
+
+
+
+
                             ElementId typeId = element.GetTypeId();
                             Element elementType = doc.GetElement(typeId);
 
