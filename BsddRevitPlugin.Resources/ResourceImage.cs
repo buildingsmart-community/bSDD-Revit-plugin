@@ -16,7 +16,8 @@ namespace BsddRevitPlugin.Resources
         /// <returns></returns>
         public static BitmapImage GetIcon(string name)
         {
-            Stream stream = ResourceAssembly.GetAssembly().GetManifestResourceStream($"{ResourceAssembly.GetNamespace()}Images.Icons.{name}");
+            string iconPath = $"{ResourceAssembly.GetNamespace()}Images.Icons.{name}";
+            Stream stream = ResourceAssembly.GetAssembly().GetManifestResourceStream(iconPath);
 
             BitmapImage image = new BitmapImage();
 
