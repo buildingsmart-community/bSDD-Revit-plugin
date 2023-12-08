@@ -7,6 +7,7 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Media.Media3D;
 using static ASRR.Revit.Core.Elements.Parameters.Dto.RevitParameter;
 
 
@@ -191,13 +192,14 @@ namespace BsddRevitPlugin.Logic.Model
                                 Name = "DigiBase Demo NL-SfB tabel 1",
                                 Location = domainUri
                             }
+                        },
+                        new IfcMaterial
+                        {
+                            //MaterialId = GetMaterialId(doc, elem).Id.ToString(),
+                            //MaterialType = GetMaterialId(doc, elem).MaterialCategory,
+                            MaterialName = GetMaterialId(doc, elem).Name,
+                            Description = "Description"//GetParamValueByName("Assembly Code", item)
                         }
-                        //new IfcMaterial
-                        //{
-                        //    //MaterialType = item.GetMaterialIds(false).First().ToString(),
-                        //    MaterialName = "MaterialName",//GetMaterialName(item, Command.MyApp.DbDoc),
-                        //    Description = "Description"//GetParamValueByName("Assembly Code", item)
-                        //}
                     }
                 };
 
@@ -315,42 +317,56 @@ namespace BsddRevitPlugin.Logic.Model
         }
 
 
-        public static string GetMaterialName(Element e, Document DbDoc)
+        public static Autodesk.Revit.DB.Material GetMaterialId(Document doc, Element e)
         {
-            string materialName = "not defined1";
-            Autodesk.Revit.DB.Material firstMaterial = null;
+            ElementId matId = null;
+            List<ElementId> matIds = new List<ElementId>();
+            ICollection<ElementId> materialIds;
 
-            // Reference to the Revit API Document
-            Document doc = DbDoc;
-
-            // Reference to the element you are interested in
-            ElementId elementId = e.GetTypeId();
-            //Element element = doc.GetElement(elementId);
-
-            //// Get the Material Id of the element
-            //ICollection<ElementId> materialIds = element.GetMaterialIds(false);
-            //foreach (ElementId materialId in materialIds)
-            //{
-            //    firstMaterial = doc.GetElement(materialId) as Autodesk.Revit.DB.Material;
-            if (firstMaterial != null)
+            var exactType = e.GetType().Name;
+            if (exactType == "WallType" || exactType == "FloorType" || exactType == "RoofType")
             {
-                // Found the first material, break out of the loop
-                //        break;
-            }
-            //}
-
-            if (firstMaterial != null)
-            {
-                //                materialName = firstMaterial.Name;
-                // You can access other properties of the material here
-                // For example, firstMaterial.Color, firstMaterial.Transparency, etc.
+                CompoundStructure compoundStructure = null;
+                if (exactType == "WallType")
+                {
+                    WallType wallType = e as WallType;
+                    compoundStructure = wallType.GetCompoundStructure();
+                }
+                if (exactType == "FloorType")
+                {
+                    FloorType floorType = e as FloorType;
+                    compoundStructure = floorType.GetCompoundStructure();
+                }
+                if (exactType == "RoofType")
+                {
+                    FloorType roofType = e as FloorType;
+                    compoundStructure = roofType.GetCompoundStructure();
+                }
+                var layers = compoundStructure.GetLayers();
+                foreach (var item in layers)
+                {
+                    matId = item.MaterialId;
+                    if (matId != null)
+                    {
+                        break;
+                    }
+                }
             }
             else
             {
-                materialName = "No material found1";
+                materialIds = e.GetMaterialIds(false);
+                foreach (var materialId in materialIds)
+                {
+                    if (materialId != null)
+                    {
+                        // Found the first material, break out of the loop
+                        matId = materialId;
+                        break;
+                    }
+                }
             }
-
-            return materialName;
+            Autodesk.Revit.DB.Material m = doc.GetElement(matId) as Autodesk.Revit.DB.Material;
+            return m;
         }
 
         public static Uri GetLocationParam(string domain, Element element)

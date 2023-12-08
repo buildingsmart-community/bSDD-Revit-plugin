@@ -95,6 +95,9 @@ namespace BsddRevitPlugin.Logic.IfcJson
     }
     public class IfcMaterial : Association
     {
+        [JsonProperty("materialid")]
+        public string MaterialId { get; set; }
+
         [JsonProperty("description")]
         public string Description { get; set; }
 
