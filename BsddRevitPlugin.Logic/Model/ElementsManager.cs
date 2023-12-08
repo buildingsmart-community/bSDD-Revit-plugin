@@ -197,7 +197,7 @@ namespace BsddRevitPlugin.Logic.Model
                         {
                             //MaterialId = GetMaterialId(doc, elem).Id.ToString(),
                             //MaterialType = GetMaterialId(doc, elem).MaterialCategory,
-                            MaterialName = GetMaterialId(doc, elem).Name,
+                            MaterialName = GetMaterial(doc, elem).Name,
                             Description = "Description"//GetParamValueByName("Assembly Code", item)
                         }
                     }
@@ -317,7 +317,7 @@ namespace BsddRevitPlugin.Logic.Model
         }
 
 
-        public static Autodesk.Revit.DB.Material GetMaterialId(Document doc, Element e)
+        public static Autodesk.Revit.DB.Material GetMaterial(Document doc, Element e)
         {
             ElementId matId = null;
             List<ElementId> matIds = new List<ElementId>();
@@ -365,8 +365,15 @@ namespace BsddRevitPlugin.Logic.Model
                     }
                 }
             }
-            Autodesk.Revit.DB.Material m = doc.GetElement(matId) as Autodesk.Revit.DB.Material;
-            return m;
+
+            try
+            {
+                return doc.GetElement(matId) as Autodesk.Revit.DB.Material;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         public static Uri GetLocationParam(string domain, Element element)
