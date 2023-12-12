@@ -3,6 +3,7 @@ using ASRR.Core.Persistence;
 using Autodesk.Revit.DB;
 using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
+using CefSharp.DevTools.LayerTree;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -195,10 +196,9 @@ namespace BsddRevitPlugin.Logic.Model
                         },
                         new IfcMaterial
                         {
-                            //MaterialId = GetMaterialId(doc, elem).Id.ToString(),
-                            //MaterialType = GetMaterialId(doc, elem).MaterialCategory,
-                            MaterialName = GetMaterial(doc, elem).Name,
-                            Description = "Description"//GetParamValueByName("Assembly Code", item)
+                            MaterialId = GetMaterial(doc, elem)?.Id.ToString() ?? null,
+                            MaterialType = GetMaterial(doc, elem)?.MaterialCategory ?? null,
+                            MaterialName = GetMaterial(doc, elem)?.Name ?? null
                         }
                     }
                 };
@@ -269,7 +269,6 @@ namespace BsddRevitPlugin.Logic.Model
         {
             try
             {
-                //ElementId eId = e.GetTypeId();
                 ElementId eId = e.Id;
                 ElementType elementType = (ElementType)doc.GetElement(eId) as ElementType;
 
@@ -290,7 +289,6 @@ namespace BsddRevitPlugin.Logic.Model
             {
                 try
                 {
-                    //ElementId eId = e.GetTypeId();
                     ElementId eId = e.Id;
                     ElementType elementType = (ElementType)doc.GetElement(eId) as ElementType;
 
@@ -320,7 +318,6 @@ namespace BsddRevitPlugin.Logic.Model
         public static Autodesk.Revit.DB.Material GetMaterial(Document doc, Element e)
         {
             ElementId matId = null;
-            List<ElementId> matIds = new List<ElementId>();
             ICollection<ElementId> materialIds;
 
             var exactType = e.GetType().Name;
@@ -354,7 +351,14 @@ namespace BsddRevitPlugin.Logic.Model
             }
             else
             {
-                materialIds = e.GetMaterialIds(false);
+                try
+                {
+                    materialIds = e.GetMaterialIds(false);
+                }
+                catch (Exception)
+                {
+                    return null;
+                }
                 foreach (var materialId in materialIds)
                 {
                     if (materialId != null)
@@ -372,7 +376,7 @@ namespace BsddRevitPlugin.Logic.Model
             }
             catch (Exception)
             {
-                throw;
+                return null;
             }
         }
 
