@@ -44,13 +44,6 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         public string save(string ifcJsonData)
         {
 
-            //OpenBsddSearchUiCommand a = new OpenBsddSearchUiCommand();
-
-            //a.Execute();
-            //testExEvent2.Raise();
-            // EventHandlerBsddSearch.Execute(Ap);
-
-            // Create an instance of the IfcDataConverter class
             var converter = new IfcJsonConverter();
 
             // Deserialize the JSON data into an IfcData object using the IfcDataConverter

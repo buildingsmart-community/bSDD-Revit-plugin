@@ -36,7 +36,7 @@ namespace BsddRevitPlugin.Logic.UI.View
 
         public BsddSearch()
         {
-
+            
             InitializeComponent();
 
             string addinLocation = Assembly.GetExecutingAssembly().Location;
@@ -58,35 +58,6 @@ namespace BsddRevitPlugin.Logic.UI.View
         {
             Close();
         }
-
-        //public async void ShowAndSendData(object data)
-        //{
-        //    // Show the form
-        //    this.Show();
-
-        //    // Serialize the data to a JSON string
-        //    var jsonString = JsonConvert.SerializeObject(data);
-
-        //    // Create a JavaScript function call
-        //    var jsFunctionCall = $"myJavaScriptFunction({jsonString});";
-
-        //    // Wait for the browser to be initialized
-        //    if (!Browser.IsBrowserInitialized)
-        //    {
-        //        var tcs = new TaskCompletionSource<bool>();
-        //        EventHandler handler = null;
-        //        handler = (sender, args) =>
-        //        {
-        //            Browser.IsBrowserInitializedChanged -= handler;
-        //            tcs.SetResult(true);
-        //        };
-        //        Browser.IsBrowserInitializedChanged += handler;
-        //        await tcs.Task;
-        //    }
-
-        //    // Execute the JavaScript function
-        //    Browser.ExecuteScriptAsync(jsFunctionCall);
-        //}
 
 
         public void UpdateBsddBridgeData(BsddBridgeData bsddBridgeData)
@@ -110,6 +81,11 @@ namespace BsddRevitPlugin.Logic.UI.View
             if (Browser.IsBrowserInitialized)
             {
                 Browser.ShowDevTools();
+                if (_inputBsddBridgeData == null || _inputBsddBridgeData.IfcData == null || _inputBsddBridgeData.IfcData[0] == null)
+                {
+                    return;
+                }
+
                 var jsonString = JsonConvert.SerializeObject(_inputBsddBridgeData.IfcData[0]);
 
                 // Initialize the bridge and set the initial IfcEntity
