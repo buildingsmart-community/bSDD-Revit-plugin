@@ -48,20 +48,12 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         /// <returns></returns>
         public string bsddSearch(string ifcJsonData)
         {
-            //      uicapp.ControlledApplication
-            //.ApplicationInitialized
-            //  += ControlledApplication_ApplicationInitialized;
-
-            //uicapp.ControlledApplication.ApplicationInitialized += ControlledApplication_ApplicationInitialized;
-            //var command = new OpenBsddSearchUiCommand();
-            //command.Execute();
-
             if (_bsddSearchParent != null)
             {
                 _bsddSearchParent.Dispatcher.Invoke(() => _bsddSearchParent.Close());
             }
 
-            eventHandlerBsddSearch.Raise("openSearch");
+       
             //ExEventBsddSearch.Raise();
 
             // Create an instance of the IfcDataConverter class
@@ -72,11 +64,8 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             var bsddBridgeData = new BsddBridgeData();
             bsddBridgeData.IfcData.Add(ifcData);
             eventHandlerBsddSearch.setBsddBridgeData(bsddBridgeData);
-
-            //EventHandlerBsddSearch.Raise(_bsddSearch);
-            // Return the serialized JSON data for the IfcData object
+            eventHandlerBsddSearch.Raise("openSearch");
             return JsonConvert.SerializeObject(ifcData);
-
         }
     }
 }
