@@ -1,6 +1,7 @@
 ﻿
 using ASRR.Core.Persistence;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Architecture;
 using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
 using CefSharp.DevTools.LayerTree;
@@ -157,6 +158,41 @@ namespace BsddRevitPlugin.Logic.Model
                 if (loc_domain != null) location_domain = new Uri(loc_domain);
                 if (loc_domainentry != null) location_domain_entry = new Uri(loc_domainentry);
 
+                //Association material_list_ass = new Association();
+                //List<Association> material_list = new List<Association>();
+                //if (GetMaterial(doc, elem) != null)
+                //{
+                //    foreach (Autodesk.Revit.DB.Material mat in GetMaterial(doc, elem))
+                //    {
+                //        IfcMaterial material = new IfcMaterial
+                //        {
+                //            MaterialId = mat?.Id.ToString() ?? null,
+                //            MaterialType = mat?.MaterialCategory ?? null,
+                //            MaterialName = mat?.Name ?? null
+                //        };
+                //        material_list.Add(material);
+                //    }
+                //    foreach (IfcMaterial item in material_list)
+                //    {
+                //        material_list_ass = material_list_ass + item;
+                //    }
+                //    material_list_ass = material_list[0];
+                //}
+                //else
+                //{
+                //    IfcMaterial material = new IfcMaterial
+                //    {
+                //        MaterialId = null,
+                //        MaterialType = null,
+                //        MaterialName = null
+                //    };
+                //    material_list_ass = material;
+                //}
+                
+                
+
+
+
 
 
                 IfcData ifcData = new IfcData
@@ -171,14 +207,14 @@ namespace BsddRevitPlugin.Logic.Model
                         new IfcClassificationReference
                         {
                             Type = "IfcClassificationReference",
-                            Name = GetParameterValue(elem,"Description"),
+                            Name = GetParameterValue(elem, "Description"),
                             Location = location_domain_entry,
-                            Identification = GetParameterValue( elem, "Description"),
+                            Identification = GetParameterValue(elem, "Description"),
                             ReferencedSource = new IfcClassification
                             {
                                 Type = "IfcClassification",
                                 Name = "BIM Basis Objecten",
-                                Location =  location_domain
+                                Location = location_domain
                             }
                         },
                         new IfcClassificationReference
@@ -194,14 +230,29 @@ namespace BsddRevitPlugin.Logic.Model
                                 Location = domainUri
                             }
                         },
+                        //material_list_ass,
                         new IfcMaterial
                         {
-                            MaterialId = GetMaterial(doc, elem)?.Id.ToString() ?? null,
-                            MaterialType = GetMaterial(doc, elem)?.MaterialCategory ?? null,
-                            MaterialName = GetMaterial(doc, elem)?.Name ?? null
+                            MaterialId = GetMaterial(doc, elem)?[0]?.Id.ToString() ?? null,
+                            MaterialType = GetMaterial(doc, elem)?[0]?.MaterialCategory ?? null,
+                            MaterialName = GetMaterial(doc, elem)?[0]?.Name ?? null
+                        },
+                        new IfcMaterial
+                        {
+                            MaterialId = GetMaterial(doc, elem)?[1]?.Id.ToString() ?? null,
+                            MaterialType = GetMaterial(doc, elem)?[1]?.MaterialCategory ?? null,
+                            MaterialName = GetMaterial(doc, elem)?[1]?.Name ?? null
+                        },
+                        new IfcMaterial
+                        {
+                            MaterialId = GetMaterial(doc, elem)?[2]?.Id.ToString() ?? null,
+                            MaterialType = GetMaterial(doc, elem)?[2]?.MaterialCategory ?? null,
+                            MaterialName = GetMaterial(doc, elem)?[2]?.Name ?? null
                         }
                     }
                 };
+
+
 
                 ifcDataLst.Add(ifcData);
 
@@ -315,13 +366,15 @@ namespace BsddRevitPlugin.Logic.Model
         }
 
 
-        public static Autodesk.Revit.DB.Material GetMaterial(Document doc, Element e)
+        public static List<Autodesk.Revit.DB.Material> GetMaterial(Document doc, Element e)
         {
             ElementId matId = null;
-            ICollection<ElementId> materialIds;
+            ICollection<ElementId> matIdColl;
+            List<Autodesk.Revit.DB.Material> materials = new List<Autodesk.Revit.DB.Material>() { null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, };
+            int count = 0;
 
             var exactType = e.GetType().Name;
-            if (exactType == "WallType" || exactType == "FloorType" || exactType == "RoofType")
+            if (exactType == "WallType" || exactType == "FloorType" || exactType == "RoofType" || exactType == "Fascia")
             {
                 CompoundStructure compoundStructure = null;
                 if (exactType == "WallType")
@@ -339,13 +392,19 @@ namespace BsddRevitPlugin.Logic.Model
                     FloorType roofType = e as FloorType;
                     compoundStructure = roofType.GetCompoundStructure();
                 }
+                if (exactType == "Fascia")
+                {
+                    FasciaType fasciaType = e as FasciaType;
+                    compoundStructure = fasciaType.GetCompoundStructure();
+                }
                 var layers = compoundStructure.GetLayers();
                 foreach (var item in layers)
                 {
                     matId = item.MaterialId;
                     if (matId != null)
                     {
-                        break;
+                        materials[count] = (doc.GetElement(matId) as Autodesk.Revit.DB.Material);
+                        count++;
                     }
                 }
             }
@@ -353,31 +412,38 @@ namespace BsddRevitPlugin.Logic.Model
             {
                 try
                 {
-                    materialIds = e.GetMaterialIds(false);
+                    matIdColl = e.GetMaterialIds(false);
                 }
                 catch (Exception)
                 {
                     return null;
                 }
-                foreach (var materialId in materialIds)
+                if (matIdColl.Count == 0)
                 {
-                    if (materialId != null)
+                    return null;
+                }
+                else
+                {
+                    foreach (var materialId in matIdColl)
                     {
-                        // Found the first material, break out of the loop
-                        matId = materialId;
-                        break;
+                        if (materialId != null)
+                        {
+                            materials[count] = (doc.GetElement(materialId) as Autodesk.Revit.DB.Material);
+                            count++;
+                        }
                     }
                 }
             }
-
+            
             try
             {
-                return doc.GetElement(matId) as Autodesk.Revit.DB.Material;
+                return materials;
             }
-            catch (Exception)
+            catch (Exception) 
             {
                 return null;
             }
+
         }
 
         public static Uri GetLocationParam(string domain, Element element)
