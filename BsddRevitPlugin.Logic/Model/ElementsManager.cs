@@ -137,7 +137,7 @@ namespace BsddRevitPlugin.Logic.Model
                 {
                     case IfcClassificationReference ifcClassificationReference:
                         // do something with ifcClassificationReference
-                        if (ifcClassificationReference.ReferencedSource.Name == "DigiBase Demo NL-SfB tabel 1") 
+                        if (ifcClassificationReference.ReferencedSource.Name == "DigiBase Demo NL-SfB tabel 1")
                         {
                             nlfsbValue = ifcClassificationReference.Identification;
                         }
@@ -208,66 +208,126 @@ namespace BsddRevitPlugin.Logic.Model
         public static BsddBridgeData SelectionToJson(Document doc, List<Element> elemList)
         {
 
-            const string domain = "https://identifier.buildingsmart.org/uri/digibase/bim-basis-objecten";
-            List<string> filterDomains = new List<string>(){
-                "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3",
-                "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021"
+            const string mainClassificationLocation = "https://identifier.buildingsmart.org/uri/digibase/basisbouwproducten/0.8.0";
+            const string mainClassificationName = "BIM Basis Objecten";
+
+            const string ifcClassificationLocation = "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3";
+            const string ifcClassificationName = "IFC";
+
+            const string nlsfbClassificationLocation = "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021";
+            const string nlsfbClassificationName = "DigiBase Demo NL-SfB tabel 1";
+
+            List<string> filterClassificationLocations = new List<string>(){
+                ifcClassificationLocation,
+                nlsfbClassificationLocation
             };
 
-            var mainData = new BsddBridgeData();
+            Uri mainClassificationUri = _getBsddDomainUri(mainClassificationLocation);
+            Uri ifcClassificationUri = _getBsddDomainUri(ifcClassificationLocation);
+            Uri nlsfbClassificationUri = _getBsddDomainUri(nlsfbClassificationLocation);
+
+            var bsddBridgeData = new BsddBridgeData();
             List<IfcData> ifcDataLst = new List<IfcData>();
 
             foreach (Element elem in elemList)
             {
-
-                string code = elem.get_Parameter(BuiltInParameter.UNIFORMAT_CODE).AsString();
-                Uri domainUri = _getBsddDomainUri(domain);
-                Uri classificationUri = _getBsddClassificationUri(domainUri, code);
-
+                string familyName = GetFamilyName(doc, elem, GetTypeParameterValue(doc, elem, "IfcName"));
+                string typeName = GetTypeName(doc, elem, GetTypeParameterValue(doc, elem, "IfcType"));
+                string ifcTag = GetTypeId(elem);
+                string type_description = GetParameterValue(elem, "Description");
+                string ifcType =  elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS).AsString();
+                string ifcPredefinedType = elem.get_Parameter(BuiltInParameter.IFC_EXPORT_PREDEFINEDTYPE_TYPE).AsString();
                 string loc_domain = GetParameterValue(elem, "bsdd_domain");
                 string loc_domainentry = GetParameterValue(elem, "bsdd_domain_entry");
+                string uniformatCode = elem.get_Parameter(BuiltInParameter.UNIFORMAT_CODE).AsString();
+                string uniformatDescription = elem.get_Parameter(BuiltInParameter.UNIFORMAT_DESCRIPTION).AsString();
 
-                Uri location_domain = new Uri("https://www.volkerwessels.nl");
-                Uri location_domain_entry = new Uri("https://www.volkerwessels.nl");
+                string mainClassificationReferenceIdentification = null;
+                string mainClassificationReferenceName = null;
 
-                if (loc_domain != null) location_domain = new Uri(loc_domain);
-                if (loc_domainentry != null) location_domain_entry = new Uri(loc_domainentry);
+                string ifcClassificationReferenceIdentification = null;
+                string ifcClassificationReferenceName = null;
 
+                string nlsfbClassificationReferenceIdentification = null;
+                string nlsfbClassificationReferenceName = null;
 
+                if (type_description != null)
+                {
+                    mainClassificationReferenceIdentification = type_description.Replace(" ", "");
+                    mainClassificationReferenceName = type_description;
+                }
+
+                if (ifcType != null)
+                {
+                    ifcClassificationReferenceIdentification = ifcType.Replace(" ", "");
+                    ifcClassificationReferenceName = ifcType;
+                }
+
+                if (ifcClassificationReferenceIdentification != null && ifcClassificationReferenceName != null && ifcPredefinedType != null)
+                {
+                    ifcClassificationReferenceIdentification = ifcClassificationReferenceIdentification + ifcPredefinedType;
+                    ifcClassificationReferenceName = ifcClassificationReferenceName + "." + ifcPredefinedType;
+                }
+
+                if (uniformatCode != null)
+                {
+                    nlsfbClassificationReferenceIdentification = uniformatCode.Replace(" ", "");
+                    nlsfbClassificationReferenceName = uniformatDescription;
+                }
+
+                Uri mainClassificationReferenceUri = _getBsddClassificationUri(mainClassificationUri, mainClassificationReferenceIdentification);
+                Uri ifcClassificationReferenceUri = _getBsddClassificationUri(ifcClassificationUri, ifcClassificationReferenceIdentification);
+                Uri nlsfbClassificationReferenceUri = _getBsddClassificationUri(nlsfbClassificationUri, nlsfbClassificationReferenceIdentification);
+
+                if (loc_domain != null) mainClassificationUri = new Uri(loc_domain);
+                if (loc_domainentry != null) mainClassificationReferenceUri = new Uri(loc_domainentry);
 
                 IfcData ifcData = new IfcData
                 {
-                    Type = GetTypeParameterValue(doc, elem, "Export Type to IFC As"),
-                    Name = GetFamilyName(doc, elem, GetTypeParameterValue(doc, elem, "IfcName")) + " - " + GetTypeName(doc, elem, GetTypeParameterValue(doc, elem, "IfcType")),
-                    Tag = GetTypeId(elem),
-                    Description = GetParameterValue(elem, "Description"),
-                    PredefinedType = GetTypeParameterValue(doc, elem, "Type IFC Predefined Type"),
+                    Type = ifcType,
+                    Name = familyName + " - " + typeName,
+                    Tag = ifcTag,
+                    Description = type_description,
+                    PredefinedType = ifcPredefinedType,
                     HasAssociations = new List<Association>
                     {
                         new IfcClassificationReference
                         {
                             Type = "IfcClassificationReference",
-                            Name = GetParameterValue(elem,"Description"),
-                            Location = location_domain_entry,
-                            Identification = GetParameterValue( elem, "Description"),
+                            Name = mainClassificationReferenceName,
+                            Location = mainClassificationReferenceUri,
+                            Identification = mainClassificationReferenceIdentification,
                             ReferencedSource = new IfcClassification
                             {
                                 Type = "IfcClassification",
-                                Name = "BIM Basis Objecten",
-                                Location =  location_domain
+                                Name = mainClassificationName,
+                                Location =  mainClassificationUri
                             }
                         },
                         new IfcClassificationReference
                         {
                             Type = "IfcClassificationReference",
-                            Name = elem.get_Parameter(BuiltInParameter.UNIFORMAT_DESCRIPTION).AsString(),
-                            Location = classificationUri,
-                            Identification = GetTypeParameterValue(doc, elem, "Assembly Code"),
+                            Name = ifcClassificationReferenceName,
+                            Location = ifcClassificationReferenceUri,
+                            Identification = ifcClassificationReferenceIdentification,
                             ReferencedSource = new IfcClassification
                             {
                                 Type = "IfcClassification",
-                                Name = "DigiBase Demo NL-SfB tabel 1",
-                                Location = domainUri
+                                Name = ifcClassificationName,
+                                Location = ifcClassificationUri
+                            }
+                        },
+                        new IfcClassificationReference
+                        {
+                            Type = "IfcClassificationReference",
+                            Name = nlsfbClassificationReferenceName,
+                            Location = nlsfbClassificationReferenceUri,
+                            Identification = nlsfbClassificationReferenceIdentification,
+                            ReferencedSource = new IfcClassification
+                            {
+                                Type = "IfcClassification",
+                                Name = nlsfbClassificationName,
+                                Location = nlsfbClassificationUri
                             }
                         }
                         //new IfcMaterial
@@ -285,13 +345,13 @@ namespace BsddRevitPlugin.Logic.Model
             }
             //JObject json = JObject.Parse(JsonConvert.SerializeObject(ifcDataLst));
 
-            mainData.Name = "testIFC";
-            mainData.setDomain(domain);
-            mainData.setFilterDomains(filterDomains);
-            mainData.IfcData = ifcDataLst;
+            bsddBridgeData.Name = "testIFC";
+            bsddBridgeData.setDomain(mainClassificationLocation);
+            bsddBridgeData.setFilterDomains(filterClassificationLocations);
+            bsddBridgeData.IfcData = ifcDataLst;
             var provider = new JsonBasedPersistenceProvider("C://temp");
-            provider.Persist(mainData);
-            return mainData;
+            provider.Persist(bsddBridgeData);
+            return bsddBridgeData;
         }
 
         private static Uri _getBsddDomainUri(string domain)
@@ -301,7 +361,7 @@ namespace BsddRevitPlugin.Logic.Model
 
         private static Uri _getBsddClassificationUri(Uri domain, string code)
         {
-            return new Uri(domain, code);
+            return new Uri(domain + "/class/" + code);
         }
         public static string GetFamilyName(Document doc, Element e)
         {
