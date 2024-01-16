@@ -20,12 +20,6 @@ namespace BsddRevitPlugin.Logic.IfcJson
         public string Type { get; set; }
 
         /// <summary>
-        /// TODO: Not part of IFC schema
-        /// </summary>
-        [JsonProperty("typename")]
-        public string TypeName { get; set; }
-
-        /// <summary>
         /// Optional name for use by the participating software systems or users. For some subtypes of IfcRoot
         /// the insertion of the Name attribute may be required. This would be enforced by a where rule.
         /// </summary>
