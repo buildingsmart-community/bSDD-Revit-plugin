@@ -39,6 +39,14 @@
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
+    <Reference Include="ASRR.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\ASRR.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="ASRR.Revit.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\ASRR.Revit.Core.dll</HintPath>
+    </Reference>
     <Reference Include="CefSharp, Version=92.0.260.0, Culture=neutral, PublicKeyToken=40c4b6fc221f4138, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\Program Files\Autodesk\Revit 2023\CefSharp\CefSharp.dll</HintPath>
@@ -159,16 +167,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\lib\assr\lib-asrr-core\ASRR.Core.csproj">
-      <Project>{12ea4456-8cd5-43ef-80c7-d70338c8b018}</Project>
-      <Name>ASRR.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\lib\assr\lib-asrr-revit-core\ASRR.Revit.Core.csproj">
-      <Project>{60ac09bd-db0e-40a9-b8a7-b0d40e7042e6}</Project>
-      <Name>ASRR.Revit.Core</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="UI\ViewModel\" />
