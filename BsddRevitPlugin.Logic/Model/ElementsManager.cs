@@ -237,7 +237,8 @@ namespace BsddRevitPlugin.Logic.Model
 
                 IfcData ifcData = new IfcData
                 {
-                    Type = GetParameterValue2(elem, "Export Type to IFC As"),
+                    //Type = GetParameterValue2(elem, "Export Type to IFC As"),
+                    Type = GetTypeParameterValue2(doc, elem, "Export Type to IFC As"),
                     Name = GetFamilyName(doc, elem, GetParameterValue(elem, "IfcName")) + " - " + GetTypeName(doc, elem, GetParameterValue(elem, "IfcType")),
                     Tag = GetTypeId(elem),
                     Description = GetParameterValue(elem, "Description"),
@@ -363,11 +364,12 @@ namespace BsddRevitPlugin.Logic.Model
         {
             try
             {
-                ElementType element2 = doc.GetElement(element.GetTypeId()) as ElementType;
-                
-                if (element2?.LookupParameter(parameterName) != null)
+                //ElementType elementType = doc.GetElement(element.GetTypeId()) as ElementType;
+                ElementType elementType = doc.GetElement(element.Id) as ElementType;
+
+                if (elementType?.LookupParameter(parameterName) != null)
                 {
-                    return _getParameterValueByCorrectStorageType2(element2.LookupParameter(parameterName));
+                    return _getParameterValueByCorrectStorageType2(elementType.LookupParameter(parameterName));
                 }
 
                 return null;
