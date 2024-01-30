@@ -84,10 +84,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BsddRevitPlugin.Logic\BsddRevitPlugin.Logic.csproj">
-      <Project>{4ADB19D3-24D7-4410-BDCB-19DBFE6908EB}</Project>
-      <Name>BsddRevitPlugin.Logic</Name>
-    </ProjectReference>
     <ProjectReference Include="..\BsddRevitPlugin.Resources\BsddRevitPlugin.Resources.csproj">
       <Project>{4c519d66-46f3-43df-bcf5-cc1847654828}</Project>
       <Name>BsddRevitPlugin.Resources</Name>
