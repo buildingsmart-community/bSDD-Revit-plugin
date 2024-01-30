@@ -1,5 +1,4 @@
-﻿
-using ASRR.Core.Persistence;
+﻿using ASRR.Core.Persistence;
 using Autodesk.Revit.DB;
 using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
