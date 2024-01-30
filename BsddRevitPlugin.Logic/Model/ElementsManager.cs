@@ -31,6 +31,7 @@ namespace BsddRevitPlugin.Logic.Model
                     {
                         if (
                         item.Category.Name != "Levels" &&
+                        item.Category.Name != "Grids" &&
                         item.Category.Name != "Location Data" &&
                         item.Category.Name != "Model Groups" &&
                         item.Category.Name != "RVT Links" &&
@@ -234,7 +235,7 @@ namespace BsddRevitPlugin.Logic.Model
                 string typeName = GetTypeName(doc, elem, GetTypeParameterValue(doc, elem, "IfcType"));
                 string ifcTag = GetTypeId(elem);
                 string type_description = GetParameterValue(elem, "Description");
-                string ifcType =  elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS).AsString();
+                string ifcType = elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS).AsString();
                 string ifcPredefinedType = elem.get_Parameter(BuiltInParameter.IFC_EXPORT_PREDEFINEDTYPE_TYPE).AsString();
                 string loc_domain = GetParameterValue(elem, "bsdd_domain");
                 string loc_domainentry = GetParameterValue(elem, "bsdd_domain_entry");
