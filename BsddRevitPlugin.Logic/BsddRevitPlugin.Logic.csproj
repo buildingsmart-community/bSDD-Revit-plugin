@@ -161,17 +161,17 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\lib\assr\lib-asrr-core\ASRR.Core.csproj">
+    <Folder Include="UI\ViewModel\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\lib\asrr\lib-asrr-core\ASRR.Core.csproj">
       <Project>{12ea4456-8cd5-43ef-80c7-d70338c8b018}</Project>
       <Name>ASRR.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\lib\assr\lib-asrr-revit-core\ASRR.Revit.Core.csproj">
+    <ProjectReference Include="..\lib\asrr\lib-asrr-revit-core\ASRR.Revit.Core.csproj">
       <Project>{60ac09bd-db0e-40a9-b8a7-b0d40e7042e6}</Project>
       <Name>ASRR.Revit.Core</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="UI\ViewModel\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

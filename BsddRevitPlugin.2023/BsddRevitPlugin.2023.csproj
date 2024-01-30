@@ -88,13 +88,13 @@
       <Project>{4ADB19D3-24D7-4410-BDCB-19DBFE6908EB}</Project>
       <Name>BsddRevitPlugin.Logic</Name>
     </ProjectReference>
-    <ProjectReference Include="..\lib\assr\lib-asrr-core\ASRR.Core.csproj">
-      <Project>{12ea4456-8cd5-43ef-80c7-d70338c8b018}</Project>
-      <Name>ASRR.Core</Name>
-    </ProjectReference>
     <ProjectReference Include="..\BsddRevitPlugin.Resources\BsddRevitPlugin.Resources.csproj">
       <Project>{4c519d66-46f3-43df-bcf5-cc1847654828}</Project>
       <Name>BsddRevitPlugin.Resources</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\lib\asrr\lib-asrr-core\ASRR.Core.csproj">
+      <Project>{12ea4456-8cd5-43ef-80c7-d70338c8b018}</Project>
+      <Name>ASRR.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
