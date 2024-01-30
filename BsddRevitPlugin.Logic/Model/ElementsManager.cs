@@ -14,16 +14,16 @@ namespace BsddRevitPlugin.Logic.Model
     public static class ElementsManager
     {
 
-        public static List<Element> ListFilter(List<Element> elemList)
+        public static List<ElementType> ListFilter(List<ElementType> elemList)
         {
             Logger logger = LogManager.GetCurrentClassLogger();
 
-            List<Element> elemListFiltered = new List<Element>();
+            List<ElementType> elemListFiltered = new List<ElementType>();
 
 
             string typeId;
             List<string> idList = new List<string>();
-            foreach (Element item in elemList)
+            foreach (ElementType item in elemList)
             {
                 try
                 {
@@ -205,7 +205,7 @@ namespace BsddRevitPlugin.Logic.Model
                 tx.Commit();
             }
         }
-        public static BsddBridgeData SelectionToJson(Document doc, List<Element> elemList)
+        public static BsddBridgeData SelectionToJson(Document doc, List<ElementType> elemList)
         {
 
             const string mainClassificationLocation = "https://identifier.buildingsmart.org/uri/digibase/basisbouwproducten/0.8.0";
@@ -229,19 +229,30 @@ namespace BsddRevitPlugin.Logic.Model
             var bsddBridgeData = new BsddBridgeData();
             List<IfcData> ifcDataLst = new List<IfcData>();
 
-            foreach (Element elem in elemList)
+            foreach (ElementType elem in elemList)
             {
-                string familyName = GetFamilyName(doc, elem, GetTypeParameterValue(doc, elem, "IfcName"));
-                string typeName = GetTypeName(doc, elem, GetTypeParameterValue(doc, elem, "IfcType"));
-                string ifcTag = GetTypeId(elem);
-                string type_description = GetParameterValue(elem, "Description");
+                //----------
+                string familyName = GetFamilyName(doc, elem, GetTypeParameterValueByElementType(elem, "IfcName"));
+                string typeName = GetTypeName(doc, elem, GetTypeParameterValueByElementType(elem, "IfcType"));
+                string ifcTag = elem.Id.ToString(); 
+                //string ifcTag = GetTypeId(elem);
+                string type_description = GetTypeParameterValueByElementType(elem, "Description");
                 string ifcType = elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS).AsString();
+                //string ifcType = GetTypeParameterValueByElementType(elem, "Export Type to IFC As");
                 string ifcPredefinedType = elem.get_Parameter(BuiltInParameter.IFC_EXPORT_PREDEFINEDTYPE_TYPE).AsString();
-                string loc_domain = GetParameterValue(elem, "bsdd_domain");
-                string loc_domainentry = GetParameterValue(elem, "bsdd_domain_entry");
+                //string ifcPredefinedType = GetTypeParameterValueByElementType(elem, "Type IFC Predefined Type");
+                string loc_domain = GetTypeParameterValueByElementType(elem, "bsdd_domain");
+                string loc_domainentry = GetTypeParameterValueByElementType(elem, "bsdd_domain_entry");
                 string uniformatCode = elem.get_Parameter(BuiltInParameter.UNIFORMAT_CODE).AsString();
                 string uniformatDescription = elem.get_Parameter(BuiltInParameter.UNIFORMAT_DESCRIPTION).AsString();
 
+                
+//------------
+                //string code = elem.get_Parameter(BuiltInParameter.UNIFORMAT_CODE).AsString();
+                //Uri domainUri = _getBsddDomainUri(domain);
+                //Uri classificationUri = _getBsddClassificationUri(domainUri, code);
+
+//-----------
                 string mainClassificationReferenceIdentification = null;
                 string mainClassificationReferenceName = null;
 
@@ -400,6 +411,45 @@ namespace BsddRevitPlugin.Logic.Model
             }
 
 
+        }
+
+        public static dynamic GetTypeParameterValueByElementType(ElementType elementType, string parameterName)
+        {
+            try
+            {
+                //ElementType elementType = doc.GetElement(element.GetTypeId()) as ElementType;
+                //ElementType elementType = doc.GetElement(element.Id) as ElementType;
+
+                if (elementType?.LookupParameter(parameterName) != null)
+                {
+                    return _getParameterValueByCorrectStorageType2(elementType.LookupParameter(parameterName));
+                }
+
+                return null;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        private static dynamic _getParameterValueByCorrectStorageType2(Parameter parameter)
+        {
+            switch(parameter.StorageType)
+            {
+                case StorageType.ElementId:
+                    return parameter.AsElementId().IntegerValue;
+                case StorageType.Integer:
+                    return parameter.AsInteger();
+                case StorageType.None:
+                    return parameter.AsString();
+                case StorageType.Double:
+                    return parameter.AsDouble();
+                case StorageType.String:
+                    return parameter.AsValueString();
+                default:
+                    return "";
+            };            
         }
         public static string GetTypeName(Document doc, Element e)
         {
