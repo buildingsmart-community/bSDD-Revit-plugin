@@ -15,16 +15,16 @@ namespace BsddRevitPlugin.Logic.Model
     public static class ElementsManager
     {
 
-        public static List<Element> ListFilter(List<Element> elemList)
+        public static List<ElementType> ListFilter(List<ElementType> elemList)
         {
             Logger logger = LogManager.GetCurrentClassLogger();
 
-            List<Element> elemListFiltered = new List<Element>();
+            List<ElementType> elemListFiltered = new List<ElementType>();
 
 
             string typeId;
             List<string> idList = new List<string>();
-            foreach (Element item in elemList)
+            foreach (ElementType item in elemList)
             {
                 try
                 {
@@ -205,7 +205,7 @@ namespace BsddRevitPlugin.Logic.Model
                 tx.Commit();
             }
         }
-        public static BsddBridgeData SelectionToJson(Document doc, List<Element> elemList)
+        public static BsddBridgeData SelectionToJson(Document doc, List<ElementType> elemList)
         {
 
             const string domain = "https://identifier.buildingsmart.org/uri/digibase/bim-basis-objecten";
@@ -217,15 +217,15 @@ namespace BsddRevitPlugin.Logic.Model
             var mainData = new BsddBridgeData();
             List<IfcData> ifcDataLst = new List<IfcData>();
 
-            foreach (Element elem in elemList)
+            foreach (ElementType elem in elemList)
             {
 
                 string code = elem.get_Parameter(BuiltInParameter.UNIFORMAT_CODE).AsString();
                 Uri domainUri = _getBsddDomainUri(domain);
                 Uri classificationUri = _getBsddClassificationUri(domainUri, code);
 
-                string loc_domain = GetParameterValue(elem, "bsdd_domain");
-                string loc_domainentry = GetParameterValue(elem, "bsdd_domain_entry");
+                string loc_domain = GetTypeParameterValueByElementType(elem, "bsdd_domain");
+                string loc_domainentry = GetTypeParameterValueByElementType(elem, "bsdd_domain_entry");
 
                 Uri location_domain = new Uri("https://www.volkerwessels.nl");
                 Uri location_domain_entry = new Uri("https://www.volkerwessels.nl");
@@ -237,19 +237,20 @@ namespace BsddRevitPlugin.Logic.Model
 
                 IfcData ifcData = new IfcData
                 {
-                    Type = GetTypeParameterValue(doc, elem, "Export Type to IFC As"),
-                    Name = GetFamilyName(doc, elem, GetTypeParameterValue(doc, elem, "IfcName")) + " - " + GetTypeName(doc, elem, GetTypeParameterValue(doc, elem, "IfcType")),
+                    //Type = GetParameterValue2(elem, "Export Type to IFC As"),
+                    Type = GetTypeParameterValueByElementType(elem, "Export Type to IFC As"),
+                    Name = GetFamilyName(doc, elem, GetTypeParameterValueByElementType(elem, "IfcName")) + " - " + GetTypeName(doc, elem, GetTypeParameterValueByElementType(elem, "IfcType")),
                     Tag = GetTypeId(elem),
-                    Description = GetParameterValue(elem, "Description"),
-                    PredefinedType = GetTypeParameterValue(doc, elem, "Type IFC Predefined Type"),
+                    Description = GetTypeParameterValueByElementType(elem, "Description"),
+                    PredefinedType = GetTypeParameterValueByElementType(elem, "Type IFC Predefined Type"),
                     HasAssociations = new List<Association>
                     {
                         new IfcClassificationReference
                         {
                             Type = "IfcClassificationReference",
-                            Name = GetParameterValue(elem,"Description"),
+                            Name = GetTypeParameterValueByElementType(elem,"Description"),
                             Location = location_domain_entry,
-                            Identification = GetParameterValue( elem, "Description"),
+                            Identification = GetTypeParameterValueByElementType(elem, "Description"),
                             ReferencedSource = new IfcClassification
                             {
                                 Type = "IfcClassification",
@@ -262,7 +263,7 @@ namespace BsddRevitPlugin.Logic.Model
                             Type = "IfcClassificationReference",
                             Name = elem.get_Parameter(BuiltInParameter.UNIFORMAT_DESCRIPTION).AsString(),
                             Location = classificationUri,
-                            Identification = GetTypeParameterValue(doc, elem, "Assembly Code"),
+                            Identification = GetTypeParameterValueByElementType(elem, "Assembly Code"),
                             ReferencedSource = new IfcClassification
                             {
                                 Type = "IfcClassification",
@@ -340,6 +341,45 @@ namespace BsddRevitPlugin.Logic.Model
             }
 
 
+        }
+
+        public static dynamic GetTypeParameterValueByElementType(ElementType elementType, string parameterName)
+        {
+            try
+            {
+                //ElementType elementType = doc.GetElement(element.GetTypeId()) as ElementType;
+                //ElementType elementType = doc.GetElement(element.Id) as ElementType;
+
+                if (elementType?.LookupParameter(parameterName) != null)
+                {
+                    return _getParameterValueByCorrectStorageType2(elementType.LookupParameter(parameterName));
+                }
+
+                return null;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        private static dynamic _getParameterValueByCorrectStorageType2(Parameter parameter)
+        {
+            switch(parameter.StorageType)
+            {
+                case StorageType.ElementId:
+                    return parameter.AsElementId().IntegerValue;
+                case StorageType.Integer:
+                    return parameter.AsInteger();
+                case StorageType.None:
+                    return parameter.AsString();
+                case StorageType.Double:
+                    return parameter.AsDouble();
+                case StorageType.String:
+                    return parameter.AsValueString();
+                default:
+                    return "";
+            };            
         }
         public static string GetTypeName(Document doc, Element e)
         {
