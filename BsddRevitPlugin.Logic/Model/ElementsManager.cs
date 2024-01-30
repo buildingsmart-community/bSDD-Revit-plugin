@@ -166,7 +166,7 @@ namespace BsddRevitPlugin.Logic.Model
 
                 int idInt = Convert.ToInt32(ifcData.Tag);
                 ElementId typeId = new ElementId(idInt);
-                Element elementType = doc.GetElement(typeId);
+                ElementType elementType = doc.GetElement(typeId) as ElementType;
 
                 foreach (Parameter typeparameter in elementType.Parameters)
                 {
@@ -211,6 +211,9 @@ namespace BsddRevitPlugin.Logic.Model
             const string mainClassificationLocation = "https://identifier.buildingsmart.org/uri/digibase/basisbouwproducten/0.8.0";
             const string mainClassificationName = "BIM Basis Objecten";
 
+            const string mainTestClassificationLocation = "https://search-test.bsdd.buildingsmart.org/uri/digibase/basisbouwproducten/0.8.0";
+            const string mainTestClassificationName = "Basis bouwproducten";
+        
             const string ifcClassificationLocation = "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3";
             const string ifcClassificationName = "IFC";
 
@@ -231,9 +234,8 @@ namespace BsddRevitPlugin.Logic.Model
 
             foreach (ElementType elem in elemList)
             {
-                //----------
-                string familyName = GetFamilyName(doc, elem, GetTypeParameterValueByElementType(elem, "IfcName"));
-                string typeName = GetTypeName(doc, elem, GetTypeParameterValueByElementType(elem, "IfcType"));
+                string familyName = GetElementTypeFamilyName(doc, elem, GetTypeParameterValueByElementType(elem, "IfcName"));
+                string typeName = GetElementTypeName(doc, elem, GetTypeParameterValueByElementType(elem, "IfcType"));
                 string ifcTag = elem.Id.ToString(); 
                 //string ifcTag = GetTypeId(elem);
                 string type_description = GetTypeParameterValueByElementType(elem, "Description");
@@ -246,13 +248,7 @@ namespace BsddRevitPlugin.Logic.Model
                 string uniformatCode = elem.get_Parameter(BuiltInParameter.UNIFORMAT_CODE).AsString();
                 string uniformatDescription = elem.get_Parameter(BuiltInParameter.UNIFORMAT_DESCRIPTION).AsString();
 
-                
-//------------
-                //string code = elem.get_Parameter(BuiltInParameter.UNIFORMAT_CODE).AsString();
-                //Uri domainUri = _getBsddDomainUri(domain);
-                //Uri classificationUri = _getBsddClassificationUri(domainUri, code);
 
-//-----------
                 string mainClassificationReferenceIdentification = null;
                 string mainClassificationReferenceName = null;
 
@@ -374,22 +370,7 @@ namespace BsddRevitPlugin.Logic.Model
         {
             return new Uri(domain + "/class/" + code);
         }
-        public static string GetFamilyName(Document doc, Element e)
-        {
-
-            try
-            {
-                ElementId eId = e.Id;
-                ElementType elementType = (ElementType)doc.GetElement(eId) as ElementType;
-
-                return elementType.FamilyName;
-            }
-            catch
-            {
-                return "";
-            }
-        }
-        public static string GetFamilyName(Document doc, Element e, string IfcName)
+        public static string GetElementTypeFamilyName(Document doc, ElementType e, string IfcName)
         {
             if (IfcName != null && IfcName != "")
             {
@@ -399,10 +380,7 @@ namespace BsddRevitPlugin.Logic.Model
             {
                 try
                 {
-                    ElementId eId = e.Id;
-                    ElementType elementType = (ElementType)doc.GetElement(eId) as ElementType;
-
-                    return elementType.FamilyName;
+                    return e.FamilyName;
                 }
                 catch
                 {
@@ -412,6 +390,38 @@ namespace BsddRevitPlugin.Logic.Model
 
 
         }
+        public static string GetElementTypeName(Document doc, ElementType e, string IfcType)
+        {
+            if (IfcType != null && IfcType != "")
+            {
+                return IfcType;
+            }
+            else
+            {
+                try
+                {
+                    return e.Name;
+                }
+                catch
+                {
+                    return "";
+                }
+            }
+        }
+        public static string GetTypeId(Element e)
+        {
+            try
+            {
+                ElementId eId = e.Id;
+                if (eId == null) return "";
+                return eId.ToString();
+            }
+            catch
+            {
+                return "";
+            }
+        }
+
 
         public static dynamic GetTypeParameterValueByElementType(ElementType elementType, string parameterName)
         {
@@ -451,57 +461,6 @@ namespace BsddRevitPlugin.Logic.Model
                     return "";
             };            
         }
-        public static string GetTypeName(Document doc, Element e)
-        {
-            try
-            {
-                //ElementId eId = e.GetTypeId();
-                ElementId eId = e.Id;
-                ElementType elementType = (ElementType)doc.GetElement(eId) as ElementType;
-
-                return elementType.Name;
-            }
-            catch
-            {
-                return "";
-            }
-        }
-        public static string GetTypeName(Document doc, Element e, string IfcType)
-        {
-            if (IfcType != null && IfcType != "")
-            {
-                return IfcType;
-            }
-            else
-            {
-                try
-                {
-                    //ElementId eId = e.GetTypeId();
-                    ElementId eId = e.Id;
-                    ElementType elementType = (ElementType)doc.GetElement(eId) as ElementType;
-
-                    return elementType.Name;
-                }
-                catch
-                {
-                    return "";
-                }
-            }
-        }
-        public static string GetTypeId(Element e)
-        {
-            try
-            {
-                ElementId eId = e.Id;
-                if (eId == null) return "";
-                return eId.ToString();
-            }
-            catch
-            {
-                return "";
-            }
-        }
-
 
         public static string GetMaterialName(Element e, Document DbDoc)
         {
