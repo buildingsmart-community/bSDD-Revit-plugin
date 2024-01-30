@@ -28,15 +28,15 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
     {
         Logger logger = LogManager.GetCurrentClassLogger();
 
-        static List<Element> elemList = new List<Element>();
+        static List<ElementType> elemList = new List<ElementType>();
 
         protected Select Selectorlist = new Select();
         ChromiumWebBrowser browser;
 
         public override void Execute(UIApplication uiapp, string args)
         {
-            var uidoc = uiapp.ActiveUIDocument;
-            var doc = uidoc.Document;
+            UIDocument uidoc = uiapp.ActiveUIDocument;
+            Document doc = uidoc.Document;
             elemList = GetSelection(uiapp);
 
             // Filter elements to remove non-element categories
@@ -49,7 +49,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             UpdateBsddSelection(selectionData);
         }
 
-        protected abstract List<Element> GetSelection(UIApplication uiapp);
+        protected abstract List<ElementType> GetSelection(UIApplication uiapp);
 
         public void SetBrowser(ChromiumWebBrowser browserObject)
         {
@@ -77,7 +77,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
     /// </summary>
     public class EventMakeSelection : EventRevitSelection
     {
-        protected override List<Element> GetSelection(UIApplication uiapp)
+        protected override List<ElementType> GetSelection(UIApplication uiapp)
         {
             return Selectorlist.SelectElements(uiapp);
         }
@@ -88,7 +88,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
     /// </summary>
     public class EventSelectAll : EventRevitSelection
     {
-        protected override List<Element> GetSelection(UIApplication uiapp)
+        protected override List<ElementType> GetSelection(UIApplication uiapp)
         {
             return Selectorlist.AllElements(uiapp);
         }
@@ -99,7 +99,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
     /// </summary>
     public class EventSelectView : EventRevitSelection
     {
-        protected override List<Element> GetSelection(UIApplication uiapp)
+        protected override List<ElementType> GetSelection(UIApplication uiapp)
         {
             return Selectorlist.AllElementsView(uiapp);
         }
