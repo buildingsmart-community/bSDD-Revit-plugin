@@ -128,6 +128,37 @@ namespace BsddRevitPlugin.Common.Commands
 
 
 
+                    //ONDERZOEK NAAR UITLEZEN VAN IFC CLASSES EN OPSLAAN IN EEN STORE/FYSIEKE FILE
+                    // ALS BESTAAND PAD GEVONDEN KAN WORDEN, GEBRUIK PAD, ANDERS BOVENSTAAND TOEPASSEN
+                    //  
+
+
+                    // Add option with a new IFC Class System
+
+                    using (var form = new System.Windows.Forms.Form())
+                    {
+                        // Create OpenFileDialog
+                        OpenFileDialog openFileDialog = new OpenFileDialog();
+                        openFileDialog.Filter = "Text Files (*.txt)|*.txt";
+                        openFileDialog.FilterIndex = 1;
+                        openFileDialog.Multiselect = false;
+
+                        // Show OpenFileDialog and get the result
+                        DialogResult result = openFileDialog.ShowDialog(form);
+
+                        // Check if the user clicked OK in the OpenFileDialog
+                        if (result == DialogResult.OK)
+                        {
+                            // Get the selected file path
+                            string mappingFilePath = openFileDialog.FileName;
+
+                            // Add the option for IFC Export Classes Family Mapping
+                            exportOptions.AddOption("ExportLayers", mappingFilePath);
+                        }
+                    }
+
+
+
                     // Create a SaveFile Dialog to enable a location to export the IFC to
                     SaveFileDialog saveFileDialog = new SaveFileDialog();
 
