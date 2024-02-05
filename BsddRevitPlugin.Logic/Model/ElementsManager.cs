@@ -209,10 +209,7 @@ namespace BsddRevitPlugin.Logic.Model
         {
 
             const string mainClassificationLocation = "https://identifier.buildingsmart.org/uri/digibase/basisbouwproducten/0.8.0";
-            const string mainClassificationName = "BIM Basis Objecten";
-
-            const string mainTestClassificationLocation = "https://search-test.bsdd.buildingsmart.org/uri/digibase/basisbouwproducten/0.8.0";
-            const string mainTestClassificationName = "Basis bouwproducten";
+            const string mainClassificationName = "Basis bouwproducten";
         
             const string ifcClassificationLocation = "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3";
             const string ifcClassificationName = "IFC";
