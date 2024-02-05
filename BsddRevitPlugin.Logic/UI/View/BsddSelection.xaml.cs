@@ -194,6 +194,12 @@ namespace BsddRevitPlugin.Logic.UI.View
             };
         }
 
+        private void SM_DropDownOpened(object sender, EventArgs e)
+        {
+            // Your code to handle the ComboBox dropdown opening
+            SM.SelectedItem = SM.Items[0];
+        }
+
         void OnIsBrowserInitializedChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             if (Browser.IsBrowserInitialized)
