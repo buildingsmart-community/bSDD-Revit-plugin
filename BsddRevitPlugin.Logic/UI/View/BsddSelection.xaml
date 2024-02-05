@@ -12,7 +12,7 @@
         </Grid.RowDefinitions>
         <Grid>
             <DockPanel>
-                <ComboBox DockPanel.Dock="Top" Name="SM" SelectionChanged="SM_SelectionChanged"/>
+                <ComboBox DockPanel.Dock="Top" Name="SM" SelectionChanged="SM_SelectionChanged" DropDownOpened="SM_DropDownOpened"/>
             </DockPanel>
         </Grid>
         <Grid Grid.Row="1">
