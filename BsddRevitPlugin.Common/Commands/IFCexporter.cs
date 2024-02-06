@@ -23,6 +23,7 @@ namespace BsddRevitPlugin.Common.Commands
                 UIApplication uiApp = commandData.Application;
                 UIDocument uiDoc = uiApp.ActiveUIDocument;
                 Document doc = uiDoc.Document;
+                ElementId activeViewId = uiDoc.ActiveView.Id;
 
                 using (Transaction transaction = new Transaction(doc, "Export IFC"))
                 {
@@ -92,7 +93,7 @@ namespace BsddRevitPlugin.Common.Commands
                     exportOptions.AddOption("ExportSpecificSchedules", false.ToString());
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                     //exportOptions.AddOption("ExportUserDefinedPsets", false.ToString());
                     //exportOptions.AddOption("ExportUserDefinedPsetsFileName", "");
 
@@ -100,7 +101,7 @@ namespace BsddRevitPlugin.Common.Commands
 
                     //exportOptions.AddOption("ExportUserDefinedParameterMapping", false.ToString());
                     //exportOptions.AddOption("ExportUserDefinedParameterMappingFileName", "");
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                     exportOptions.AddOption("TessellationLevelOfDetail", 0.5.ToString());
                     exportOptions.AddOption("ExportPartsAsBuildingElements", false.ToString());
@@ -114,6 +115,7 @@ namespace BsddRevitPlugin.Common.Commands
                     exportOptions.AddOption("UseOnlyTriangulation", false.ToString());
                     exportOptions.AddOption("UseTypeNameOnlyForIfcType", true.ToString());
                     exportOptions.AddOption("UseVisibleRevitNameAsEntityName", true.ToString());
+                    exportOptions.FilterViewId = activeViewId;
                     //exportOptions.AddOption("SelectedSite", "MF");
                     //exportOptions.AddOption("SitePlacement", 0.ToString());
                     //exportOptions.AddOption("GeoRefCRSName", "");
@@ -164,7 +166,7 @@ namespace BsddRevitPlugin.Common.Commands
 
                     // Set properties of the SaveFileDialog
                     //saveFileDialog.Filter = "IFC Files (*.ifc)|*.rvt|All Files (*.*)|*.*";
-                    saveFileDialog.Filter = "IFC Files (*.ifc)|*.ifc"; 
+                    saveFileDialog.Filter = "IFC Files (*.ifc)|*.ifc";
                     saveFileDialog.FilterIndex = 1;
                     saveFileDialog.RestoreDirectory = true;
 
@@ -185,10 +187,10 @@ namespace BsddRevitPlugin.Common.Commands
                             transaction.Commit();
                             TaskDialog.Show("IFC-Export", "An IFC-export was executed.");
                         }
-                    }          
+                    }
                 }
-                    
-                
+
+
                 return Result.Succeeded;
             }
             catch (Exception ex)
