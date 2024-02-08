@@ -23,6 +23,7 @@ namespace BsddRevitPlugin.Common.Commands
                 UIApplication uiApp = commandData.Application;
                 UIDocument uiDoc = uiApp.ActiveUIDocument;
                 Document doc = uiDoc.Document;
+                ElementId activeViewId = uiDoc.ActiveView.Id;
 
                 using (Transaction transaction = new Transaction(doc, "Export IFC"))
                 {
@@ -92,7 +93,7 @@ namespace BsddRevitPlugin.Common.Commands
                     exportOptions.AddOption("ExportSpecificSchedules", false.ToString());
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                     //exportOptions.AddOption("ExportUserDefinedPsets", false.ToString());
                     //exportOptions.AddOption("ExportUserDefinedPsetsFileName", "");
 
@@ -100,7 +101,7 @@ namespace BsddRevitPlugin.Common.Commands
 
                     //exportOptions.AddOption("ExportUserDefinedParameterMapping", false.ToString());
                     //exportOptions.AddOption("ExportUserDefinedParameterMappingFileName", "");
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                     exportOptions.AddOption("TessellationLevelOfDetail", 0.5.ToString());
                     exportOptions.AddOption("ExportPartsAsBuildingElements", false.ToString());
@@ -114,6 +115,7 @@ namespace BsddRevitPlugin.Common.Commands
                     exportOptions.AddOption("UseOnlyTriangulation", false.ToString());
                     exportOptions.AddOption("UseTypeNameOnlyForIfcType", true.ToString());
                     exportOptions.AddOption("UseVisibleRevitNameAsEntityName", true.ToString());
+                    exportOptions.FilterViewId = activeViewId;
                     //exportOptions.AddOption("SelectedSite", "MF");
                     //exportOptions.AddOption("SitePlacement", 0.ToString());
                     //exportOptions.AddOption("GeoRefCRSName", "");
@@ -128,12 +130,43 @@ namespace BsddRevitPlugin.Common.Commands
 
 
 
+                    //ONDERZOEK NAAR UITLEZEN VAN IFC CLASSES EN OPSLAAN IN EEN STORE/FYSIEKE FILE
+                    // ALS BESTAAND PAD GEVONDEN KAN WORDEN, GEBRUIK PAD, ANDERS BOVENSTAAND TOEPASSEN
+                    //  
+
+
+                    // Add option with a new IFC Class System
+
+                    using (var form = new System.Windows.Forms.Form())
+                    {
+                        // Create OpenFileDialog
+                        OpenFileDialog openFileDialog = new OpenFileDialog();
+                        openFileDialog.Filter = "Text Files (*.txt)|*.txt";
+                        openFileDialog.FilterIndex = 1;
+                        openFileDialog.Multiselect = false;
+
+                        // Show OpenFileDialog and get the result
+                        DialogResult result = openFileDialog.ShowDialog(form);
+
+                        // Check if the user clicked OK in the OpenFileDialog
+                        if (result == DialogResult.OK)
+                        {
+                            // Get the selected file path
+                            string mappingFilePath = openFileDialog.FileName;
+
+                            // Add the option for IFC Export Classes Family Mapping
+                            exportOptions.AddOption("ExportLayers", mappingFilePath);
+                        }
+                    }
+
+
+
                     // Create a SaveFile Dialog to enable a location to export the IFC to
                     SaveFileDialog saveFileDialog = new SaveFileDialog();
 
                     // Set properties of the SaveFileDialog
                     //saveFileDialog.Filter = "IFC Files (*.ifc)|*.rvt|All Files (*.*)|*.*";
-                    saveFileDialog.Filter = "IFC Files (*.ifc)|*.ifc"; 
+                    saveFileDialog.Filter = "IFC Files (*.ifc)|*.ifc";
                     saveFileDialog.FilterIndex = 1;
                     saveFileDialog.RestoreDirectory = true;
 
@@ -154,10 +187,10 @@ namespace BsddRevitPlugin.Common.Commands
                             transaction.Commit();
                             TaskDialog.Show("IFC-Export", "An IFC-export was executed.");
                         }
-                    }          
+                    }
                 }
-                    
-                
+
+
                 return Result.Succeeded;
             }
             catch (Exception ex)

@@ -39,6 +39,9 @@
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
+    <Reference Include="ASRR.Core">
+      <HintPath>..\BsddRevitPlugin.Logic\bin\Debug\ASRR.Core.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -85,7 +88,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BsddRevitPlugin.Logic\BsddRevitPlugin.Logic.csproj">
-      <Project>{4ADB19D3-24D7-4410-BDCB-19DBFE6908EB}</Project>
+      <Project>{4adb19d3-24d7-4410-bdcb-19dbfe6908eb}</Project>
       <Name>BsddRevitPlugin.Logic</Name>
     </ProjectReference>
     <ProjectReference Include="..\BsddRevitPlugin.Resources\BsddRevitPlugin.Resources.csproj">
