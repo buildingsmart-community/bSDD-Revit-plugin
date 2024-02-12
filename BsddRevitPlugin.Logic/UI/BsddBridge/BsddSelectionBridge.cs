@@ -1,9 +1,11 @@
 ﻿using Autodesk.Revit.DB.Events;
 using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
+using BsddRevitPlugin.Logic.UI.BsddBridge;
 using BsddRevitPlugin.Logic.UI.View;
 using BsddRevitPlugin.Logic.UI.Wrappers;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.Windows;
 
 namespace BsddRevitPlugin.Logic.UI.BsddBridge
@@ -53,7 +55,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
                 _bsddSearchParent.Dispatcher.Invoke(() => _bsddSearchParent.Close());
             }
 
-       
+
             //ExEventBsddSearch.Raise();
 
             // Create an instance of the IfcDataConverter class
@@ -61,11 +63,23 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
 
             // Deserialize the JSON data into an IfcData object using the IfcDataConverter
             var ifcData = JsonConvert.DeserializeObject<IfcData>(ifcJsonData, converter);
-            var bsddBridgeData = new BsddBridgeData();
-            bsddBridgeData.IfcData.Add(ifcData);
+            var bsddBridgeData = new BsddBridgeData
+            {
+                IfcData = new List<IfcData> { ifcData }
+            };
             eventHandlerBsddSearch.setBsddBridgeData(bsddBridgeData);
             eventHandlerBsddSearch.Raise("openSearch");
             return JsonConvert.SerializeObject(ifcData);
         }
+
+        /// <summary>
+        /// Updates the settings from a JSON string.
+        /// </summary>
+        /// <param name="settingsJson">The JSON string of the new settings.</param>
+        public void saveSettings(string settingsJson)
+        {
+            var newSettings = JsonConvert.DeserializeObject<BsddSettings>(settingsJson);
+        }
+
     }
 }
