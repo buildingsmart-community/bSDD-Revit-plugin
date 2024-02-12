@@ -6,7 +6,6 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static ASRR.Revit.Core.Elements.Parameters.Dto.RevitParameter;
 
 
 namespace BsddRevitPlugin.Logic.Model
@@ -210,16 +209,29 @@ namespace BsddRevitPlugin.Logic.Model
 
             const string mainClassificationLocation = "https://identifier.buildingsmart.org/uri/digibase/basisbouwproducten/0.8.0";
             const string mainClassificationName = "Basis bouwproducten";
-        
+
             const string ifcClassificationLocation = "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3";
             const string ifcClassificationName = "IFC";
 
             const string nlsfbClassificationLocation = "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021";
             const string nlsfbClassificationName = "DigiBase Demo NL-SfB tabel 1";
 
-            List<string> filterClassificationLocations = new List<string>(){
-                ifcClassificationLocation,
-                nlsfbClassificationLocation
+            BsddDictionary mainDictionary = new BsddDictionary()
+            {
+                DictionaryUri = mainClassificationLocation,
+                DictionaryName = mainClassificationName,
+            };
+
+            List<BsddDictionary> filterDictionaries = new List<BsddDictionary>()
+            {
+                new BsddDictionary {
+                    DictionaryUri=ifcClassificationLocation,
+                    DictionaryName= ifcClassificationName,
+                },
+                new BsddDictionary {
+                    DictionaryUri = nlsfbClassificationLocation,
+                    DictionaryName = nlsfbClassificationName
+                }
             };
 
             Uri mainClassificationUri = _getBsddDomainUri(mainClassificationLocation);
@@ -233,7 +245,7 @@ namespace BsddRevitPlugin.Logic.Model
             {
                 string familyName = GetElementTypeFamilyName(doc, elem, GetTypeParameterValueByElementType(elem, "IfcName"));
                 string typeName = GetElementTypeName(doc, elem, GetTypeParameterValueByElementType(elem, "IfcType"));
-                string ifcTag = elem.Id.ToString(); 
+                string ifcTag = elem.Id.ToString();
                 //string ifcTag = GetTypeId(elem);
                 string type_description = GetTypeParameterValueByElementType(elem, "Description");
                 string ifcType = elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS).AsString();
@@ -349,9 +361,12 @@ namespace BsddRevitPlugin.Logic.Model
             }
             //JObject json = JObject.Parse(JsonConvert.SerializeObject(ifcDataLst));
 
-            bsddBridgeData.Name = "testIFC";
-            bsddBridgeData.setDomain(mainClassificationLocation);
-            bsddBridgeData.setFilterDomains(filterClassificationLocations);
+            bsddBridgeData.Settings = new BsddSettings
+            {
+                BsddApiEnvironment = "test",
+                MainDictionary = mainDictionary,
+                FilterDictionaries = filterDictionaries
+            };
             bsddBridgeData.IfcData = ifcDataLst;
             var provider = new JsonBasedPersistenceProvider("C://temp");
             provider.Persist(bsddBridgeData);
@@ -442,7 +457,7 @@ namespace BsddRevitPlugin.Logic.Model
 
         private static dynamic _getParameterValueByCorrectStorageType2(Parameter parameter)
         {
-            switch(parameter.StorageType)
+            switch (parameter.StorageType)
             {
                 case StorageType.ElementId:
                     return parameter.AsElementId().IntegerValue;
@@ -456,7 +471,7 @@ namespace BsddRevitPlugin.Logic.Model
                     return parameter.AsValueString();
                 default:
                     return "";
-            };            
+            };
         }
 
         public static string GetMaterialName(Element e, Document DbDoc)
