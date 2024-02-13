@@ -1,42 +1,52 @@
 ﻿using BsddRevitPlugin.Logic.IfcJson;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BsddRevitPlugin.Logic.UI.BsddBridge
 {
-    /// <summary>
-    /// Represents the data structure for communication between the application and bSDD UI.
-    /// </summary>
+    public class BsddDictionary
+    {
+        [JsonProperty("dictionaryUri")]
+        public string DictionaryUri { get; set; }
+
+        [JsonProperty("dictionaryName")]
+        public string DictionaryName { get; set; }
+
+        [JsonProperty("parameterName")]
+        public string ParameterName { get; set; }
+
+        [JsonProperty("parameterId")]
+        public string ParameterId { get; set; }
+
+        [JsonProperty("parameterMapping")]
+        public string ParameterMapping { get; set; }
+    }
+
+    public class BsddSettings
+    {
+        [JsonProperty("bsddApiEnvironment")]
+        public string BsddApiEnvironment { get; set; } = "production";
+
+        [JsonProperty("mainDictionary")]
+        public BsddDictionary MainDictionary { get; set; }
+
+        [JsonProperty("filterDictionaries")]
+        public List<BsddDictionary> FilterDictionaries { get; set; }
+
+        [JsonProperty("language")]
+        public string Language { get; set; }
+    }
+
     public class BsddBridgeData
     {
-        /// Gets or sets the name of the bridge.
-        /// </summary>
         [JsonProperty("name")]
         public string Name { get; set; }
 
-        /// <summary>
-        /// Gets or sets the main dictionary URI.
-        /// </summary>
-        [JsonProperty("mainDictionaryUri")]
-        public Uri MainDictionaryUri { get; set; }
+        [JsonProperty("settings")]
+        public BsddSettings Settings { get; set; }
 
-        /// <summary>
-        /// Gets or sets the filter dictionary URIs.
-        /// </summary>
-        [JsonProperty("filterDictionaryUris")]
-        public List<Uri> FilterDictionaryUris { get; set; } = new List<Uri>();
-
-        /// <summary>
-        /// Gets or sets the IFC data.
-        /// Input can be a list of multiple IfcData objects,
-        /// UI always returns a list containing a single IfcData object.
-        /// </summary>
         [JsonProperty("ifcData")]
-        public List<IfcData> IfcData { get; set; } = new List<IfcData>();
+        public List<IfcData> IfcData { get; set; }
 
         /// <summary>
         /// Sets the main dictionary URI.
@@ -44,28 +54,34 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         /// <param name="domain">The domain of the main dictionary.</param>
         public void setDomain(string domain)
         {
-            MainDictionaryUri = new Uri(domain);
+            Settings.MainDictionary.DictionaryUri = domain;
         }
 
         /// <summary>
-        /// Adds a filter dictionary URI.
+        /// Adds a filter dictionary.
         /// </summary>
-        /// <param name="domain">The domain of the filter dictionary.</param>
-        public void addFilterDomain(string domain)
+        /// <param name="dictionary">The dictionary to add.</param>
+        public void addFilterDictionary(BsddDictionary dictionary)
         {
-            FilterDictionaryUris.Add(new Uri(domain));
+            Settings.FilterDictionaries.Add(dictionary);
         }
 
         /// <summary>
-        /// Sets the filter dictionary URIs.
+        /// Sets the main dictionary.
         /// </summary>
-        /// <param name="domains">The domains of the filter dictionaries.</param>
-        public void setFilterDomains(List<string> domains)
+        /// <param name="dictionary">The dictionary to set.</param>
+        public void setMainDictionary(BsddDictionary dictionary)
         {
-            foreach (string domain in domains)
-            {
-                FilterDictionaryUris.Add(new Uri(domain));
-            }
+            Settings.MainDictionary = dictionary;
+        }
+
+        /// <summary>
+        /// Sets the filter dictionaries.
+        /// </summary>
+        /// <param name="dictionaries">The dictionaries to set.</param>
+        public void setFilterDictionaries(List<BsddDictionary> dictionaries)
+        {
+            Settings.FilterDictionaries = dictionaries;
         }
     }
 }

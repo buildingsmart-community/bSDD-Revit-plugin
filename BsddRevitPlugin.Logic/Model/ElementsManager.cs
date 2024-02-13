@@ -204,9 +204,22 @@ namespace BsddRevitPlugin.Logic.Model
             const string nlsfbClassificationLocation = "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021";
             const string nlsfbClassificationName = "DigiBase Demo NL-SfB tabel 1";
 
-            List<string> filterClassificationLocations = new List<string>(){
-                ifcClassificationLocation,
-                nlsfbClassificationLocation
+            BsddDictionary mainDictionary = new BsddDictionary()
+            {
+                DictionaryUri = mainClassificationLocation,
+                DictionaryName = mainClassificationName,
+            };
+
+            List<BsddDictionary> filterDictionaries = new List<BsddDictionary>()
+            {
+                new BsddDictionary {
+                    DictionaryUri=ifcClassificationLocation,
+                    DictionaryName= ifcClassificationName,
+                },
+                new BsddDictionary {
+                    DictionaryUri = nlsfbClassificationLocation,
+                    DictionaryName = nlsfbClassificationName
+                }
             };
 
             Uri mainClassificationUri = _getBsddDomainUri(mainClassificationLocation);
@@ -336,9 +349,12 @@ namespace BsddRevitPlugin.Logic.Model
             }
             //JObject json = JObject.Parse(JsonConvert.SerializeObject(ifcDataLst));
 
-            bsddBridgeData.Name = "testIFC";
-            bsddBridgeData.setDomain(mainClassificationLocation);
-            bsddBridgeData.setFilterDomains(filterClassificationLocations);
+            bsddBridgeData.Settings = new BsddSettings
+            {
+                BsddApiEnvironment = "test",
+                MainDictionary = mainDictionary,
+                FilterDictionaries = filterDictionaries
+            };
             bsddBridgeData.IfcData = ifcDataLst;
             var provider = new JsonBasedPersistenceProvider("C://temp");
             provider.Persist(bsddBridgeData);
