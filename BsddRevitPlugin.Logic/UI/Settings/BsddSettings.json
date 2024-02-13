@@ -13,7 +13,7 @@
       "dictionaryName": "IFC",
       "parameterName": null,
       "parameterId": null,
-      "parameterMapping": "IfcExportAs"
+      "parameterMapping": "Export Type to IFC As"
     },
     {
       "dictionaryUri": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021",
