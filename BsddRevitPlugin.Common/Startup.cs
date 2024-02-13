@@ -1,9 +1,12 @@
-﻿using Autodesk.Revit.Attributes;
+﻿using ASRR.Core.Persistence;
+using Autodesk.Revit.Attributes;
 using Autodesk.Revit.UI;
+using BsddRevitPlugin.Logic.UI.BsddBridge;
 using BsddRevitPlugin.Logic.UI.View;
 using BsddRevitPlugin.Resources;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 
 namespace BsddRevitPlugin.Common
@@ -33,13 +36,20 @@ namespace BsddRevitPlugin.Common
         public Result OnStartup(UIControlledApplication application)
         {
 
+            //Read json settings and parse to BsddSettings class
+            string currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string settingsFilePath = currentPath + "\\UI\\Settings"; //BsddSettings.json
+
+            JsonBasedPersistenceProvider jsonBasedPersistenceProvider = new JsonBasedPersistenceProvider(settingsFilePath);
+            GlobalBsddSettings.bsddsettings = jsonBasedPersistenceProvider.Fetch<BsddSettings>();
+
             // Register Dockable panel for Revit project when it is opened.
             RegisterDockPanel(application);
 
             // Add ribbon buttons to the UI.
             AddRibbonButtons(application);
 
-            // Open logs.
+                        // Open logs.
             Main.Instance.OpenLogs();
 
 
