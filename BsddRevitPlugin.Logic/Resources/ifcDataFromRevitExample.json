@@ -3,23 +3,17 @@
   "mainDictionary": {
     "dictionaryUri": "https://identifier.buildingsmart.org/uri/digibase/basisbouwproducten/0.8.0",
     "dictionaryName": "Basis bouwproducten",
-    "parameterName": "bsdd/digibase/basisbouwproducten",
-    "parameterId": "14762b7f-3c15-468b-8dad-1f514ff90dc2",
     "parameterMapping": "description"
   },
   "filterDictionaries": [
     {
       "dictionaryUri": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3",
       "dictionaryName": "IFC",
-      "parameterName": "bsdd/buildingsmart/ifc",
-      "parameterId": "6999e83d-6f2e-4d40-87f9-9dd406d25bcf ",
       "parameterMapping": "IfcExportAs"
     },
     {
       "dictionaryUri": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021",
       "dictionaryName": "DigiBase Demo NL-SfB tabel 1",
-      "parameterName": "bsdd/digibase/nlsfb",
-      "parameterId": "f0c64040-e2c8-4e91-8753-4ab324599edb ",
       "parameterMapping": "assemblycode"
     }
   ],
