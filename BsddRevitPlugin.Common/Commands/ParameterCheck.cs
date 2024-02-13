@@ -2,19 +2,54 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using System;
+using Element = Autodesk.Revit.DB.Element;
+using ElementType = Autodesk.Revit.DB.ElementType;
+using Parameter = Autodesk.Revit.DB.Parameter;
+using Category = Autodesk.Revit.DB.Category;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using NLog;
+using System.Collections.Generic;
 
-namespace Test
+namespace BsddRevitPlugin.Common.Commands
 {
-    [Transaction(TransactionMode.ReadOnly)]
-    public class test : IExternalCommand
+    [Transaction(TransactionMode.Manual)]
+    public class ParameterCheck : IExternalCommand
     {
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
+            Logger logger = LogManager.GetCurrentClassLogger();
             try
             {
                 // Get the active document
                 Document doc = commandData.Application.ActiveUIDocument.Document;
                 UIApplication app = commandData.Application;
+                //{
+                //    "type": "IfcClassificationReference",
+                //    "name": "23.21 vloeren; constructief, vrijdragende vloeren",
+                //    "location": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021/class/23.21",
+                //    "identification": "23.21",
+                //    "referencedSource": {
+                //        "type": "IfcClassification",
+                //         "name": "DigiBase Demo NL-SfB tabel 1",
+                //         "location": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021"
+                //    }
+                //}
+
+                string paramnam = "bsdd\\digibase\\nlsfb";
+
+                Dictionary<string, string> dictionary = new Dictionary<string, string>
+                {
+                    { "Name", "digibase" },
+                    { "Type", "nlsfb" },
+                    { "location", "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021" },
+                };
+
+            https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021/class/23.21
+
+                //string parameterName = $"bsdd/{dictionary.Values}/{dictionary.Name}".Replace(" ", "-");
+
 
                 //////////////////////////// REMARK, Replace with your elementId
                 // Specify the element id you want to check
@@ -25,7 +60,7 @@ namespace Test
 
                 PublicClass.checkTypeParameter = false;
                 PublicClass.checkParameter = false;
-                ParameterCheck(doc, elementId, parameterName, app);
+                //ParameterChecker(doc, elementId, parameterName, app);
 
 
 
@@ -38,7 +73,12 @@ namespace Test
             }
         }
 
-        private void ParameterCheck(Document doc, ElementId elementId, string parameterName, UIApplication app)
+
+
+
+
+
+        private void ParameterChecker(Document doc, ElementId elementId, string parameterName, UIApplication app)
         {
             Element element = doc.GetElement(elementId);
             ElementId elementTypeId = element.GetTypeId();

@@ -127,8 +127,11 @@
     <Compile Include="UI\Wrappers\MethodsWrapped.cs" />
     <Compile Include="UI\Wrappers\RevitEventWrapper.cs" />
     <Compile Include="Utilities\FileHandling.cs" />
+    <Compile Include="Utilities\Parameters.cs" />
+    <Compile Include="Utilities\UuidFromUri.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="html\bsdd_search\react-bsdd-search.umd.cjs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

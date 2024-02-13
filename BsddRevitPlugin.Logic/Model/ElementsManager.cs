@@ -6,7 +6,6 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static ASRR.Revit.Core.Elements.Parameters.Dto.RevitParameter;
 
 
 namespace BsddRevitPlugin.Logic.Model
@@ -42,14 +41,14 @@ namespace BsddRevitPlugin.Logic.Model
                             //dubble elementen verwijderen
                             typeId = GetTypeId(item);
                             bool chk = !idList.Any();
-                            logger.Debug("Aantal: " + idList.Count());
-                            logger.Debug("TypeId: " + typeId);
+                            //logger.Debug("Aantal: " + idList.Count());
+                            //logger.Debug("TypeId: " + typeId);
                             int count = idList.Count();
                             int number = 1;
                             foreach (string result in idList)
                             {
                                 // do something with each item
-                                logger.Debug("result: " + result);
+                                //logger.Debug("result: " + result);
                                 if (count == number)
                                 {
                                     // do something different with the last item
@@ -122,85 +121,73 @@ namespace BsddRevitPlugin.Logic.Model
             const string ifcEntityParameter = "Export Type to IFC As";
             const string ifcPredefinedtypeParameter = "Type IFC Predefined Type";
 
-            if (ifcData.Type != null)
-            {
-                ifcEntityValue = ifcData.Type;
-            }
-            if (ifcData.PredefinedType != null)
-            {
-                ifcPredefinedtypeValue = ifcData.PredefinedType;
-            }
-
-            foreach (var association in ifcData.HasAssociations)
-            {
-                switch (association)
-                {
-                    case IfcClassificationReference ifcClassificationReference:
-                        // do something with ifcClassificationReference
-                        if (ifcClassificationReference.ReferencedSource.Name == "DigiBase Demo NL-SfB tabel 1")
-                        {
-                            nlfsbValue = ifcClassificationReference.Identification;
-                        }
-                        else if (ifcClassificationReference.ReferencedSource.Name == "NL-SfB 2005")
-                        {
-                            nlfsbValue = ifcClassificationReference.Identification;
-                        }
-                        else if (ifcClassificationReference.ReferencedSource.Name == "BIM Basis Objecten")
-                        {
-                            basisproductValue = ifcClassificationReference.Identification;
-                        }
-                        break;
-
-                    case IfcMaterial ifcMaterial:
-                        // do something with ifcMaterial
-                        break;
-
-                }
-            }
-
             using (Transaction tx = new Transaction(doc))
             {
                 tx.Start("Update Parameters");
 
-                List<Parameter> typeparameters = new List<Parameter>();
+                if (ifcData.Type != null)
+                {
+                    ifcEntityValue = ifcData.Type;
+                }
+                if (ifcData.PredefinedType != null)
+                {
+                    ifcPredefinedtypeValue = ifcData.PredefinedType;
+                }
 
+
+                List<Parameter> typeparameters = new List<Parameter>();
                 int idInt = Convert.ToInt32(ifcData.Tag);
                 ElementId typeId = new ElementId(idInt);
                 ElementType elementType = doc.GetElement(typeId) as ElementType;
+                string parameterName = "";
+                string parameterMappedName = "";
 
-                foreach (Parameter typeparameter in elementType.Parameters)
+
+
+                ForgeTypeId specType = SpecTypeId.String.Text;
+                ForgeTypeId groupType = GroupTypeId.Ifc;
+
+                foreach (var association in ifcData.HasAssociations)
                 {
-                    typeparameters.Add(typeparameter);
-                }
-
-                foreach (Parameter typeparameter in typeparameters)
-                {
-                    string paramName = typeparameter.Definition.Name;
-                    //TaskDialog.Show("Success", paramName);
-
-                    if (!typeparameter.IsReadOnly)
+                    switch (association)
                     {
-                        switch (paramName)
-                        {
-                            case nlfsbParameter:
-                                logger.Debug("NL/SfB: " + nlfsbValue.ToString());
-                                typeparameter.Set(nlfsbValue);
-                                break;
-                            case basisproductParameter:
-                                logger.Debug("BasisProduct: " + basisproductValue.ToString());
-                                typeparameter.Set(basisproductValue);
-                                break;
-                            case ifcEntityParameter:
-                                logger.Debug("IfcEntity: " + ifcEntityValue.ToString());
-                                typeparameter.Set(ifcEntityValue);
-                                break;
-                            case ifcPredefinedtypeParameter:
-                                logger.Debug("IfcPredefinedtype: " + ifcPredefinedtypeValue.ToString());
-                                typeparameter.Set(ifcPredefinedtypeValue);
-                                break;
-                        }
+                        case IfcClassificationReference ifcClassificationReference:
+                            // do something with ifcClassificationReference
+
+                            parameterName = "bsdd/" + ifcClassificationReference.ReferencedSource.Location.ToString();
+
+                            //Add a project parameter for the bsdd classification in call Revit categories if it does not exist
+                            Utilities.Parameters.CreateProjectParameterForAllCategories(doc, parameterName, "tempGroupName", specType, groupType, false);
+
+                            //Check each type parameter from the object
+                            foreach (Parameter typeparameter in elementType.Parameters)
+                            {
+                                string paramName = typeparameter.Definition.Name;
+
+                                //Add the bsdd value to the parameter
+                                if (paramName == parameterName)
+                                {
+                                    typeparameter.Set(Newtonsoft.Json.JsonConvert.SerializeObject(ifcClassificationReference));
+                                   
+                                }
+                                // TODO: find out the mapped parameter name
+
+                                //Add the bsdd value to the mapped parameter
+                                if (paramName == parameterMappedName)
+                                {
+                                    typeparameter.Set(ifcClassificationReference.Identification);
+
+                                }
+                            }
+                            break;
+
+                        case IfcMaterial ifcMaterial:
+                            // do something with ifcMaterial
+                            break;
+
                     }
                 }
+
 
                 tx.Commit();
             }
@@ -210,7 +197,7 @@ namespace BsddRevitPlugin.Logic.Model
 
             const string mainClassificationLocation = "https://identifier.buildingsmart.org/uri/digibase/basisbouwproducten/0.8.0";
             const string mainClassificationName = "Basis bouwproducten";
-        
+
             const string ifcClassificationLocation = "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3";
             const string ifcClassificationName = "IFC";
 
@@ -233,7 +220,7 @@ namespace BsddRevitPlugin.Logic.Model
             {
                 string familyName = GetElementTypeFamilyName(doc, elem, GetTypeParameterValueByElementType(elem, "IfcName"));
                 string typeName = GetElementTypeName(doc, elem, GetTypeParameterValueByElementType(elem, "IfcType"));
-                string ifcTag = elem.Id.ToString(); 
+                string ifcTag = elem.Id.ToString();
                 //string ifcTag = GetTypeId(elem);
                 string type_description = GetTypeParameterValueByElementType(elem, "Description");
                 string ifcType = elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS).AsString();
@@ -442,7 +429,7 @@ namespace BsddRevitPlugin.Logic.Model
 
         private static dynamic _getParameterValueByCorrectStorageType2(Parameter parameter)
         {
-            switch(parameter.StorageType)
+            switch (parameter.StorageType)
             {
                 case StorageType.ElementId:
                     return parameter.AsElementId().IntegerValue;
@@ -456,7 +443,7 @@ namespace BsddRevitPlugin.Logic.Model
                     return parameter.AsValueString();
                 default:
                     return "";
-            };            
+            };
         }
 
         public static string GetMaterialName(Element e, Document DbDoc)
