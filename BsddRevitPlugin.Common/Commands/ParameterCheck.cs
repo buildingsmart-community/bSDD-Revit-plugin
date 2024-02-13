@@ -11,6 +11,10 @@ using System.Security.Cryptography;
 using System.Text;
 using NLog;
 using System.Collections.Generic;
+using BsddRevitPlugin.Logic.UI.BsddBridge;
+using System.Reflection;
+using System.IO;
+using ASRR.Core.Persistence;
 
 namespace BsddRevitPlugin.Common.Commands
 {
@@ -25,31 +29,41 @@ namespace BsddRevitPlugin.Common.Commands
                 // Get the active document
                 Document doc = commandData.Application.ActiveUIDocument.Document;
                 UIApplication app = commandData.Application;
-                //{
-                //    "type": "IfcClassificationReference",
-                //    "name": "23.21 vloeren; constructief, vrijdragende vloeren",
-                //    "location": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021/class/23.21",
-                //    "identification": "23.21",
-                //    "referencedSource": {
-                //        "type": "IfcClassification",
-                //         "name": "DigiBase Demo NL-SfB tabel 1",
-                //         "location": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021"
-                //    }
-                //}
 
-                string paramnam = "bsdd\\digibase\\nlsfb";
 
-                Dictionary<string, string> dictionary = new Dictionary<string, string>
+                BsddSettings tempBsddSettings = new BsddSettings()
                 {
-                    { "Name", "digibase" },
-                    { "Type", "nlsfb" },
-                    { "location", "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021" },
+                    Language = "nl",
+                    BsddApiEnvironment = "test",
+                    MainDictionary = new BsddDictionary()
+                    {
+                        DictionaryUri = "https://identifier.buildingsmart.org/uri/digibase/basisbouwproducten/0.8.0",
+                        DictionaryName = "Basis bouwproducten",
+                        ParameterMapping = "Description"
+                    },
+                    FilterDictionaries = new List<BsddDictionary>()
+                    {
+                        new BsddDictionary()
+                        {
+                            DictionaryUri = "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3",
+                            DictionaryName = "IFC",
+                            ParameterMapping = "IfcExportAs"
+                        },
+                        new BsddDictionary()
+                        {
+                            DictionaryUri = "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021",
+                            DictionaryName = "DigiBase Demo NL-SfB tabel 1",
+                            ParameterMapping = "Assembly Code"
+                        }
+                    }   
                 };
 
-            https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021/class/23.21
+                //save json settings to app location in BsddSettings.json
+                string currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                string settingsFilePath = currentPath + "\\UI\\Settings"; //BsddSettings.json
 
-                //string parameterName = $"bsdd/{dictionary.Values}/{dictionary.Name}".Replace(" ", "-");
-
+                JsonBasedPersistenceProvider var = new JsonBasedPersistenceProvider(settingsFilePath);
+                var.Persist<BsddSettings>(tempBsddSettings);
 
                 //////////////////////////// REMARK, Replace with your elementId
                 // Specify the element id you want to check

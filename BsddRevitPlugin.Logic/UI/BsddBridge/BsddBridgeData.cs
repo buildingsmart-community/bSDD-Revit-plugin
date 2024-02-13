@@ -4,6 +4,10 @@ using System.Collections.Generic;
 
 namespace BsddRevitPlugin.Logic.UI.BsddBridge
 {
+    public static class GlobalBsddSettings
+    {
+        public static BsddSettings bsddsettings = new BsddSettings();
+    }
     public class BsddDictionary
     {
         [JsonProperty("dictionaryUri")]

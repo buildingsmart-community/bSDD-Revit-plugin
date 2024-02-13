@@ -1,4 +1,5 @@
-﻿using Autodesk.Revit.DB.Events;
+﻿using ASRR.Core.Persistence;
+using Autodesk.Revit.DB.Events;
 using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
@@ -6,6 +7,8 @@ using BsddRevitPlugin.Logic.UI.View;
 using BsddRevitPlugin.Logic.UI.Wrappers;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 using System.Windows;
 
 namespace BsddRevitPlugin.Logic.UI.BsddBridge
@@ -78,7 +81,15 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         /// <param name="settingsJson">The JSON string of the new settings.</param>
         public void saveSettings(string settingsJson)
         {
-            var newSettings = JsonConvert.DeserializeObject<BsddSettings>(settingsJson);
+            GlobalBsddSettings.bsddsettings = JsonConvert.DeserializeObject<BsddSettings>(settingsJson);
+
+            //save json settings to app location in BsddSettings.json
+            string currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string settingsFilePath = currentPath + "\\UI\\Settings"; //BsddSettings.json
+
+            JsonBasedPersistenceProvider jsonBasedPersistenceProvider = new JsonBasedPersistenceProvider(settingsFilePath);
+            jsonBasedPersistenceProvider.Persist<BsddSettings>(GlobalBsddSettings.bsddsettings);
+
         }
 
     }
