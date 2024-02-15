@@ -1,68 +1,80 @@
 {
     "name": "Floor - NLRS_23_FL_breedplaat_vloer_100mm_vws",
     "tag": "770104",
-    "hasAssociations": [
-        {
-            "type": "IfcClassificationReference",
-            "name": "breedplaatvloer",
-            "location": "https://identifier.buildingsmart.org/uri/digibase/basisbouwproducten/0.1/class/breedplaatvloer",
-            "identification": "breedplaatvloer",
-            "referencedSource": {
-                "type": "IfcClassification",
-                "name": "Basis bouwproducten"
-            }
-        },
-        {
-            "type": "IfcClassificationReference",
-            "name": "Slab",
-            "location": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/class/IfcSlab",
-            "identification": "IfcSlab",
-            "referencedSource": {
-                "type": "IfcClassification",
-                "name": "IFC"
-            }
-        },
-        {
-            "type": "IfcClassificationReference",
-            "name": "27.21 daken; constructief, vlakke daken",
-            "location": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021/class/27.21",
-            "identification": "27.21",
-            "referencedSource": {
-                "type": "IfcClassification",
-                "name": "DigiBase Demo NL-SfB tabel 1"
-            }
-        },
-        {
-            "type": "IfcClassificationReference",
-            "name": "23.21 vloeren; constructief, vrijdragende vloeren",
-            "location": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021/class/23.21",
-            "identification": "23.21",
-            "referencedSource": {
-                "type": "IfcClassification",
-                "name": "DigiBase Demo NL-SfB tabel 1"
-            }
-        },
-        {
-            "type": "IfcClassificationReference",
-            "name": "Vloer, vloer",
-            "location": "https://identifier.buildingsmart.org/uri/digibase/digibasedemoifctranslation/0.1/class/IfcSlab.FLOOR",
-            "identification": "IfcSlab.FLOOR",
-            "referencedSource": {
-                "type": "IfcClassification",
-                "name": "DigiBase demo IFC translation"
-            }
-        },
-        {
-            "type": "IfcClassificationReference",
-            "name": "F Vloerafbouw/vloerafwerking",
-            "location": "https://identifier.buildingsmart.org/uri/digibase/nen2699/0.1/class/B.1.F",
-            "identification": "B.1.F",
-            "referencedSource": {
-                "type": "IfcClassification",
-                "name": "DigiBase Demo NEN 2699"
-            }
-        }
-    ],
+  "hasAssociations": [
+    {
+      "type": "IfcClassificationReference",
+      "name": "breedplaatvloer",
+      "location": "https://identifier.buildingsmart.org/uri/digibase/basisbouwproducten/0.1/class/breedplaatvloer",
+      "identification": "breedplaatvloer",
+      "referencedSource": {
+        "type": "IfcClassification",
+        "name": "Basis bouwproducten"
+      }
+    },
+    {
+      "type": "IfcClassificationReference",
+      "name": "Slab",
+      "location": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/class/IfcSlab",
+      "identification": "IfcSlab",
+      "referencedSource": {
+        "type": "IfcClassification",
+        "name": "IFC"
+      }
+    },
+    {
+      "type": "IfcClassificationReference",
+      "name": "27.21 daken; constructief, vlakke daken",
+      "location": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021/class/27.21",
+      "identification": "27.21",
+      "referencedSource": {
+        "type": "IfcClassification",
+        "name": "DigiBase Demo NL-SfB tabel 1",
+        "location": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021"
+      }
+    },
+    {
+      "type": "IfcClassificationReference",
+      "name": "27.21 daken; constructief, vlakke daken",
+      "location": "",
+      "identification": "27.21",
+      "referencedSource": {
+        "type": "IfcClassification",
+        "name": "",
+        "location": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021"
+      }
+    },
+    {
+      "type": "IfcClassificationReference",
+      "name": "23.21 vloeren; constructief, vrijdragende vloeren",
+      "location": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021/class/23.21",
+      "identification": "23.21",
+      "referencedSource": {
+        "type": "IfcClassification",
+        "name": "DigiBase Demo NL-SfB tabel 1"
+      }
+    },
+    {
+      "type": "IfcClassificationReference",
+      "name": "Vloer, vloer",
+      "location": "https://identifier.buildingsmart.org/uri/digibase/digibasedemoifctranslation/0.1/class/IfcSlab.FLOOR",
+      "identification": "IfcSlab.FLOOR",
+      "referencedSource": {
+        "type": "IfcClassification",
+        "name": "DigiBase demo IFC translation"
+      }
+    },
+    {
+      "type": "IfcClassificationReference",
+      "name": "F Vloerafbouw/vloerafwerking",
+      "location": "https://identifier.buildingsmart.org/uri/digibase/nen2699/0.1/class/B.1.F",
+      "identification": "B.1.F",
+      "referencedSource": {
+        "type": "IfcClassification",
+        "name": "DigiBase Demo NEN 2699"
+      }
+    }
+  ],
     "isDefinedBy": [
         {
             "type": "IfcPropertySet",

@@ -1,5 +1,6 @@
 ﻿using ASRR.Core.Persistence;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.ExtensibleStorage;
 using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
 using NLog;
@@ -107,6 +108,12 @@ namespace BsddRevitPlugin.Logic.Model
                 ForgeTypeId specType = SpecTypeId.String.Text;
                 ForgeTypeId groupType = GroupTypeId.Ifc;
 
+                Schema schema = GetSchema();
+                var f = schema.GetField("IFCClassification");
+                Entity test = new Entity(schema);
+                test.Set(f, Newtonsoft.Json.JsonConvert.SerializeObject(ifcData.HasAssociations));
+                elementType.SetEntity(test);
+
                 foreach (var association in ifcData.HasAssociations)
                 {
                     switch (association)
@@ -136,7 +143,7 @@ namespace BsddRevitPlugin.Logic.Model
                             Utilities.Parameters.CreateProjectParameterForAllCategories(doc, bsddParameterName, "tempGroupName", specType, groupType, false);
 
 
-
+                            // TODO: Get mapped parameter name from extended datastorage
                             if (GlobalBsddSettings.bsddsettings.MainDictionary.DictionaryUri == refSourceLocation)
                             {
                                 parameterMappedName = GlobalBsddSettings.bsddsettings.MainDictionary.ParameterMapping;
@@ -153,7 +160,7 @@ namespace BsddRevitPlugin.Logic.Model
                                     }
                                 }
                             }
-
+                            List<IfcClassificationReference> ifcClassificationReferences = new List<IfcClassificationReference>();
                             //Check each type parameter from the object
                             foreach (Parameter typeparameter in elementType.Parameters)
                             {
@@ -162,14 +169,12 @@ namespace BsddRevitPlugin.Logic.Model
                                 //Add the bsdd value to the parameter
                                 if (typeParameterName == bsddParameterName)
                                 {
-                                    typeparameter.Set(Newtonsoft.Json.JsonConvert.SerializeObject(ifcClassificationReference));
-                                   
+                                    typeparameter.Set(ifcClassificationReference.Identification + ":" + ifcClassificationReference.Name);
                                 }
                                 //Add the bsdd value to the mapped parameter
                                 if (typeParameterName == parameterMappedName)
                                 {
                                     typeparameter.Set(ifcClassificationReference.Identification);
-
                                 }
                             }
                             break;
@@ -177,13 +182,24 @@ namespace BsddRevitPlugin.Logic.Model
                         case IfcMaterial ifcMaterial:
                             // do something with ifcMaterial
                             break;
-
                     }
                 }
-
-
                 tx.Commit();
             }
+        }
+        // Element IFCClassification schema
+        private static Guid s_schemaId = new Guid("79717CB2-D47B-4EC0-8E74-83A43E7D9F0A");
+        private static Schema GetSchema()
+        {
+            Schema schema = Schema.Lookup(s_schemaId);
+            if (schema == null)
+            {
+                SchemaBuilder classificationBuilder = new SchemaBuilder(s_schemaId);
+                classificationBuilder.SetSchemaName("BsddData");
+                classificationBuilder.AddSimpleField("IFCClassification", typeof(string));
+                schema = classificationBuilder.Finish();
+            }
+            return schema;
         }
         public static BsddBridgeData SelectionToJson(Document doc, List<ElementType> elemList)
         {
@@ -277,17 +293,26 @@ namespace BsddRevitPlugin.Logic.Model
                 foreach (Parameter typeparameter in elem.Parameters)
                 {
                     string typeParameterName = typeparameter.Definition.Name;
+                    // TODO: Get the Ifcclassifications from extended datastorage
+                    // fill "name": "<extendable storage>else<bsdd param>",
+                    // fill "identification": "<extendable storage>else<mapped param>else<bsdd param>"
 
                     if (typeParameterName.StartsWith("bsdd/"))
                     {
                         var jsonstring = GetTypeParameterValueByElementType(elem, typeParameterName);
 
-                        hasAssociations.Add(Newtonsoft.Json.JsonConvert.DeserializeObject<IfcClassificationReference>(jsonstring)); 
+                        if (jsonstring != null)
+                        {
+                            hasAssociations.Add(Newtonsoft.Json.JsonConvert.DeserializeObject<IfcClassificationReference>(jsonstring));
+                        }
                     }
 
                     
                 }
-                ifcData.HasAssociations = hasAssociations;
+                if (hasAssociations != null)
+                {
+                    ifcData.HasAssociations = hasAssociations;
+                }
                 ifcDataLst.Add(ifcData);
 
 
