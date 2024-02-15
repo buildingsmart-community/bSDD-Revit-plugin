@@ -81,15 +81,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         /// <param name="settingsJson">The JSON string of the new settings.</param>
         public void saveSettings(string settingsJson)
         {
-            GlobalBsddSettings.bsddsettings = JsonConvert.DeserializeObject<BsddSettings>(settingsJson);
-
-            //save json settings to app location in BsddSettings.json
-            string currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            string settingsFilePath = currentPath + "\\UI\\Settings"; //BsddSettings.json
-
-            JsonBasedPersistenceProvider jsonBasedPersistenceProvider = new JsonBasedPersistenceProvider(settingsFilePath);
-            jsonBasedPersistenceProvider.Persist<BsddSettings>(GlobalBsddSettings.bsddsettings);
-
+            // TODO: set these settings in extended DataStorage
         }
 
     }

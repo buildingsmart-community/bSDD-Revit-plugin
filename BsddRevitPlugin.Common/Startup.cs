@@ -1,12 +1,17 @@
 ﻿using ASRR.Core.Persistence;
 using Autodesk.Revit.Attributes;
+using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.ExtensibleStorage;
 using Autodesk.Revit.UI;
+using Autodesk.Revit.UI.Events;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
 using BsddRevitPlugin.Logic.UI.View;
 using BsddRevitPlugin.Resources;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace BsddRevitPlugin.Common
@@ -36,12 +41,14 @@ namespace BsddRevitPlugin.Common
         public Result OnStartup(UIControlledApplication application)
         {
 
-            //Read json settings and parse to BsddSettings class
-            string currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            string settingsFilePath = currentPath + "\\UI\\Settings"; //BsddSettings.json
+            application.ViewActivated
+              += new EventHandler<ViewActivatedEventArgs>(
+                OnViewActivated);
 
-            JsonBasedPersistenceProvider jsonBasedPersistenceProvider = new JsonBasedPersistenceProvider(settingsFilePath);
-            GlobalBsddSettings.bsddsettings = jsonBasedPersistenceProvider.Fetch<BsddSettings>();
+
+
+
+
 
             // Register Dockable panel for Revit project when it is opened.
             RegisterDockPanel(application);
@@ -49,13 +56,81 @@ namespace BsddRevitPlugin.Common
             // Add ribbon buttons to the UI.
             AddRibbonButtons(application);
 
-                        // Open logs.
+            // Open logs.
             Main.Instance.OpenLogs();
 
 
             return Result.Succeeded;
         }
 
+
+        void OnViewActivated(
+          object sender,
+          ViewActivatedEventArgs e)
+        {
+            Autodesk.Revit.DB.View vPrevious = e.PreviousActiveView;
+            Autodesk.Revit.DB.View vCurrent = e.CurrentActiveView;
+            if (vPrevious.Document.PathName != vCurrent.Document.PathName)
+            {
+                // TODO: if there are extended datastorage settings, set them to the Global Settings
+
+
+                // TODO: if statement: if settings are in extended datastorage, use those. Else make new ones.
+                Schema schema = GetSchema();
+
+                IList<DataStorage> dataStorages = GetClassificationInStorage(vCurrent.Document, schema);
+
+                if (dataStorages.Count == 0)
+                {
+                    //Read json settings and parse to BsddSettings class
+                    string currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                    string settingsFilePath = currentPath + "\\UI\\Settings"; //BsddSettings.json
+
+                    JsonBasedPersistenceProvider jsonBasedPersistenceProvider = new JsonBasedPersistenceProvider(settingsFilePath);
+                    GlobalBsddSettings.bsddsettings = jsonBasedPersistenceProvider.Fetch<BsddSettings>();
+
+                    //Create new DataStorage
+                    DataStorage dataStorage = DataStorage.Create(vCurrent.Document);
+                    Entity entity = new Entity(schema);
+                    entity.Set<string>(schema.GetField("BsddSettings"), Newtonsoft.Json.JsonConvert.SerializeObject(GlobalBsddSettings.bsddsettings));
+                    dataStorage.SetEntity(entity);
+                }
+                else
+                {
+                    var dataStorage = dataStorages.First();
+
+                    var entity = dataStorage.GetEntity(schema);
+                    var jsonstring = entity.Get<string>(schema.GetField("BsddSettings"));
+                    GlobalBsddSettings.bsddsettings = Newtonsoft.Json.JsonConvert.DeserializeObject<BsddSettings>(jsonstring);
+
+                }
+
+            }
+
+        }
+
+        // Settings schema
+        private static Guid s_schemaId = new Guid("D5CF8E88-86CF-421A-9FAD-202D1A278D4C");
+        private static Schema GetSchema()
+        {
+            Schema schema = Schema.Lookup(s_schemaId);
+            if (schema == null)
+            {
+                SchemaBuilder classificationBuilder = new SchemaBuilder(s_schemaId);
+                classificationBuilder.SetSchemaName("BsddSettings");
+                classificationBuilder.AddSimpleField("BsddSettings", typeof(string));
+                schema = classificationBuilder.Finish();
+            }
+            return schema;
+        }
+        private static IList<DataStorage> GetClassificationInStorage(Document document, Schema schema)
+        {
+            FilteredElementCollector collector = new FilteredElementCollector(document);
+            collector.OfClass(typeof(DataStorage));
+            Func<DataStorage, bool> hasTargetData = ds => (ds.GetEntity(schema) != null && ds.GetEntity(schema).IsValid());
+
+            return collector.Cast<DataStorage>().Where<DataStorage>(hasTargetData).ToList<DataStorage>();
+        }
         // BitmapImage NewBitmapImage(
         //     Assembly a, string imageName)
         // {
