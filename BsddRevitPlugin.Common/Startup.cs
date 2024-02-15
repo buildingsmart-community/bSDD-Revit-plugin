@@ -1,12 +1,14 @@
 ﻿using ASRR.Core.Persistence;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Events;
 using Autodesk.Revit.DB.ExtensibleStorage;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Events;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
 using BsddRevitPlugin.Logic.UI.View;
 using BsddRevitPlugin.Resources;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -41,11 +43,12 @@ namespace BsddRevitPlugin.Common
         public Result OnStartup(UIControlledApplication application)
         {
 
-            application.ViewActivated
-              += new EventHandler<ViewActivatedEventArgs>(
-                OnViewActivated);
 
+            // Subscribe to the DocumentCreated event
+            application.ControlledApplication.DocumentCreated += Application_DocumentCreated;
 
+            // Subscribe to the DocumentOpened event
+            application.ControlledApplication.DocumentOpened += Application_DocumentOpened;
 
 
 
@@ -64,72 +67,20 @@ namespace BsddRevitPlugin.Common
         }
 
 
-        void OnViewActivated(
-          object sender,
-          ViewActivatedEventArgs e)
+
+        // Event handler for DocumentOpened event
+        private void Application_DocumentOpened(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)
+
         {
-            Autodesk.Revit.DB.View vPrevious = e.PreviousActiveView;
-            Autodesk.Revit.DB.View vCurrent = e.CurrentActiveView;
-            if (vPrevious.Document.PathName != vCurrent.Document.PathName)
-            {
-                // TODO: if there are extended datastorage settings, set them to the Global Settings
-
-
-                // TODO: if statement: if settings are in extended datastorage, use those. Else make new ones.
-                Schema schema = GetSchema();
-
-                IList<DataStorage> dataStorages = GetClassificationInStorage(vCurrent.Document, schema);
-
-                if (dataStorages.Count == 0)
-                {
-                    //Read json settings and parse to BsddSettings class
-                    string currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                    string settingsFilePath = currentPath + "\\UI\\Settings"; //BsddSettings.json
-
-                    JsonBasedPersistenceProvider jsonBasedPersistenceProvider = new JsonBasedPersistenceProvider(settingsFilePath);
-                    GlobalBsddSettings.bsddsettings = jsonBasedPersistenceProvider.Fetch<BsddSettings>();
-
-                    //Create new DataStorage
-                    DataStorage dataStorage = DataStorage.Create(vCurrent.Document);
-                    Entity entity = new Entity(schema);
-                    entity.Set<string>(schema.GetField("BsddSettings"), Newtonsoft.Json.JsonConvert.SerializeObject(GlobalBsddSettings.bsddsettings));
-                    dataStorage.SetEntity(entity);
-                }
-                else
-                {
-                    var dataStorage = dataStorages.First();
-
-                    var entity = dataStorage.GetEntity(schema);
-                    var jsonstring = entity.Get<string>(schema.GetField("BsddSettings"));
-                    GlobalBsddSettings.bsddsettings = Newtonsoft.Json.JsonConvert.DeserializeObject<BsddSettings>(jsonstring);
-
-                }
-
-            }
-
+            BsddRevitPlugin.Logic.Model.SettingsManager.ApplySettingsToGlobalParametersAndDataStorage(e.Document);
         }
 
-        // Settings schema
-        private static Guid s_schemaId = new Guid("D5CF8E88-86CF-421A-9FAD-202D1A278D4C");
-        private static Schema GetSchema()
-        {
-            Schema schema = Schema.Lookup(s_schemaId);
-            if (schema == null)
-            {
-                SchemaBuilder classificationBuilder = new SchemaBuilder(s_schemaId);
-                classificationBuilder.SetSchemaName("BsddSettings");
-                classificationBuilder.AddSimpleField("BsddSettings", typeof(string));
-                schema = classificationBuilder.Finish();
-            }
-            return schema;
-        }
-        private static IList<DataStorage> GetClassificationInStorage(Document document, Schema schema)
-        {
-            FilteredElementCollector collector = new FilteredElementCollector(document);
-            collector.OfClass(typeof(DataStorage));
-            Func<DataStorage, bool> hasTargetData = ds => (ds.GetEntity(schema) != null && ds.GetEntity(schema).IsValid());
 
-            return collector.Cast<DataStorage>().Where<DataStorage>(hasTargetData).ToList<DataStorage>();
+        private void Application_DocumentCreated(object sender, Autodesk.Revit.DB.Events.DocumentCreatedEventArgs e)
+
+        {
+
+            BsddRevitPlugin.Logic.Model.SettingsManager.ApplySettingsToGlobalParametersAndDataStorage(e.Document);
         }
         // BitmapImage NewBitmapImage(
         //     Assembly a, string imageName)

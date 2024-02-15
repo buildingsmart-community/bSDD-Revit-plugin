@@ -108,7 +108,7 @@ namespace BsddRevitPlugin.Logic.Model
                 ForgeTypeId specType = SpecTypeId.String.Text;
                 ForgeTypeId groupType = GroupTypeId.Ifc;
 
-                Schema schema = GetSchema();
+                Schema schema = GetBsddDataSchema();
                 var f = schema.GetField("IFCClassification");
                 Entity test = new Entity(schema);
                 test.Set(f, Newtonsoft.Json.JsonConvert.SerializeObject(ifcData.HasAssociations));
@@ -189,7 +189,7 @@ namespace BsddRevitPlugin.Logic.Model
         }
         // Element IFCClassification schema
         private static Guid s_schemaId = new Guid("79717CB2-D47B-4EC0-8E74-83A43E7D9F0A");
-        private static Schema GetSchema()
+        private static Schema GetBsddDataSchema()
         {
             Schema schema = Schema.Lookup(s_schemaId);
             if (schema == null)
