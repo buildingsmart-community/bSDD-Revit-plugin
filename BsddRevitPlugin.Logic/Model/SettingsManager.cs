@@ -30,7 +30,7 @@ namespace BsddRevitPlugin.Logic.Model
             }
             return schema;
         }
-        private static IList<DataStorage> GetClassificationInStorage(Document document, Schema schema)
+        public static IList<DataStorage> GetClassificationInStorage(Document document, Schema schema)
         {
             FilteredElementCollector collector = new FilteredElementCollector(document);
             collector.OfClass(typeof(DataStorage));
