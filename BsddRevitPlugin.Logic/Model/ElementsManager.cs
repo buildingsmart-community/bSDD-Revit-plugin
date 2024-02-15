@@ -224,105 +224,127 @@ namespace BsddRevitPlugin.Logic.Model
         }
         public static BsddBridgeData SelectionToJson(Document doc, List<ElementType> elemList)
         {
-
-            var bsddBridgeData = new BsddBridgeData();
-            List<IfcData> ifcDataLst = new List<IfcData>();
-
-            foreach (ElementType elem in elemList)
+            try
             {
-                //Get the element type parameters
-                string familyName = GetElementTypeFamilyName(doc, elem, GetTypeParameterValueByElementType(elem, "IfcName"));
-                string typeName = GetElementTypeName(doc, elem, GetTypeParameterValueByElementType(elem, "IfcType"));
-                string ifcTag = elem.Id.ToString();
-                //string ifcTag = GetTypeId(elem);
-                string type_description = GetTypeParameterValueByElementType(elem, "Description");
-                string ifcType = elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS).AsString();
-                //string ifcType = GetTypeParameterValueByElementType(elem, "Export Type to IFC As");
-                string ifcPredefinedType = elem.get_Parameter(BuiltInParameter.IFC_EXPORT_PREDEFINEDTYPE_TYPE).AsString();
-                //string ifcPredefinedType = GetTypeParameterValueByElementType(elem, "Type IFC Predefined Type");
+                var bsddBridgeData = new BsddBridgeData();
+                List<IfcData> ifcDataLst = new List<IfcData>();
 
-                //Get bsdd data schema for classification reading
-                Schema schema = GetBsddDataSchema();
-
-                //Get schema entity and field, add to List<Association>
-                var entity = elem.GetEntity(schema);
-                var jsonstring = entity.Get<string>(schema.GetField("IFCClassification"));
-                List<Association> hasAssociations = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Association>>(jsonstring);
-
-                //Overwriting properties from current Revit values:
-                //Value leading are:
-                //"name": First: <bsdd/...>(value after :) Second: <extendable storage> (currently in hasAssociations)
-                //"identification": First: <bsdd/...>(value after :) Second: <mapped parameter>(from bsddSettings) Third: <extendable storage> (currently in hasAssociations)
-                foreach (var association in hasAssociations)
+                foreach (ElementType elem in elemList)
                 {
-                    switch (association)
+                    //Get the element type parameters
+                    string familyName = GetElementTypeFamilyName(doc, elem, GetTypeParameterValueByElementType(elem, "IfcName"));
+                    string typeName = GetElementTypeName(doc, elem, GetTypeParameterValueByElementType(elem, "IfcType"));
+                    string ifcTag = elem.Id.ToString();
+                    //string ifcTag = GetTypeId(elem);
+                    string type_description = GetTypeParameterValueByElementType(elem, "Description");
+                    string ifcType = elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS).AsString();
+                    //string ifcType = GetTypeParameterValueByElementType(elem, "Export Type to IFC As");
+                    string ifcPredefinedType = elem.get_Parameter(BuiltInParameter.IFC_EXPORT_PREDEFINEDTYPE_TYPE).AsString();
+                    //string ifcPredefinedType = GetTypeParameterValueByElementType(elem, "Type IFC Predefined Type");
+
+
+                    List<Association> hasAssociations = new List<Association>();
+
+                    try
                     {
-                        case IfcClassificationReference ifcClassificationReference:
-                            // do something with ifcClassificationReference
 
-                            //Get bsddParameterValue
-                            string bsddParameterName = CreateParameterNameFromIFCClassificationReferenceSourceLocation(ifcClassificationReference);
-                            string bsddParameterValue = GetTypeParameterValueByElementType(elem, bsddParameterName);
+                        //Get bsdd data schema for classification reading
+                        Schema schema = GetBsddDataSchema();
 
-                            //Get mapped parameter value
-                            string mappedParameterName = GetMappedParameterName(ifcClassificationReference);
-                            string mappedParameterValue = GetTypeParameterValueByElementType(elem, mappedParameterName);
+                        //Get schema entity and field, add to List<Association>
+                        var entity = elem.GetEntity(schema);
+                        var field = schema.GetField("IFCClassification");
+                        var jsonstring = entity.Get<string>(field);
+                        //var jsonstring = entity.Get<string>(schema.GetField("IFCClassification"));
+                        hasAssociations = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Association>>(jsonstring);
+                    }
+                    catch (Exception)
+                    {
 
-                            //Set Name:
-                            if (bsddParameterValue != null)
-                            {
-                                ifcClassificationReference.Name = bsddParameterValue.Split(':')[1];
-                            }
-
-                            //set Identification:
-                            if (mappedParameterValue != null)
-                            {
-                                ifcClassificationReference.Identification  = mappedParameterValue.Split(':')[1];
-                            }
-                            else if (bsddParameterValue != null)
-                            {
-                                ifcClassificationReference.Identification = bsddParameterValue.Split(':')[0];
-                            }
-
-                            break;
-
-                        case IfcMaterial ifcMaterial:
-                            // do something with ifcMaterial
-                            break;
                     }
 
+                    //Overwriting properties from current Revit values:
+                    //Value leading are:
+                    //"name": First: <bsdd/...>(value after :) Second: <extendable storage> (currently in hasAssociations)
+                    //"identification": First: <bsdd/...>(value after :) Second: <mapped parameter>(from bsddSettings) Third: <extendable storage> (currently in hasAssociations)
+                    foreach (var association in hasAssociations)
+                    {
+                        switch (association)
+                        {
+                            case IfcClassificationReference ifcClassificationReference:
+                                // do something with ifcClassificationReference
+
+                                //Get bsddParameterValue
+                                string bsddParameterName = CreateParameterNameFromIFCClassificationReferenceSourceLocation(ifcClassificationReference);
+                                string bsddParameterValue = GetTypeParameterValueByElementType(elem, bsddParameterName);
+
+                                //Get mapped parameter value
+                                string mappedParameterName = GetMappedParameterName(ifcClassificationReference);
+                                string mappedParameterValue = GetTypeParameterValueByElementType(elem, mappedParameterName);
+
+                                //Set Name:
+                                if (bsddParameterValue != null)
+                                {
+                                    ifcClassificationReference.Name = bsddParameterValue.Split(':')[1];
+                                }
+
+                                //set Identification:
+                                if (mappedParameterValue != null)
+                                {
+                                    ifcClassificationReference.Identification = mappedParameterValue.Split(':')[1];
+                                }
+                                else if (bsddParameterValue != null)
+                                {
+                                    ifcClassificationReference.Identification = bsddParameterValue.Split(':')[0];
+                                }
+
+                                break;
+
+                            case IfcMaterial ifcMaterial:
+                                // do something with ifcMaterial
+                                break;
+                        }
+
+                    }
+
+                    IfcData ifcData = new IfcData
+                    {
+                        Type = ifcType,
+                        Name = familyName + " - " + typeName,
+                        Tag = ifcTag,
+                        Description = type_description,
+                        PredefinedType = ifcPredefinedType,
+
+                    };
+
+                    if (hasAssociations != null || hasAssociations.Count != 0)
+                    {
+                        ifcData.HasAssociations = hasAssociations;
+                    }
+                    ifcDataLst.Add(ifcData);
+
+
                 }
 
-                IfcData ifcData = new IfcData
-                {
-                    Type = ifcType,
-                    Name = familyName + " - " + typeName,
-                    Tag = ifcTag,
-                    Description = type_description,
-                    PredefinedType = ifcPredefinedType,
-                   
-                };
+                //Add current settings to the bsddBridgeData
+                bsddBridgeData.Settings = GlobalBsddSettings.bsddsettings;
 
-                if (hasAssociations != null)
-                {
-                    ifcData.HasAssociations = hasAssociations;
-                }
-                ifcDataLst.Add(ifcData);
+                //Set ifcData for all elements
+                bsddBridgeData.IfcData = ifcDataLst;
 
+                //Parse to Json object
+                var provider = new JsonBasedPersistenceProvider("C://temp");
+                provider.Persist(bsddBridgeData);
 
+                return bsddBridgeData;
             }
+            catch (Exception)
+            {
 
-            //Add current settings to the bsddBridgeData
-            bsddBridgeData.Settings = GlobalBsddSettings.bsddsettings;
+                throw;
+            }
+            
 
-            //Set ifcData for all elements
-            bsddBridgeData.IfcData = ifcDataLst;
-
-            //Parse to Json object
-            var provider = new JsonBasedPersistenceProvider("C://temp");
-            provider.Persist(bsddBridgeData);
-
-            return bsddBridgeData;
         }
 
         private static Uri _getBsddDomainUri(string domain)
