@@ -25,17 +25,6 @@
     {
       "type": "IfcClassificationReference",
       "name": "27.21 daken; constructief, vlakke daken",
-      "location": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021/class/27.21",
-      "identification": "27.21",
-      "referencedSource": {
-        "type": "IfcClassification",
-        "name": "DigiBase Demo NL-SfB tabel 1",
-        "location": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021"
-      }
-    },
-    {
-      "type": "IfcClassificationReference",
-      "name": "27.21 daken; constructief, vlakke daken",
       "location": "",
       "identification": "27.21",
       "referencedSource": {

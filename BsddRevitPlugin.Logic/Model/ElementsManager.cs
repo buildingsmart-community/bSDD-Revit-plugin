@@ -1,12 +1,16 @@
 ﻿using ASRR.Core.Persistence;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExtensibleStorage;
+using Autodesk.Revit.DB.Mechanical;
 using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
 using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Security.Policy;
+using System.Windows.Controls;
 
 namespace BsddRevitPlugin.Logic.Model
 {
@@ -83,109 +87,126 @@ namespace BsddRevitPlugin.Logic.Model
             elemListFiltered = elemListFiltered.Distinct().ToList();
             return elemListFiltered;
         }
-        public static void SetIfcDataToRevit(Document doc, IfcData ifcData)
+        public static void SetIfcDataToRevitElement(Document doc, IfcData ifcData)
         {
             Logger logger = LogManager.GetCurrentClassLogger();
             
-            const string nlfsbParameter = "Assembly Code";
-            const string basisproductParameter = "Description";
-            const string ifcEntityParameter = "Export Type to IFC As";
-            const string ifcPredefinedtypeParameter = "Type IFC Predefined Type";
-
-            using (Transaction tx = new Transaction(doc))
+            try
             {
-                tx.Start("Update Parameters");
-
-                int idInt = Convert.ToInt32(ifcData.Tag);
-                ElementId typeId = new ElementId(idInt);
-                ElementType elementType = doc.GetElement(typeId) as ElementType;
-
-                string bsddParameterName = "";
-                string parameterMappedName = "";
-
-
-
-                ForgeTypeId specType = SpecTypeId.String.Text;
-                ForgeTypeId groupType = GroupTypeId.Ifc;
-
-                Schema schema = GetBsddDataSchema();
-                var f = schema.GetField("IFCClassification");
-                Entity test = new Entity(schema);
-                test.Set(f, Newtonsoft.Json.JsonConvert.SerializeObject(ifcData.HasAssociations));
-                elementType.SetEntity(test);
-
-                foreach (var association in ifcData.HasAssociations)
+                using (Transaction tx = new Transaction(doc))
                 {
-                    switch (association)
+                    tx.Start("Update Parameters");
+
+                    //Get the elementType
+                    int idInt = Convert.ToInt32(ifcData.Tag);
+                    ElementId typeId = new ElementId(idInt);
+                    ElementType elementType = doc.GetElement(typeId) as ElementType;
+
+                    //Initialize parameters
+                    string bsddParameterName = "";
+                    string parameterMappedName = "";
+
+                    //Set parameter type and group for the bsdd classification parameters
+                    ForgeTypeId specType = SpecTypeId.String.Text;
+                    ForgeTypeId groupType = GroupTypeId.Ifc;
+
+                    //Add all associations to the element in element entity storage
+                    Schema schema = GetBsddDataSchema();
+                    var field = schema.GetField("IFCClassification");
+                    Entity entity = new Entity(schema);
+                    entity.Set(field, Newtonsoft.Json.JsonConvert.SerializeObject(ifcData.HasAssociations));
+                    elementType.SetEntity(entity);
+
+                    //Set Revit parameters for each association
+                    foreach (var association in ifcData.HasAssociations)
                     {
-                        case IfcClassificationReference ifcClassificationReference:
-                            // do something with ifcClassificationReference
+                        switch (association)
+                        {
+                            case IfcClassificationReference ifcClassificationReference:
+                                // do something with ifcClassificationReference
 
-                            //<---- this is temporary, the referencesource.location should be provided in the given json
+                                //<---- this is temporary, the referencesource.location should be provided in the given json
 
-                            string url = ifcClassificationReference.Location.ToString();
-                            int index = url.IndexOf("/class");
+                                string url = ifcClassificationReference.Location.ToString();
+                                int index = url.IndexOf("/class");
 
-                            if (index > 0)
-                            {
-                                url = url.Substring(0, index);
-                            }
-                            ifcClassificationReference.ReferencedSource.Location = new Uri(url, UriKind.Absolute);
-
-                            //--------->
-
-
-                            string refSourceLocation = ifcClassificationReference.ReferencedSource.Location.ToString();
-
-                            bsddParameterName = "bsdd/" + refSourceLocation;
-
-                            //Add a project parameter for the bsdd classification in call Revit categories if it does not exist
-                            Utilities.Parameters.CreateProjectParameterForAllCategories(doc, bsddParameterName, "tempGroupName", specType, groupType, false);
-
-
-                            // TODO: Get mapped parameter name from extended datastorage
-                            if (GlobalBsddSettings.bsddsettings.MainDictionary.DictionaryUri == refSourceLocation)
-                            {
-                                parameterMappedName = GlobalBsddSettings.bsddsettings.MainDictionary.ParameterMapping;
-                                break;
-                            }
-                            else
-                            {
-                                foreach (var filterDictionary in GlobalBsddSettings.bsddsettings.FilterDictionaries)
+                                if (index > 0)
                                 {
-                                    if (filterDictionary.DictionaryUri == refSourceLocation)
+                                    url = url.Substring(0, index);
+                                }
+                                ifcClassificationReference.ReferencedSource.Location = new Uri(url, UriKind.Absolute);
+
+                                //--------->
+                                string refSourceLocation = ifcClassificationReference.ReferencedSource.Location.ToString();
+
+                                //Create parameter name for each unique the bsdd classificationReference
+                                bsddParameterName = CreateParameterNameFromIFCClassificationReferenceSourceLocation(ifcClassificationReference);
+
+                                //Add a project parameter for the bsdd classification in all Revit categories if it does not exist
+                                Utilities.Parameters.CreateProjectParameterForAllCategories(doc, bsddParameterName, "tempGroupName", specType, groupType, false);
+
+                                //Get mapped parametername (stored in the documents DataStorage)
+                                parameterMappedName = GetMappedParameterName(ifcClassificationReference);
+
+                                //Check each type parameter from the object
+                                foreach (Parameter typeparameter in elementType.Parameters)
+                                {
+                                    string typeParameterName = typeparameter.Definition.Name;
+
+                                    //Add the bsdd value to the parameter
+                                    if (typeParameterName == bsddParameterName)
                                     {
-                                        parameterMappedName = filterDictionary.ParameterMapping;
-                                        break;
+                                        typeparameter.Set(ifcClassificationReference.Identification + ":" + ifcClassificationReference.Name);
+                                    }
+                                    //Add the bsdd value to the mapped parameter
+                                    if (typeParameterName == parameterMappedName)
+                                    {
+                                        typeparameter.Set(ifcClassificationReference.Identification);
                                     }
                                 }
-                            }
-                            List<IfcClassificationReference> ifcClassificationReferences = new List<IfcClassificationReference>();
-                            //Check each type parameter from the object
-                            foreach (Parameter typeparameter in elementType.Parameters)
-                            {
-                                string typeParameterName = typeparameter.Definition.Name;
+                                break;
 
-                                //Add the bsdd value to the parameter
-                                if (typeParameterName == bsddParameterName)
-                                {
-                                    typeparameter.Set(ifcClassificationReference.Identification + ":" + ifcClassificationReference.Name);
-                                }
-                                //Add the bsdd value to the mapped parameter
-                                if (typeParameterName == parameterMappedName)
-                                {
-                                    typeparameter.Set(ifcClassificationReference.Identification);
-                                }
-                            }
-                            break;
+                            case IfcMaterial ifcMaterial:
+                                // do something with ifcMaterial
+                                break;
+                        }
+                    }
+                    tx.Commit();
+                }
 
-                        case IfcMaterial ifcMaterial:
-                            // do something with ifcMaterial
-                            break;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+        public static string GetMappedParameterName(IfcClassificationReference ifcClassificationReference)
+        {
+            string refSourceLocation = ifcClassificationReference.ReferencedSource.Location.ToString();
+
+            if (GlobalBsddSettings.bsddsettings.MainDictionary.DictionaryUri == refSourceLocation)
+            {
+                return GlobalBsddSettings.bsddsettings.MainDictionary.ParameterMapping;
+            }
+            else
+            {
+                foreach (var filterDictionary in GlobalBsddSettings.bsddsettings.FilterDictionaries)
+                {
+                    if (filterDictionary.DictionaryUri == refSourceLocation)
+                    {
+                        return filterDictionary.ParameterMapping;
                     }
                 }
-                tx.Commit();
             }
+            return "";
+        }
+        public static string CreateParameterNameFromIFCClassificationReferenceSourceLocation(IfcClassificationReference ifcClassificationReference)
+        {
+            string refSourceLocation = ifcClassificationReference.ReferencedSource.Location.ToString();
+            int index = refSourceLocation.IndexOf("//");
+            string refSourceLocation2 = refSourceLocation.Substring(index + 2);
+            return "bsdd/" + refSourceLocation;
         }
         // Element IFCClassification schema
         private static Guid s_schemaId = new Guid("79717CB2-D47B-4EC0-8E74-83A43E7D9F0A");
@@ -204,27 +225,12 @@ namespace BsddRevitPlugin.Logic.Model
         public static BsddBridgeData SelectionToJson(Document doc, List<ElementType> elemList)
         {
 
-            // TODO: Build the Json object genericly by reading all bsdd/... parameters from Revit, parse the json inside it and add it to the IfcClassificationReference list.
-
-            const string mainClassificationLocation = "https://identifier.buildingsmart.org/uri/digibase/basisbouwproducten/0.8.0";
-            const string mainClassificationName = "Basis bouwproducten";
-
-            const string ifcClassificationLocation = "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3";
-            const string ifcClassificationName = "IFC";
-
-            const string nlsfbClassificationLocation = "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021";
-            const string nlsfbClassificationName = "DigiBase Demo NL-SfB tabel 1";
-
-
-            Uri mainClassificationUri = _getBsddDomainUri(mainClassificationLocation);
-            Uri ifcClassificationUri = _getBsddDomainUri(ifcClassificationLocation);
-            Uri nlsfbClassificationUri = _getBsddDomainUri(nlsfbClassificationLocation);
-
             var bsddBridgeData = new BsddBridgeData();
             List<IfcData> ifcDataLst = new List<IfcData>();
 
             foreach (ElementType elem in elemList)
             {
+                //Get the element type parameters
                 string familyName = GetElementTypeFamilyName(doc, elem, GetTypeParameterValueByElementType(elem, "IfcName"));
                 string typeName = GetElementTypeName(doc, elem, GetTypeParameterValueByElementType(elem, "IfcType"));
                 string ifcTag = elem.Id.ToString();
@@ -234,51 +240,58 @@ namespace BsddRevitPlugin.Logic.Model
                 //string ifcType = GetTypeParameterValueByElementType(elem, "Export Type to IFC As");
                 string ifcPredefinedType = elem.get_Parameter(BuiltInParameter.IFC_EXPORT_PREDEFINEDTYPE_TYPE).AsString();
                 //string ifcPredefinedType = GetTypeParameterValueByElementType(elem, "Type IFC Predefined Type");
-                string loc_domain = GetTypeParameterValueByElementType(elem, "bsdd_domain");
-                string loc_domainentry = GetTypeParameterValueByElementType(elem, "bsdd_domain_entry");
-                string uniformatCode = elem.get_Parameter(BuiltInParameter.UNIFORMAT_CODE).AsString();
-                string uniformatDescription = elem.get_Parameter(BuiltInParameter.UNIFORMAT_DESCRIPTION).AsString();
 
+                //Get bsdd data schema for classification reading
+                Schema schema = GetBsddDataSchema();
 
-                string mainClassificationReferenceIdentification = null;
-                string mainClassificationReferenceName = null;
+                //Get schema entity and field, add to List<Association>
+                var entity = elem.GetEntity(schema);
+                var jsonstring = entity.Get<string>(schema.GetField("IFCClassification"));
+                List<Association> hasAssociations = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Association>>(jsonstring);
 
-                string ifcClassificationReferenceIdentification = null;
-                string ifcClassificationReferenceName = null;
-
-                string nlsfbClassificationReferenceIdentification = null;
-                string nlsfbClassificationReferenceName = null;
-
-                if (type_description != null)
+                //Overwriting properties from current Revit values:
+                //Value leading are:
+                //"name": First: <bsdd/...>(value after :) Second: <extendable storage> (currently in hasAssociations)
+                //"identification": First: <bsdd/...>(value after :) Second: <mapped parameter>(from bsddSettings) Third: <extendable storage> (currently in hasAssociations)
+                foreach (var association in hasAssociations)
                 {
-                    mainClassificationReferenceIdentification = type_description.Replace(" ", "");
-                    mainClassificationReferenceName = type_description;
+                    switch (association)
+                    {
+                        case IfcClassificationReference ifcClassificationReference:
+                            // do something with ifcClassificationReference
+
+                            //Get bsddParameterValue
+                            string bsddParameterName = CreateParameterNameFromIFCClassificationReferenceSourceLocation(ifcClassificationReference);
+                            string bsddParameterValue = GetTypeParameterValueByElementType(elem, bsddParameterName);
+
+                            //Get mapped parameter value
+                            string mappedParameterName = GetMappedParameterName(ifcClassificationReference);
+                            string mappedParameterValue = GetTypeParameterValueByElementType(elem, mappedParameterName);
+
+                            //Set Name:
+                            if (bsddParameterValue != null)
+                            {
+                                ifcClassificationReference.Name = bsddParameterValue.Split(':')[1];
+                            }
+
+                            //set Identification:
+                            if (mappedParameterValue != null)
+                            {
+                                ifcClassificationReference.Identification  = mappedParameterValue.Split(':')[1];
+                            }
+                            else if (bsddParameterValue != null)
+                            {
+                                ifcClassificationReference.Identification = bsddParameterValue.Split(':')[0];
+                            }
+
+                            break;
+
+                        case IfcMaterial ifcMaterial:
+                            // do something with ifcMaterial
+                            break;
+                    }
+
                 }
-
-                if (ifcType != null)
-                {
-                    ifcClassificationReferenceIdentification = ifcType.Replace(" ", "");
-                    ifcClassificationReferenceName = ifcType;
-                }
-
-                if (ifcClassificationReferenceIdentification != null && ifcClassificationReferenceName != null && ifcPredefinedType != null)
-                {
-                    ifcClassificationReferenceIdentification = ifcClassificationReferenceIdentification + ifcPredefinedType;
-                    ifcClassificationReferenceName = ifcClassificationReferenceName + "." + ifcPredefinedType;
-                }
-
-                if (uniformatCode != null)
-                {
-                    nlsfbClassificationReferenceIdentification = uniformatCode.Replace(" ", "");
-                    nlsfbClassificationReferenceName = uniformatDescription;
-                }
-
-                Uri mainClassificationReferenceUri = _getBsddClassificationUri(mainClassificationUri, mainClassificationReferenceIdentification);
-                Uri ifcClassificationReferenceUri = _getBsddClassificationUri(ifcClassificationUri, ifcClassificationReferenceIdentification);
-                Uri nlsfbClassificationReferenceUri = _getBsddClassificationUri(nlsfbClassificationUri, nlsfbClassificationReferenceIdentification);
-
-                if (loc_domain != null) mainClassificationUri = new Uri(loc_domain);
-                if (loc_domainentry != null) mainClassificationReferenceUri = new Uri(loc_domainentry);
 
                 IfcData ifcData = new IfcData
                 {
@@ -289,26 +302,7 @@ namespace BsddRevitPlugin.Logic.Model
                     PredefinedType = ifcPredefinedType,
                    
                 };
-                List<Association> hasAssociations = new List<Association>();
-                foreach (Parameter typeparameter in elem.Parameters)
-                {
-                    string typeParameterName = typeparameter.Definition.Name;
-                    // TODO: Get the Ifcclassifications from extended datastorage
-                    // fill "name": "<extendable storage>else<bsdd param>",
-                    // fill "identification": "<extendable storage>else<mapped param>else<bsdd param>"
 
-                    if (typeParameterName.StartsWith("bsdd/"))
-                    {
-                        var jsonstring = GetTypeParameterValueByElementType(elem, typeParameterName);
-
-                        if (jsonstring != null)
-                        {
-                            hasAssociations.Add(Newtonsoft.Json.JsonConvert.DeserializeObject<IfcClassificationReference>(jsonstring));
-                        }
-                    }
-
-                    
-                }
                 if (hasAssociations != null)
                 {
                     ifcData.HasAssociations = hasAssociations;
@@ -317,12 +311,17 @@ namespace BsddRevitPlugin.Logic.Model
 
 
             }
-            //JObject json = JObject.Parse(JsonConvert.SerializeObject(ifcDataLst));
 
+            //Add current settings to the bsddBridgeData
             bsddBridgeData.Settings = GlobalBsddSettings.bsddsettings;
+
+            //Set ifcData for all elements
             bsddBridgeData.IfcData = ifcDataLst;
+
+            //Parse to Json object
             var provider = new JsonBasedPersistenceProvider("C://temp");
             provider.Persist(bsddBridgeData);
+
             return bsddBridgeData;
         }
 
@@ -330,7 +329,6 @@ namespace BsddRevitPlugin.Logic.Model
         {
             return new Uri(domain);
         }
-
         private static Uri _getBsddClassificationUri(Uri domain, string code)
         {
             return new Uri(domain + "/class/" + code);
@@ -387,7 +385,6 @@ namespace BsddRevitPlugin.Logic.Model
             }
         }
 
-
         public static dynamic GetTypeParameterValueByElementType(ElementType elementType, string parameterName)
         {
             try
@@ -407,7 +404,6 @@ namespace BsddRevitPlugin.Logic.Model
                 return null;
             }
         }
-
         private static dynamic _getParameterValueByCorrectStorageType2(Parameter parameter)
         {
             switch (parameter.StorageType)
@@ -426,7 +422,6 @@ namespace BsddRevitPlugin.Logic.Model
                     return "";
             };
         }
-
         public static string GetMaterialName(Element e, Document DbDoc)
         {
             string materialName = "not defined1";
@@ -464,7 +459,6 @@ namespace BsddRevitPlugin.Logic.Model
 
             return materialName;
         }
-
         public static Uri GetLocationParam(string domain, Element element)
         {
             Uri paramValue = new Uri(domain);
@@ -479,6 +473,5 @@ namespace BsddRevitPlugin.Logic.Model
 
             return paramValue;
         }
-
     }
 }

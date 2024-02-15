@@ -120,7 +120,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             var uidoc = uiapp.ActiveUIDocument;
             var doc = uidoc.Document;
 
-            SetIfcDataToRevit(doc, ifcData);
+            SetIfcDataToRevitElement(doc, ifcData);
         }
         public void SetIfcData(IfcData ifcDataObject)
         {
