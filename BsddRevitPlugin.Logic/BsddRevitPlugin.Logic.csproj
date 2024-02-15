@@ -112,6 +112,7 @@
     <Compile Include="IfcJson\IfcJson.cs" />
     <Compile Include="IfcJson\IfcJsonConverter.cs" />
     <Compile Include="Model\ElementsManager.cs" />
+    <Compile Include="Model\SettingsManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\IfcDataExample.cs" />
     <Compile Include="UI\BsddBridge\BsddBridgeData.cs" />
