@@ -17954,6 +17954,7 @@ function iD() {
   return W(() => {
     console.log("bsddApiEnvironment changed"), n && (e(zP(n)), e(Up(n)));
   }, [n, e]), window.updateSelection = (r) => {
+    console.log("updateSelection", r);
     const { settings: o, ifcData: i } = r;
     e(ox(o)), e(Kp(i));
   }, /* @__PURE__ */ F.jsx(F.Fragment, { children: /* @__PURE__ */ F.jsx(ua, { size: "40rem", children: /* @__PURE__ */ F.jsxs(st, { defaultValue: "koppelen", children: [
