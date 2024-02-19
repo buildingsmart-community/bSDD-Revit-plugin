@@ -134,12 +134,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="html\bsdd_search\react-bsdd-search.umd.cjs">
+    <Content Include="html\bsdd_search\react-bsdd-search.umd.cjs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="html\bsdd_selection\react-bsdd-selection.umd.cjs">
+    </Content>
+    <Content Include="html\bsdd_selection\react-bsdd-selection.umd.cjs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </Content>
     <None Include="packages.config" />
     <None Include="Resources\ifcDataFromBsddExample.json" />
     <None Include="Resources\ifcDataFromRevitExample.json" />
