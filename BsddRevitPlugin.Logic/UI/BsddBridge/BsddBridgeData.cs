@@ -51,7 +51,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         public BsddSettings Settings { get; set; }
 
         [JsonProperty("ifcData")]
-        public List<IfcData> IfcData { get; set; }
+        public List<IfcEntity> IfcData { get; set; }
 
         /// <summary>
         /// Sets the main dictionary URI.

@@ -11,7 +11,7 @@ namespace BsddRevitPlugin.Logic.IfcJson
     /// based on IfcTypeProduct:
     /// https://ifc43-docs.standards.buildingsmart.org/IFC/RELEASE/IFC4x3/HTML/lexical/IfcTypeProduct.htm
     /// </summary>
-    public class IfcData
+    public class IfcEntity
     {
         /// <summary>
         /// IfcJson parameter for the IFC entity type.

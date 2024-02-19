@@ -1,19 +1,13 @@
 ﻿using ASRR.Core.Persistence;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExtensibleStorage;
-using Autodesk.Revit.DB.Mechanical;
 using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
 using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Security.Policy;
-using System.Windows.Controls;
-using BsddRevitPlugin.Logic.Model;
 using Newtonsoft.Json;
-using System.Collections;
 
 
 namespace BsddRevitPlugin.Logic.Model
@@ -107,7 +101,7 @@ namespace BsddRevitPlugin.Logic.Model
             elemListFiltered = elemListFiltered.Distinct().ToList();
             return elemListFiltered;
         }
-        public static void SetIfcDataToRevitElement(Document doc, IfcData ifcData)
+        public static void SetIfcDataToRevitElement(Document doc, IfcEntity ifcEntity)
         {
             Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -121,7 +115,7 @@ namespace BsddRevitPlugin.Logic.Model
                     HashSet<IfcClassification> dictionaryCollection = new HashSet<IfcClassification>();
 
                     //Get the elementType
-                    int idInt = Convert.ToInt32(ifcData.Tag);
+                    int idInt = Convert.ToInt32(ifcEntity.Tag);
                     ElementId typeId = new ElementId(idInt);
                     ElementType elementType = doc.GetElement(typeId) as ElementType;
 
@@ -139,7 +133,7 @@ namespace BsddRevitPlugin.Logic.Model
                     try
                     {
                         Entity entity = new Entity(schema);
-                        entity.Set(field, Newtonsoft.Json.JsonConvert.SerializeObject(ifcData.HasAssociations));
+                        entity.Set(field, JsonConvert.SerializeObject(ifcEntity.HasAssociations));
                         elementType.SetEntity(entity);
                     }
                     catch
@@ -149,7 +143,7 @@ namespace BsddRevitPlugin.Logic.Model
 
 
                     //Set Revit parameters for each association
-                    var associations = ifcData.HasAssociations;
+                    var associations = ifcEntity.HasAssociations;
                     if (associations != null)
                     {
                         foreach (var association in associations)
@@ -399,16 +393,15 @@ namespace BsddRevitPlugin.Logic.Model
         /// </summary>
         /// <param name="doc">The active Revit document.</param>
         /// <param name="elemList">The list of selected Revit element types.</param>
-        /// <returns>A BsddBridgeData object representing the ifcJSON structure.</returns>
-        public static BsddBridgeData SelectionToIfcJson(Document doc, List<ElementType> elemList)
+        /// <returns>A IfcData object representing the ifcJSON structure.</returns>
+        public static List<IfcEntity> SelectionToIfcJson(Document doc, List<ElementType> elemList)
         {
             if (doc == null || elemList == null)
             {
                 throw new ArgumentNullException(doc == null ? nameof(doc) : nameof(elemList));
             }
 
-            var bsddBridgeData = new BsddBridgeData();
-            var ifcEntities = new List<IfcData>();
+            var ifcEntities = new List<IfcEntity>();
 
             foreach (ElementType elem in elemList)
             {
@@ -421,13 +414,10 @@ namespace BsddRevitPlugin.Logic.Model
                 ifcEntities.Add(ifcData);
             }
 
-            bsddBridgeData.Settings = GlobalBsddSettings.bsddsettings ?? throw new InvalidOperationException("GlobalBsddSettings.bsddsettings is null");
-            bsddBridgeData.IfcData = ifcEntities;
-
             var provider = new JsonBasedPersistenceProvider("C://temp");
-            provider.Persist(bsddBridgeData);
+            provider.Persist(ifcEntities);
 
-            return bsddBridgeData;
+            return ifcEntities;
         }
 
         // TODO: IFC type should also be read from the mapping files when not present in the revit typeEntity
@@ -435,7 +425,7 @@ namespace BsddRevitPlugin.Logic.Model
         /// <summary>
         /// Transforms a Revit element type into an IFC entity.
         /// </summary>
-        private static IfcData CreateIfcEntity(ElementType elem)
+        private static IfcEntity CreateIfcEntity(ElementType elem)
         {
             string familyName = GetElementTypeFamilyName(elem, GetTypeParameterValueByElementType(elem, "IfcName"));
             string typeName = GetElementTypeName(elem, GetTypeParameterValueByElementType(elem, "IfcType"));
@@ -446,7 +436,7 @@ namespace BsddRevitPlugin.Logic.Model
 
             var associations = GetElementTypeAssociations(elem);
 
-            var ifcEntity = new IfcData
+            var ifcEntity = new IfcEntity
             {
                 Type = ifcType,
                 Name = $"{familyName} - {typeName}",

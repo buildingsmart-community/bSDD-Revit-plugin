@@ -40,7 +40,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             elemList = ListFilter(elemList);
 
             // Pack data into json format
-            BsddBridgeData selectionData = SelectionToIfcJson(doc, elemList);
+            List<IfcEntity> selectionData = SelectionToIfcJson(doc, elemList);
 
             // Send MainData to BsddSelection html
             UpdateBsddSelection(selectionData);
@@ -53,13 +53,13 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             browser = browserObject;
         }
 
-        private void UpdateBsddSelection(BsddBridgeData ifcData)
+        private void UpdateBsddSelection(List<IfcEntity> ifcData)
         {
             var settings = new JsonSerializerSettings
             {
                 NullValueHandling = NullValueHandling.Ignore
             };
-            var jsonString = JsonConvert.SerializeObject(ifcData, settings);
+            var jsonString = JsonConvert.SerializeObject(ifcData);
             var jsFunctionCall = $"updateSelection({jsonString});";
 
             if (browser.IsBrowserInitialized)
@@ -110,7 +110,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
     {
         Logger logger = LogManager.GetCurrentClassLogger();
 
-        IfcData ifcData;
+        IfcEntity ifcData;
 
         public override void Execute(UIApplication uiapp, string args)
         {
@@ -119,7 +119,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
             SetIfcDataToRevitElement(doc, ifcData);
         }
-        public void SetIfcData(IfcData ifcDataObject)
+        public void SetIfcData(IfcEntity ifcDataObject)
         {
             ifcData = ifcDataObject;
         }

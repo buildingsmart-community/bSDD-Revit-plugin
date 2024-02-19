@@ -61,14 +61,14 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             _bsddSearchParent?.Dispatcher.Invoke(() => _bsddSearchParent.Close());
 
             var converter = new IfcJsonConverter();
-            var ifcData = JsonConvert.DeserializeObject<IfcData>(ifcJsonData, converter);
+            var ifcEntity = JsonConvert.DeserializeObject<IfcEntity>(ifcJsonData, converter);
             var bsddBridgeData = new BsddBridgeData
             {
-                IfcData = new List<IfcData> { ifcData }
+                IfcData = new List<IfcEntity> { ifcEntity }
             };
             _eventHandlerBsddSearch.setBsddBridgeData(bsddBridgeData);
             _eventHandlerBsddSearch.Raise("openSearch");
-            return JsonConvert.SerializeObject(ifcData);
+            return JsonConvert.SerializeObject(ifcEntity);
         }
 
         /// <summary>
@@ -81,6 +81,11 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             var settings = JsonConvert.DeserializeObject<BsddSettings>(settingsJson);
             _updateSettings.SetSettings(settings);
             _exEventUpdateSettings.Raise();
+        }
+
+        public string loadSettings()
+        {
+            return JsonConvert.SerializeObject(GlobalBsddSettings.bsddsettings);
         }
     }
 }
