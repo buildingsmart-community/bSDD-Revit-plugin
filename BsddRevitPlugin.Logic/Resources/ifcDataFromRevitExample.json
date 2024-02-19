@@ -3,7 +3,7 @@
   "mainDictionary": {
     "dictionaryUri": "https://identifier.buildingsmart.org/uri/digibase/basisbouwproducten/0.8.0",
     "dictionaryName": "Basis bouwproducten",
-    "parameterMapping": "description"
+    "parameterMapping": "Description"
   },
   "filterDictionaries": [
     {

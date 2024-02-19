@@ -104,14 +104,35 @@ namespace BsddRevitPlugin.Logic.IfcJson
     /// </summary>
     public class IfcClassification
     {
+
         [JsonProperty("type")]
         public string Type { get; set; }
+
+        [JsonProperty("source")]
+        public string Source { get; set; }
+
+        [JsonProperty("edition")]
+        public string Edition { get; set; }
+
+        [JsonProperty("editionDate")]
+        public DateTime EditionDate { get; set; }
 
         [JsonProperty("name")]
         public string Name { get; set; }
 
+        [JsonProperty("description")]
+        public string Description { get; set; }
+
         [JsonProperty("location")]
         public Uri Location { get; set; }
+
+        //[JsonProperty("referenceTokens")]
+        //public List<string> ReferenceTokens { get; set; }
+
+        // Addition for the Revit mapping parameter, should not be present in the ifcJSON data
+        [JsonProperty("classificationFieldName")]
+        public string ClassificationFieldName { get; set; }
+
     }
 
     /// <summary>

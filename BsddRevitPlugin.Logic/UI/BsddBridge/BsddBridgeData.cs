@@ -1,5 +1,6 @@
 ﻿using BsddRevitPlugin.Logic.IfcJson;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace BsddRevitPlugin.Logic.UI.BsddBridge
@@ -11,7 +12,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
     public class BsddDictionary
     {
         [JsonProperty("dictionaryUri")]
-        public string DictionaryUri { get; set; }
+        public Uri DictionaryUri { get; set; }
 
         [JsonProperty("dictionaryName")]
         public string DictionaryName { get; set; }
@@ -29,7 +30,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
     public class BsddSettings
     {
         [JsonProperty("bsddApiEnvironment")]
-        public string BsddApiEnvironment { get; set; } = "production";
+        public string BsddApiEnvironment { get; set; } = "test";
 
         [JsonProperty("mainDictionary")]
         public BsddDictionary MainDictionary { get; set; }
@@ -58,7 +59,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         /// <param name="domain">The domain of the main dictionary.</param>
         public void setDomain(string domain)
         {
-            Settings.MainDictionary.DictionaryUri = domain;
+            Settings.MainDictionary.DictionaryUri = new Uri( domain);
         }
 
         /// <summary>

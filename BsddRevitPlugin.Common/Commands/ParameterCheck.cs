@@ -6,9 +6,6 @@ using Element = Autodesk.Revit.DB.Element;
 using ElementType = Autodesk.Revit.DB.ElementType;
 using Parameter = Autodesk.Revit.DB.Parameter;
 using Category = Autodesk.Revit.DB.Category;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using NLog;
 using System.Collections.Generic;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
@@ -37,7 +34,7 @@ namespace BsddRevitPlugin.Common.Commands
                     BsddApiEnvironment = "test",
                     MainDictionary = new BsddDictionary()
                     {
-                        DictionaryUri = "https://identifier.buildingsmart.org/uri/digibase/basisbouwproducten/0.8.0",
+                        DictionaryUri = new Uri("https://identifier.buildingsmart.org/uri/digibase/basisbouwproducten/0.8.0"),
                         DictionaryName = "Basis bouwproducten",
                         ParameterMapping = "Description"
                     },
@@ -45,13 +42,13 @@ namespace BsddRevitPlugin.Common.Commands
                     {
                         new BsddDictionary()
                         {
-                            DictionaryUri = "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3",
+                            DictionaryUri = new Uri("https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3"),
                             DictionaryName = "IFC",
                             ParameterMapping = "IfcExportAs"
                         },
                         new BsddDictionary()
                         {
-                            DictionaryUri = "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021",
+                            DictionaryUri = new Uri("https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021"),
                             DictionaryName = "DigiBase Demo NL-SfB tabel 1",
                             ParameterMapping = "Assembly Code"
                         }
