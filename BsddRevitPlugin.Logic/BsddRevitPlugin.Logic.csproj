@@ -112,6 +112,8 @@
     <Compile Include="IfcJson\IfcJson.cs" />
     <Compile Include="IfcJson\IfcJsonConverter.cs" />
     <Compile Include="Model\ElementsManager.cs" />
+    <Compile Include="Model\SettingsManager.cs" />
+    <Compile Include="Model\IfcClassificationManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\IfcDataExample.cs" />
     <Compile Include="UI\BsddBridge\BsddBridgeData.cs" />
@@ -127,16 +129,23 @@
     <Compile Include="UI\Wrappers\MethodsWrapped.cs" />
     <Compile Include="UI\Wrappers\RevitEventWrapper.cs" />
     <Compile Include="Utilities\FileHandling.cs" />
+    <Compile Include="Utilities\Parameters.cs" />
+    <Compile Include="Utilities\UuidFromUri.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="html\bsdd_search\react-bsdd-search.umd.cjs">
+    <None Include="app.config" />
+    <Content Include="html\bsdd_search\react-bsdd-search.umd.cjs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="html\bsdd_selection\react-bsdd-selection.umd.cjs">
+    </Content>
+    <Content Include="html\bsdd_selection\react-bsdd-selection.umd.cjs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </Content>
     <None Include="packages.config" />
+    <None Include="Resources\ifcDataFromBsddExample.json" />
     <None Include="Resources\ifcDataFromRevitExample.json" />
+    <None Include="UI\Settings\BsddSettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="html\bsdd_search\css\viewer.css">

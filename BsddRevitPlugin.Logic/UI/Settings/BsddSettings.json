@@ -1,0 +1,27 @@
+{
+  "bsddApiEnvironment": "test",
+  "mainDictionary": {
+    "dictionaryUri": "https://identifier.buildingsmart.org/uri/digibase/basisbouwproducten/0.8.0",
+    "dictionaryName": "Basis bouwproducten",
+    "parameterName": null,
+    "parameterId": null,
+    "parameterMapping": "Description"
+  },
+  "filterDictionaries": [
+    {
+      "dictionaryUri": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3",
+      "dictionaryName": "IFC",
+      "parameterName": null,
+      "parameterId": null,
+      "parameterMapping": "Export Type to IFC As"
+    },
+    {
+      "dictionaryUri": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021",
+      "dictionaryName": "DigiBase Demo NL-SfB tabel 1",
+      "parameterName": null,
+      "parameterId": null,
+      "parameterMapping": "Assembly Code"
+    }
+  ],
+  "language": "nl"
+}

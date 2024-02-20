@@ -1,0 +1,2260 @@
+{
+    "name": "Floor - NLRS_23_FL_breedplaat_vloer_100mm_vws",
+    "tag": "770104",
+  "hasAssociations": [
+    {
+      "type": "IfcClassificationReference",
+      "name": "breedplaatvloer",
+      "location": "https://identifier.buildingsmart.org/uri/digibase/basisbouwproducten/0.1/class/breedplaatvloer",
+      "identification": "breedplaatvloer",
+      "referencedSource": {
+        "type": "IfcClassification",
+        "name": "Basis bouwproducten"
+      }
+    },
+    {
+      "type": "IfcClassificationReference",
+      "name": "Slab",
+      "location": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/class/IfcSlab",
+      "identification": "IfcSlab",
+      "referencedSource": {
+        "type": "IfcClassification",
+        "name": "IFC"
+      }
+    },
+    {
+      "type": "IfcClassificationReference",
+      "name": "27.21 daken; constructief, vlakke daken",
+      "location": "",
+      "identification": "27.21",
+      "referencedSource": {
+        "type": "IfcClassification",
+        "name": "",
+        "location": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021"
+      }
+    },
+    {
+      "type": "IfcClassificationReference",
+      "name": "23.21 vloeren; constructief, vrijdragende vloeren",
+      "location": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021/class/23.21",
+      "identification": "23.21",
+      "referencedSource": {
+        "type": "IfcClassification",
+        "name": "DigiBase Demo NL-SfB tabel 1"
+      }
+    },
+    {
+      "type": "IfcClassificationReference",
+      "name": "Vloer, vloer",
+      "location": "https://identifier.buildingsmart.org/uri/digibase/digibasedemoifctranslation/0.1/class/IfcSlab.FLOOR",
+      "identification": "IfcSlab.FLOOR",
+      "referencedSource": {
+        "type": "IfcClassification",
+        "name": "DigiBase demo IFC translation"
+      }
+    },
+    {
+      "type": "IfcClassificationReference",
+      "name": "F Vloerafbouw/vloerafwerking",
+      "location": "https://identifier.buildingsmart.org/uri/digibase/nen2699/0.1/class/B.1.F",
+      "identification": "B.1.F",
+      "referencedSource": {
+        "type": "IfcClassification",
+        "name": "DigiBase Demo NEN 2699"
+      }
+    }
+  ],
+    "isDefinedBy": [
+        {
+            "type": "IfcPropertySet",
+            "name": "Pset_SlabCommon",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Acoustic Rating",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/AcousticRating",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Combustible",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/Combustible",
+                    "nominalValue": {
+                        "type": "IfcBoolean"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Compartmentation",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/Compartmentation",
+                    "nominalValue": {
+                        "type": "IfcBoolean"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Fire Rating",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/FireRating",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Is External",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/IsExternal",
+                    "nominalValue": {
+                        "type": "IfcBoolean"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Load Bearing",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/LoadBearing",
+                    "nominalValue": {
+                        "type": "IfcBoolean"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Pitch Angle",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/PitchAngle",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Status",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/Status",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Surface Spread of Flame",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/SurfaceSpreadOfFlame",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Thermal Transmittance",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ThermalTransmittance",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Load Bearing",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/LoadBearing",
+                    "nominalValue": {
+                        "type": "IfcBoolean",
+                        "value": true
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Qto_SlabBaseQuantities",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Depth",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/Depth",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Gross Area",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/GrossArea",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Gross Volume",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/GrossVolume",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Gross Weight",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/GrossWeight",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Length",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/Length",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Net Area",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/NetArea",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Net Volume",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/NetVolume",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Net Weight",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/NetWeight",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Peri Meter",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/Perimeter",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Width",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/Width",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Pset_ConcreteElementGeneral",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Assembly Place",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/AssemblyPlace",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Casting Method",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/CastingMethod",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Concrete Cover",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ConcreteCover",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Concrete Cover at Links",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ConcreteCoverAtLinks",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Concrete Cover at Main Bars",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ConcreteCoverAtMainBars",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Construction Tolerance Class",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ConstructionToleranceClass",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Dimensional Accuracy Class",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/DimensionalAccuracyClass",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Exposure Class",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ExposureClass",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Reinforcement Area Ratio",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ReinforcementAreaRatio",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Reinforcement Strength Class",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ReinforcementStrengthClass",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Reinforcement Volume Ratio",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ReinforcementVolumeRatio",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Strength Class",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/StrengthClass",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Structural Class",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/StructuralClass",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Pset_PrecastConcreteElementFabrication",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Actual Erection Date",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ActualErectionDate",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Actual Production Date",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ActualProductionDate",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "As Built Location Number",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/AsBuiltLocationNumber",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Piece Mark",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/PieceMark",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Production Lot ID",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ProductionLotId",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Serial Number",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/SerialNumber",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Type Designation",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/TypeDesignation",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Pset_PrecastConcreteElementGeneral",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Batter at End",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/BatterAtEnd",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Batter at Start",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/BatterAtStart",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Camber at Midspan",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/CamberAtMidspan",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Corner Chamfer",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/CornerChamfer",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Design Location Number",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/DesignLocationNumber",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Form Strip Ping Strength",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/FormStrippingStrength",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Hollow Core Plug Ging",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/HollowCorePlugging",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Initial Tension",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/InitialTension",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Lifting Strength",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/LiftingStrength",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Manufacturing Tolerance Class",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ManufacturingToleranceClass",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Minimum Allowable Support Length",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/MinimumAllowableSupportLength",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Piece Mark",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/PieceMark",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Release Strength",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ReleaseStrength",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Shortening",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/Shortening",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Support During Transport Description",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/SupportDuringTransportDescription",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Support During Transport Doc Reference",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/SupportDuringTransportDocReference",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Tendon Relaxation",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/TendonRelaxation",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Transportation Strength",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/TransportationStrength",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Twisting",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/Twisting",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Type Designation",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/TypeDesignation",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Pset_PrecastSlab",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Angle Between Component Axes",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/AngleBetweenComponentAxes",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Angle to First Axis",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/AngleToFirstAxis",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Distance Between Component Axes",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/DistanceBetweenComponentAxes",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Edge Distance to First Axis",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/EdgeDistanceToFirstAxis",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Nominal Thickness",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/NominalThickness",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Nominal Topping Thickness",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/NominalToppingThickness",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Topping Type",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ToppingType",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Type Designation",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/TypeDesignation",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Pset_ReinforcementBarPitchOfSlab",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Description",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/Description",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Long In Side Center Lower Bar Pitch",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/LongInsideCenterLowerBarPitch",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Long In Side Center Top Bar Pitch",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/LongInsideCenterTopBarPitch",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Long In Side End Lower Bar Pitch",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/LongInsideEndLowerBarPitch",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Long In Side End Top Bar Pitch",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/LongInsideEndTopBarPitch",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Long Out Side Lower Bar Pitch",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/LongOutsideLowerBarPitch",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Long Out Side Top Bar Pitch",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/LongOutsideTopBarPitch",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Short In Side Center Lower Bar Pitch",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ShortInsideCenterLowerBarPitch",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Short In Side Center Top Bar Pitch",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ShortInsideCenterTopBarPitch",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Short In Side End Lower Bar Pitch",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ShortInsideEndLowerBarPitch",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Short In Side End Top Bar Pitch",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ShortInsideEndTopBarPitch",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Short Out Side Lower Bar Pitch",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ShortOutsideLowerBarPitch",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Short Out Side Top Bar Pitch",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ShortOutsideTopBarPitch",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Pset_EnvironmentalImpactIndicators",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Atmospheric Acidification Per Unit",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/AtmosphericAcidificationPerUnit",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Climate Change Per Unit",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ClimateChangePerUnit",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Eutrophication Per Unit",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/EutrophicationPerUnit",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Expected Service Life",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ExpectedServiceLife",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Function Al Unit Reference",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/FunctionalUnitReference",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Hazardous Waste Per Unit",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/HazardousWastePerUnit",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Indicators Unit",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/IndicatorsUnit",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Inert Waste Per Unit",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/InertWastePerUnit",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Life Cycle Phase",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/LifeCyclePhase",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Non Hazardous Waste Per Unit",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/NonHazardousWastePerUnit",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Non Renewable Energy Consumption Per Unit",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/NonRenewableEnergyConsumptionPerUnit",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Photochemical Ozone Formation Per Unit",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/PhotochemicalOzoneFormationPerUnit",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Radioactive Waste Per Unit",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/RadioactiveWastePerUnit",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Renewable Energy Consumption Per Unit",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/RenewableEnergyConsumptionPerUnit",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Resource Depletion Per Unit",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ResourceDepletionPerUnit",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Stratospheric Ozone Layer Destruction Per Unit",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/StratosphericOzoneLayerDestructionPerUnit",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Total Primary Energy Consumption Per Unit",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/TotalPrimaryEnergyConsumptionPerUnit",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Water Consumption Per Unit",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/WaterConsumptionPerUnit",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Pset_EnvironmentalImpactValues",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Atmospheric Acidification",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/AtmosphericAcidification",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Climate Change",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ClimateChange",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Duration",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/Duration",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Eutrophication",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/Eutrophication",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Hazardous Waste",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/HazardousWaste",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Inert Waste",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/InertWaste",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Lead In Time",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/LeadInTime",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Lead Out Time",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/LeadOutTime",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Non Hazardous Waste",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/NonHazardousWaste",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Non Renewable Energy Consumption",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/NonRenewableEnergyConsumption",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Photochemical Ozone Formation",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/PhotochemicalOzoneFormation",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Radioactive Waste",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/RadioactiveWaste",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Renewable Energy Consumption",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/RenewableEnergyConsumption",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Resource Depletion",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ResourceDepletion",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Stratospheric Ozone Layer Destruction",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/StratosphericOzoneLayerDestruction",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Total Primary Energy Consumption",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/TotalPrimaryEnergyConsumption",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Water Consumption",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/WaterConsumption",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Pset_EnvironmentalCondition",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Maximum Atmospheric Pressure",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/MaximumAtmosphericPressure",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Maximum Rain Intensity",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/MaximumRainIntensity",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Maximum Solar Radiation",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/MaximumSolarRadiation",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Maximum Wind Speed",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/MaximumWindSpeed",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Operational Temperature Range",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/OperationalTemperatureRange",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Reference Air Relative Humidity",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ReferenceAirRelativeHumidity",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Reference Environment Temperature",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ReferenceEnvironmentTemperature",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Salt Mist Level",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/SaltMistLevel",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Seismic Resistance",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/SeismicResistance",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Smoke Level",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/SmokeLevel",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Storage Temperature Range",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/StorageTemperatureRange",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Pset_InstallationOccurrence",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Acceptance Date",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/AcceptanceDate",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Installation Date",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/InstallationDate",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Put Into Operation Date",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/PutIntoOperationDate",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Pset_RepairOccurrence",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Mean Time to Repair",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/MeanTimeToRepair",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Repair Content",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/RepairContent",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Repair Date",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/RepairDate",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Pset_Condition",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Assessment Condition",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/AssessmentCondition",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Assessment Date",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/AssessmentDate",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Assessment Description",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/AssessmentDescription",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Assessment Frequency",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/AssessmentFrequency",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Assessment Method",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/AssessmentMethod",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Assessment Type",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/AssessmentType",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Last Assessment Report",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/LastAssessmentReport",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Next Assessment Date",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/NextAssessmentDate",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Pset_ConstructionAdministration",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Procurement Method",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ProcurementMethod",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Specification Section Number",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/SpecificationSectionNumber",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Submittal Identifer",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/SubmittalIdentifer",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Pset_ConstructionOccurence",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Asset Identifier",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/AssetIdentifier",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Installation Date",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/InstallationDate",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Model Number",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ModelNumber",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Tag Number",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/TagNumber",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Pset_MaintenanceStrategy",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Accident Response",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/AccidentResponse",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Asset Criticality",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/AssetCriticality",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Asset F Rail TY",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/AssetFrailty",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Asset Priority",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/AssetPriority",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Monitoring Type",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/MonitoringType",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Pset_MaintenanceTriggerCondition",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Condition Disposal Level",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ConditionDisposalLevel",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Condition Maintenance Level",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ConditionMaintenanceLevel",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Condition Re Placement Level",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ConditionReplacementLevel",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Condition Target Performance",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ConditionTargetPerformance",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Pset_MaintenanceTriggerDuration",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Duration Disposal Level",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/DurationDisposalLevel",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Duration Maintenance Level",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/DurationMaintenanceLevel",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Duration Re Placement Level",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/DurationReplacementLevel",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Duration Target Performance",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/DurationTargetPerformance",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Pset_MaintenanceTriggerPerformance",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Disposal Level",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/DisposalLevel",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Performance Maintenance Level",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/PerformanceMaintenanceLevel",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Re Placement Level",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ReplacementLevel",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Target Performance",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/TargetPerformance",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Pset_ManufacturerOccurrence",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Acquisition Date",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/AcquisitionDate",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Assembly Place",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/AssemblyPlace",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Bar Code",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/BarCode",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Batch Reference",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/BatchReference",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Manufacturing Date",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ManufacturingDate",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Serial Number",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/SerialNumber",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Pset_ManufacturerTypeInformation",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Article Number",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ArticleNumber",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Assembly Place",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/AssemblyPlace",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Global Trade Item Number",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/GlobalTradeItemNumber",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Manufacturer",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/Manufacturer",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Model Label",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ModelLabel",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Model Reference",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ModelReference",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Operational Document",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/OperationalDocument",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Performance Certificate",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/PerformanceCertificate",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Production Year",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ProductionYear",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Safety Document",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/SafetyDocument",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Pset_ServiceLife",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Mean Time Between Failure",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/MeanTimeBetweenFailure",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Service Life Duration",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ServiceLifeDuration",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Pset_Warranty",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Exclusions",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/Exclusions",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Is Extended Warranty",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/IsExtendedWarranty",
+                    "nominalValue": {
+                        "type": "IfcBoolean"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Point of Contact",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/PointOfContact",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Warranty Content",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/WarrantyContent",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Warranty Identifier",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/WarrantyIdentifier",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Warranty Period",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/WarrantyPeriod",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Warranty Start Date",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/WarrantyStartDate",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Pset_ElementKinematics",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Cyclic Path",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/CyclicPath",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Cyclic Range",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/CyclicRange",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Linear Path",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/LinearPath",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Linear Range",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/LinearRange",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Maximum Angular Velocity",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/MaximumAngularVelocity",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Maximum Constant Speed",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/MaximumConstantSpeed",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Minimum Time",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/MinimumTime",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Attributes",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Tag",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/Tag",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Element Type",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ElementType",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Object Type",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ObjectType",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Description",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/Description",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Global ID",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/GlobalId",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Name",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/Name",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Qto_BodyGeometryValidation",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Gross Surface Area",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/GrossSurfaceArea",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Gross Volume",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/GrossVolume",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Net Surface Area",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/NetSurfaceArea",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Net Volume",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/NetVolume",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Surface Genus After Features",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/SurfaceGenusAfterFeatures",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Surface Genus Before Features",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/SurfaceGenusBeforeFeatures",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Pset_Tolerance",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Elevational Flat Ness",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ElevationalFlatness",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Horizontal Flat Ness",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/HorizontalFlatness",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Horizontal Orthogonality",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/HorizontalOrthogonality",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Horizontal Straightness",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/HorizontalStraightness",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Horizontal Tolerance",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/HorizontalTolerance",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Orthogonal Orthogonality",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/OrthogonalOrthogonality",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Orthogonal Straightness",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/OrthogonalStraightness",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Orthogonal Tolerance",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/OrthogonalTolerance",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Overall Orthogonality",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/OverallOrthogonality",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Overall Straightness",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/OverallStraightness",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Overall Tolerance",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/OverallTolerance",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Planar Flat Ness",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/PlanarFlatness",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Side Flat Ness",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/SideFlatness",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Tolerance Basis",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ToleranceBasis",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Tolerance Description",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/ToleranceDescription",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Vertical Orthogonality",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/VerticalOrthogonality",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Vertical Straightness",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/VerticalStraightness",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Vertical Tolerance",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/VerticalTolerance",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Pset_Uncertainty",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Horizontal Uncertainty",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/HorizontalUncertainty",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Linear Uncertainty",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/LinearUncertainty",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Orthogonal Uncertainty",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/OrthogonalUncertainty",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Uncertainty Basis",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/UncertaintyBasis",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Uncertainty Description",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/UncertaintyDescription",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Vertical Uncertainty",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/VerticalUncertainty",
+                    "nominalValue": {
+                        "type": "IfcReal"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Pset_Risk",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Associated Activity",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/AssociatedActivity",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Associated Location",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/AssociatedLocation",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Associated Product",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/AssociatedProduct",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Mitigated Risk Consequence",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/MitigatedRiskConsequence",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Mitigated Risk Likelihood",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/MitigatedRiskLikelihood",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Mitigated Risk Significance",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/MitigatedRiskSignificance",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Mitigation Planned",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/MitigationPlanned",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Mitigation Proposed",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/MitigationProposed",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Nature of Risk",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/NatureOfRisk",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Risk Assessment Methodology",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/RiskAssessmentMethodology",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Risk Name",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/RiskName",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Risk Type",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/RiskType",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Unmitigated Risk Consequence",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/UnmitigatedRiskConsequence",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Unmitigated Risk Likelihood",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/UnmitigatedRiskLikelihood",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Unmitigated Risk Significance",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/UnmitigatedRiskSignificance",
+                    "nominalValue": {
+                        "type": "default"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "IfcPropertySet",
+            "name": "Pset_RoofCommon",
+            "hasProperties": [
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Is External",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/IsExternal",
+                    "nominalValue": {
+                        "type": "IfcBoolean",
+                        "value": true
+                    }
+                },
+                {
+                    "type": "IfcPropertySingleValue",
+                    "name": "Load Bearing",
+                    "specification": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3/prop/LoadBearing",
+                    "nominalValue": {
+                        "type": "IfcBoolean",
+                        "value": true
+                    }
+                }
+            ]
+        }
+    ]
+}

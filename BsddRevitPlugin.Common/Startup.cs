@@ -1,9 +1,19 @@
-﻿using Autodesk.Revit.Attributes;
+﻿using ASRR.Core.Persistence;
+using Autodesk.Revit.Attributes;
+using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Events;
+using Autodesk.Revit.DB.ExtensibleStorage;
 using Autodesk.Revit.UI;
+using Autodesk.Revit.UI.Events;
+using BsddRevitPlugin.Logic.UI.BsddBridge;
 using BsddRevitPlugin.Logic.UI.View;
 using BsddRevitPlugin.Resources;
+using NLog;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace BsddRevitPlugin.Common
@@ -33,6 +43,16 @@ namespace BsddRevitPlugin.Common
         public Result OnStartup(UIControlledApplication application)
         {
 
+
+            // Subscribe to the DocumentCreated event
+            application.ControlledApplication.DocumentCreated += Application_DocumentCreated;
+
+            // Subscribe to the DocumentOpened event
+            application.ControlledApplication.DocumentOpened += Application_DocumentOpened;
+
+
+
+
             // Register Dockable panel for Revit project when it is opened.
             RegisterDockPanel(application);
 
@@ -46,6 +66,22 @@ namespace BsddRevitPlugin.Common
             return Result.Succeeded;
         }
 
+
+
+        // Event handler for DocumentOpened event
+        private void Application_DocumentOpened(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)
+
+        {
+            BsddRevitPlugin.Logic.Model.SettingsManager.ApplySettingsToGlobalParametersAndDataStorage(e.Document);
+        }
+
+
+        private void Application_DocumentCreated(object sender, Autodesk.Revit.DB.Events.DocumentCreatedEventArgs e)
+
+        {
+
+            BsddRevitPlugin.Logic.Model.SettingsManager.ApplySettingsToGlobalParametersAndDataStorage(e.Document);
+        }
         // BitmapImage NewBitmapImage(
         //     Assembly a, string imageName)
         // {
@@ -99,6 +135,13 @@ namespace BsddRevitPlugin.Common
             PushButton parameterChangeButton = panel.AddItem(parameterChangeButtonData) as PushButton;
             parameterChangeButton.ToolTip = "This is a sample Revit button";
             parameterChangeButton.LargeImage = ResourceImage.GetIcon("BsddLabel.ico");
+
+
+            // Create parameter change button.
+            PushButtonData parameterAddButtonData = new PushButtonData("ParamAdd", "Parameters\rtoevoegen", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.ParameterCheck");
+            PushButton parameterAddButton = panel.AddItem(parameterAddButtonData) as PushButton;
+            parameterAddButton.ToolTip = "This is a sample Revit button";
+            parameterAddButton.LargeImage = ResourceImage.GetIcon("BsddLabel.ico");
 
             // Create selection panel toggle button.
             PushButtonData selectionPanelButtonData = new PushButtonData("Show/Hide", "bSDD selection", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.ShowDockableWindow");
