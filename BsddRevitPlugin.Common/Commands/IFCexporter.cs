@@ -6,6 +6,8 @@ using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.Model;
+using System.Windows.Documents;
+using System.Linq;
 
 namespace BsddRevitPlugin.Common.Commands
 {
@@ -25,6 +27,7 @@ namespace BsddRevitPlugin.Common.Commands
                 Document doc = uiDoc.Document;
                 ElementId activeViewId = uiDoc.ActiveView.Id;
 
+                
                 using (Transaction transaction = new Transaction(doc, "Export IFC"))
                 {
 
@@ -32,6 +35,23 @@ namespace BsddRevitPlugin.Common.Commands
                     //IfcClassificationManager.UpdateClassifications(doc, dictionaryCollection);
 
                     string IFCversion = "IFC 2x3";
+
+                    //Maak string van alle parameters beginnend met bsdd voor de Export User Defined Propertysets
+                    string add_BSDD_UDPS = null;
+                    IList<Parameter> param = new List<Parameter>();
+                    param = GetAllBsddParameters(doc);
+                    /*
+                    Format:
+                    PropertySet:	<Pset Name>	I[nstance]/T[ype]	<element list separated by ','>
+                    <Property Name 1>	<Data type>	<[opt] Revit parameter name, if different from IFC>
+                    <Property Name 2>	<Data type>	<[opt] Revit parameter name, if different from IFC>
+                    ...
+                    */
+                    add_BSDD_UDPS += "PropertySet:\tBsdd\tT\tIfcElementType" + System.Environment.NewLine;
+                    foreach (Parameter p in param)
+                    {
+                        add_BSDD_UDPS += p.ToString() + "\t" + p.GetType() + System.Environment.NewLine;
+                    }
 
                     // Start the IFC-transaction
                     transaction.Start("Export IFC");
@@ -203,6 +223,47 @@ namespace BsddRevitPlugin.Common.Commands
                 message = ex.Message;
                 return Result.Failed;
             }
+        }
+
+        public IList<Parameter> GetAllBsddParameters(Document doc)
+        {
+            FilteredElementCollector collector = new FilteredElementCollector(doc);
+
+            IList<Parameter> param = new List<Parameter>();
+
+            foreach (Element e in collector)
+            {
+                ParameterSet pSet = e.Parameters;
+                
+                foreach (Parameter p in pSet)
+                {
+                    if (p.Definition.Name.StartsWith("bsdd"))
+                    {
+                        e.GetParameters(e.Name);
+
+                        param.Add(p);
+                    }
+                }
+            }
+
+            param = param.Distinct().ToList();
+
+            return param;
+        }
+
+        public static Uri GetParam(string domain, Element element)
+        {
+            Uri paramValue = new Uri(domain);
+
+            foreach (Parameter parameter in element.Parameters)
+            {
+                if (parameter.Definition.Name == "location")
+                {
+                    paramValue = new Uri(parameter.ToString(), UriKind.Absolute);
+                }
+            }
+
+            return paramValue;
         }
     }
 }
