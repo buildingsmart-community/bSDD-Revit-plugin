@@ -105,6 +105,8 @@ namespace BsddRevitPlugin.Logic.Model
         {
             Logger logger = LogManager.GetCurrentClassLogger();
 
+            logger.Info($"Element json {JsonConvert.SerializeObject(ifcEntity)}");
+
             try
             {
                 using (Transaction tx = new Transaction(doc))
@@ -198,19 +200,20 @@ namespace BsddRevitPlugin.Logic.Model
 
                                 case IfcMaterial ifcMaterial:
                                     // do something with ifcMaterial
-                                    break;
+                                       break;
                             }
                         }
                     }
-                    IfcClassificationManager.UpdateClassifications(tx, doc, dictionaryCollection);
+
+
 
                     tx.Commit();
                 }
 
             }
-            catch (Exception)
+            catch (Exception e)
             {
-
+                logger.Info(e.Message);
                 throw;
             }
         }
@@ -261,24 +264,25 @@ namespace BsddRevitPlugin.Logic.Model
         /// </summary>
         /// <param name="entity">The entity from which to retrieve the associations.</param>
         /// <returns>A dictionary of associations with the location as the key.</returns>        
-        private static IEnumerable<Association> getElementTypeAssociationsFromExtensibleStorage(ElementType elementType)
+        private static IEnumerable<IfcClassificationReference> getElementTypeClassificationsReferencesFromExtensibleStorage(ElementType elementType)
         {
+            // TODO: Implement Ienumerable<Associations> so materials are also added correctly or add a separate function for materials
             Schema schema = GetBsddDataSchema();
             var storageEntity = elementType.GetEntity(schema);
 
-            if (storageEntity.Schema == schema)
+
+            if (storageEntity != null)
             {
                 var field = schema.GetField(s_IfcClassificationData);
                 var jsonString = storageEntity.Get<string>(field);
 
                 if (!string.IsNullOrEmpty(jsonString))
                 {
-                    return JsonConvert.DeserializeObject<List<Association>>(jsonString)
-                        .OfType<IfcClassificationReference>();
+                    return JsonConvert.DeserializeObject<List<IfcClassificationReference>>(jsonString);
                 }
             }
 
-            return Enumerable.Empty<Association>();
+            return Enumerable.Empty<IfcClassificationReference>();
         }
 
         /// <summary>
@@ -336,16 +340,24 @@ namespace BsddRevitPlugin.Logic.Model
         /// </summary>
         /// <param name="entity">The entity from which to retrieve the associations.</param>
         /// <returns>A dictionary of associations with the location as the key.</returns>        
-        private static Dictionary<Uri, Association> GetElementTypeAssociations(ElementType elementType)
+        private static Dictionary<Uri, IfcClassificationReference> GetElementTypeAssociations(ElementType elementType)
         {
-            var associations = new Dictionary<Uri, Association>();
+            var associations = new Dictionary<Uri, IfcClassificationReference>();
             var activeDictionaryData = GetClassificationDataFromSettings(elementType);
 
-            foreach (var association in getElementTypeAssociationsFromExtensibleStorage(elementType))
+            foreach (var association in getElementTypeClassificationsReferencesFromExtensibleStorage(elementType))
             {
                 if (association is IfcClassificationReference ifcClassificationReference)
                 {
-                    associations[ifcClassificationReference.ReferencedSource.Location] = ifcClassificationReference;
+                    try
+                    {
+                        associations[ifcClassificationReference.ReferencedSource.Location] = ifcClassificationReference;
+
+                    }
+                    catch (Exception)
+                    {
+
+                    }
                 }
             }
 
@@ -447,7 +459,7 @@ namespace BsddRevitPlugin.Logic.Model
 
             if (associations != null && associations.Count > 0)
             {
-                ifcEntity.HasAssociations = associations.Values.ToList();
+                ifcEntity.HasAssociations = associations.Values.ToList<Association>();
             }
 
             return ifcEntity;

@@ -5,7 +5,7 @@ using System.Windows.Forms;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-
+using BsddRevitPlugin.Logic.Model;
 
 namespace BsddRevitPlugin.Common.Commands
 {
@@ -27,6 +27,10 @@ namespace BsddRevitPlugin.Common.Commands
 
                 using (Transaction transaction = new Transaction(doc, "Export IFC"))
                 {
+
+
+                    //IfcClassificationManager.UpdateClassifications(doc, dictionaryCollection);
+
                     string IFCversion = "IFC 2x3";
 
                     // Start the IFC-transaction
