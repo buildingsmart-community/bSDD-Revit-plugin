@@ -1,7 +1,7 @@
-using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
+using BsddRevitPlugin.Logic.Model;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
 using BsddRevitPlugin.Logic.UI.DockablePanel;
 using BsddRevitPlugin.Logic.UI.View;
@@ -9,12 +9,9 @@ using CefSharp;
 using CefSharp.Wpf;
 using Newtonsoft.Json;
 using NLog;
-using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Windows;
 using System.Windows.Interop;
-using System.Windows.Threading;
 using static BsddRevitPlugin.Logic.Model.ElementsManager;
 using Document = Autodesk.Revit.DB.Document;
 
@@ -43,7 +40,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             elemList = ListFilter(elemList);
 
             // Pack data into json format
-            BsddBridgeData selectionData = SelectionToJson(doc, elemList);
+            List<IfcEntity> selectionData = SelectionToIfcJson(doc, elemList);
 
             // Send MainData to BsddSelection html
             UpdateBsddSelection(selectionData);
@@ -56,13 +53,13 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             browser = browserObject;
         }
 
-        private async void UpdateBsddSelection(BsddBridgeData ifcData)
+        private void UpdateBsddSelection(List<IfcEntity> ifcData)
         {
             var settings = new JsonSerializerSettings
             {
                 NullValueHandling = NullValueHandling.Ignore
             };
-            var jsonString = JsonConvert.SerializeObject(ifcData, settings);
+            var jsonString = JsonConvert.SerializeObject(ifcData);
             var jsFunctionCall = $"updateSelection({jsonString});";
 
             if (browser.IsBrowserInitialized)
@@ -113,18 +110,41 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
     {
         Logger logger = LogManager.GetCurrentClassLogger();
 
-        IfcData ifcData;
+        IfcEntity ifcData;
 
         public override void Execute(UIApplication uiapp, string args)
         {
             var uidoc = uiapp.ActiveUIDocument;
             var doc = uidoc.Document;
 
-            SetIfcDataToRevit(doc, ifcData);
+            SetIfcDataToRevitElement(doc, ifcData);
         }
-        public void SetIfcData(IfcData ifcDataObject)
+        public void SetIfcData(IfcEntity ifcDataObject)
         {
             ifcData = ifcDataObject;
+        }
+
+    }
+
+    /// <summary>
+    /// Represents a class that triggers the writing of settings into the BsddSettings object and the DataStorage.
+    /// </summary>
+    public class UpdateSettings : RevitEventWrapper<string>
+    {
+        Logger logger = LogManager.GetCurrentClassLogger();
+
+        BsddSettings settings;
+
+        public override void Execute(UIApplication uiapp, string args)
+        {
+            var uidoc = uiapp.ActiveUIDocument;
+            var doc = uidoc.Document;
+            SettingsManager.SaveSettingsToGlobalVariable(settings);
+            SettingsManager.SaveSettingsToDataStorage(doc, settings);
+        }
+        public void SetSettings(BsddSettings settingsObject)
+        {
+            settings = settingsObject;
         }
 
     }

@@ -3,14 +3,12 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using Autodesk.Revit.UI;
-using BsddRevitPlugin.Logic.Model;
 using ComboBox = System.Windows.Controls.ComboBox;
-using System.ComponentModel;
-using System.Windows.Interop;
 using CefSharp;
-using CefSharp.Wpf;
 using BsddRevitPlugin.Logic.UI.Wrappers;
 using System.Reflection;
+using BsddRevitPlugin.Logic.UI.BsddBridge;
+using Newtonsoft.Json;
 
 /// <summary>
 /// Event handler for the selection method combo box. Clears the element manager and raises the appropriate external event based on the selected item in the combo box.
@@ -27,6 +25,7 @@ namespace BsddRevitPlugin.Logic.UI.View
         EventSelectAll SelectEHSA;
         EventSelectView SelectEHSV;
         ExternalEvent SelectEEMS, SelectEESA, SelectEESV;
+        private BsddBridgeData _inputBsddBridgeData;
 
 
         // Data fields
@@ -110,6 +109,17 @@ namespace BsddRevitPlugin.Logic.UI.View
             m_top = top;
             m_bottom = bottom;
             m_targetGuid = targetGuid;
+        }
+
+        public void UpdateSettings(BsddSettings settings)
+        {
+            var jsonString = JsonConvert.SerializeObject(settings);
+            var jsFunctionCall = $"updateSettings({jsonString});";
+
+            if (Browser.IsBrowserInitialized)
+            {
+                Browser.ExecuteScriptAsync(jsFunctionCall);
+            }
         }
 
         //public async void ShowAndSendData(object data)
@@ -202,6 +212,7 @@ namespace BsddRevitPlugin.Logic.UI.View
 
         void OnIsBrowserInitializedChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
+            var settings = GlobalBsddSettings.bsddsettings;
             if (Browser.IsBrowserInitialized)
             {
                 Browser.ShowDevTools();
