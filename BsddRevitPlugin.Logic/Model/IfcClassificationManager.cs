@@ -69,7 +69,7 @@ namespace BsddRevitPlugin.Logic.Model
         /// <param name="transaction">The active transaction used to save the classifications.</param>
         /// <param name="document">The document storing the saved Classification.</param>
         /// <param name="classifications">The set of Classification items to save.</param>
-        public static void UpdateClassifications(Transaction transaction, Document document, HashSet<IfcClassification> classifications)
+        public static void UpdateClassifications(Document document, HashSet<IfcClassification> classifications)
         {
             Schema schema = GetRevitClassificationSchema();
             if (schema != null)
