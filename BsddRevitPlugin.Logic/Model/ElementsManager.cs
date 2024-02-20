@@ -205,8 +205,6 @@ namespace BsddRevitPlugin.Logic.Model
                         }
                     }
 
-
-
                     tx.Commit();
                 }
 
@@ -271,7 +269,7 @@ namespace BsddRevitPlugin.Logic.Model
             var storageEntity = elementType.GetEntity(schema);
 
 
-            if (storageEntity != null)
+            if (storageEntity.Schema != null)
             {
                 var field = schema.GetField(s_IfcClassificationData);
                 var jsonString = storageEntity.Get<string>(field);
