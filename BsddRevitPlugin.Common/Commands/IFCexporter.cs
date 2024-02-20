@@ -1,11 +1,13 @@
-﻿using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Windows.Forms;
-using Autodesk.Revit.Attributes;
+﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.Model;
+using BsddRevitPlugin.Logic.UI.BsddBridge;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Windows.Forms;
 
 namespace BsddRevitPlugin.Common.Commands
 {
@@ -25,11 +27,11 @@ namespace BsddRevitPlugin.Common.Commands
                 Document doc = uiDoc.Document;
                 ElementId activeViewId = uiDoc.ActiveView.Id;
 
+                //Set IfcClassifications in the project according to the main- and filterdictionaries
+                IfcClassificationManager.UpdateClassifications(new Transaction(doc, "Update Classifications"), doc, IfcClassificationManager.GetAllIfcClassificationsInProject());
+
                 using (Transaction transaction = new Transaction(doc, "Export IFC"))
                 {
-
-
-                    //IfcClassificationManager.UpdateClassifications(doc, dictionaryCollection);
 
                     string IFCversion = "IFC 2x3";
 
@@ -204,5 +206,6 @@ namespace BsddRevitPlugin.Common.Commands
                 return Result.Failed;
             }
         }
+
     }
 }
