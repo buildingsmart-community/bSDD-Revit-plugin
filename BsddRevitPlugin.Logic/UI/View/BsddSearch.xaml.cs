@@ -36,7 +36,7 @@ namespace BsddRevitPlugin.Logic.UI.View
 
         public BsddSearch()
         {
-            
+
             InitializeComponent();
 
             string addinLocation = Assembly.GetExecutingAssembly().Location;
@@ -47,8 +47,6 @@ namespace BsddRevitPlugin.Logic.UI.View
             Browser.Address = addinDirectory + "/html/bsdd_search/index.html";
             var bridgeSearch = new BsddBridge.BsddSearchBridge();
             bridgeSearch.SetParentWindow(this);
-            var bridgeSelection = new BsddBridge.BsddSelectionBridge();
-            bridgeSelection.SetParentWindow(this);
             Browser.JavascriptObjectRepository.Register("bsddBridge", bridgeSearch, true);
             Browser.IsBrowserInitializedChanged += OnIsBrowserInitializedChanged;
 
@@ -81,21 +79,102 @@ namespace BsddRevitPlugin.Logic.UI.View
             if (Browser.IsBrowserInitialized)
             {
                 Browser.ShowDevTools();
-                if (_inputBsddBridgeData == null || _inputBsddBridgeData.IfcData == null || _inputBsddBridgeData.IfcData[0] == null)
+                if (_inputBsddBridgeData == null || _inputBsddBridgeData.IfcData == null || _inputBsddBridgeData.IfcData.Count == 0)
                 {
                     return;
                 }
 
+                var bsddApiEnvironment = _inputBsddBridgeData.Settings.BsddApiEnvironment;
+                var mainDictionary = _inputBsddBridgeData.Settings.MainDictionary;
+
+
+                var ifcEntity = _inputBsddBridgeData.IfcData[0];
+                var ifcEntityName = ifcEntity.Name;
+
+                var domain = new Domain
+                {
+                    value = mainDictionary.DictionaryUri.ToString(),
+                    label = mainDictionary.DictionaryName,
+                };
+
+                Search defaultSearch = null;
+
+                // iterate over the ifcEntity hasAssociations, for every one with type == IfcClassificationReference, check if its referencedSource is the same as the domainUri then set the defaultSearch to that classificationReference it's location(value) and name(label)
+                ifcEntity.HasAssociations.ForEach(association =>
+                {
+                    if (association.Type == "IfcClassificationReference")
+                    {
+                        var classificationReference = association as IfcClassificationReference;
+                        if (classificationReference != null && classificationReference.ReferencedSource != null && classificationReference.ReferencedSource.Location != null)
+                        {
+                            if (classificationReference.ReferencedSource.Location == mainDictionary.DictionaryUri)
+                            {
+                                defaultSearch = new Search
+                                {
+                                    value = classificationReference.Location?.ToString(),
+                                    label = classificationReference.Name,
+                                };
+                            }
+                        }
+                    }
+                });
+
+
+                var bsddSearchConfig = new BsddSearchConfig
+                {
+                    baseUrl = bsddApiEnvironment,
+                    defaultDomains = new List<Domain>
+                    {
+                        domain
+                    },
+                    defaultSearch = defaultSearch,
+                    ifcEntity = ifcEntity
+                };
+
                 var jsonString = JsonConvert.SerializeObject(_inputBsddBridgeData.IfcData[0]);
+                var bsddSearchConfigJson = JsonConvert.SerializeObject(bsddSearchConfig);
 
                 // Initialize the bridge and set the initial IfcEntity
                 var script = @"
-                    CefSharp.BindObjectAsync('bsddBridge').then(() => {
-                        window.globalIfcEntity = " + jsonString + @";
+                    function callback(ifcProduct) {
+                        console.log(ifcProduct);
+
+                        // @ts-ignore
+                        window?.bsddBridge?.save(JSON.stringify(ifcProduct)).then(function (actualResult) {
+                        console.log('Sent to Revit', actualResult);
+                        });
+                    }
+
+                    document.addEventListener('DOMContentLoaded', function() {
+                        CefSharp.BindObjectAsync('bsddBridge').then(() => {
+                            const root = document.getElementById('bsdd');
+                            BsddSearch.insertBsddSearch(root, callback, " + bsddSearchConfigJson + @");
+                            // window.globalIfcEntity = " + jsonString + @";
+                        });
                     });
                 ";
                 Browser.ExecuteScriptAsync(script);
             }
+        }
+
+        public class BsddSearchConfig
+        {
+            public string baseUrl { get; set; }
+            public List<Domain> defaultDomains { get; set; }
+            public Search defaultSearch { get; set; }
+            public IfcEntity ifcEntity { get; set; }
+        }
+
+        public class Domain
+        {
+            public string value { get; set; }
+            public string label { get; set; }
+        }
+
+        public class Search
+        {
+            public string value { get; set; }
+            public string label { get; set; }
         }
     }
 }

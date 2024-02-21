@@ -19,7 +19,6 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         private UpdateSettings _updateSettings;
         private ExternalEvent _exEventUpdateElement;
         private ExternalEvent _exEventUpdateSettings;
-        private static Window _bsddSearchParent;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BsddSelectionBridge"/> class.
@@ -34,23 +33,6 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         }
 
         /// <summary>
-        /// Sets the parent window for the BsddSelectionBridge.
-        /// </summary>
-        /// <param name="bsddSearchParent">The parent window to set.</param>
-        public void SetParentWindow(Window bsddSearchParent)
-        {
-            _bsddSearchParent = bsddSearchParent;
-        }
-
-        /// <summary>
-        /// Cleans the parent window reference.
-        /// </summary>
-        public void CleanParentWindow()
-        {
-            _bsddSearchParent = null;
-        }
-
-        /// <summary>
         /// This method is exposed to JavaScript in CefSharp. 
         /// It opens the bSDD Search panel with the selected object parameters.
         /// </summary>
@@ -58,12 +40,12 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         /// <returns>The serialized IFC data, in JSON format.</returns>
         public string bsddSearch(string ifcJsonData)
         {
-            _bsddSearchParent?.Dispatcher.Invoke(() => _bsddSearchParent.Close());
 
             var converter = new IfcJsonConverter();
             var ifcEntity = JsonConvert.DeserializeObject<IfcEntity>(ifcJsonData, converter);
             var bsddBridgeData = new BsddBridgeData
             {
+                Settings = GlobalBsddSettings.bsddsettings,
                 IfcData = new List<IfcEntity> { ifcEntity }
             };
             _eventHandlerBsddSearch.setBsddBridgeData(bsddBridgeData);
