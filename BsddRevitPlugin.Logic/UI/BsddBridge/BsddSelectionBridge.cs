@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
+using BsddRevitPlugin.Logic.Model;
 using BsddRevitPlugin.Logic.UI.Wrappers;
 using Newtonsoft.Json;
 using System.Collections.Generic;
@@ -61,10 +62,18 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         public void saveSettings(string settingsJson)
         {
             var settings = JsonConvert.DeserializeObject<BsddSettings>(settingsJson);
+
+            //set the classificationFieldName for new dictionaries
+            settings.MainDictionary.IfcClassification.ClassificationFieldName = ElementsManager.CreateParameterNameFromUri(settings.MainDictionary.IfcClassification.Location);
+
+            foreach (var item in settings.FilterDictionaries)
+            {
+                item.IfcClassification.ClassificationFieldName = ElementsManager.CreateParameterNameFromUri(item.IfcClassification.Location);
+
+            }
             _updateSettings.SetSettings(settings);
             _exEventUpdateSettings.Raise();
         }
-
         public string loadSettings()
         {
             return JsonConvert.SerializeObject(GlobalBsddSettings.bsddsettings);
