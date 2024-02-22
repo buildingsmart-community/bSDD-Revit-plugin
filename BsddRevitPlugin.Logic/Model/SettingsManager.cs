@@ -9,6 +9,8 @@ using System.Reflection;
 using ASRR.Core.Persistence;
 using System.IO;
 using Newtonsoft.Json;
+using static System.Net.Mime.MediaTypeNames;
+using NLog.Fluent;
 
 namespace BsddRevitPlugin.Logic.Model
 {
@@ -40,12 +42,12 @@ namespace BsddRevitPlugin.Logic.Model
 
         public static BsddSettings LoadDefaultSettings()
         {
+            Logger logger = LogManager.GetCurrentClassLogger();
+
             string currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             string settingsFilePath = Path.Combine(currentPath, "UI", "Settings"); //BsddSettings.json
 
             JsonBasedPersistenceProvider jsonBasedPersistenceProvider = new JsonBasedPersistenceProvider(settingsFilePath);
-
-            var test = jsonBasedPersistenceProvider.Fetch<BsddSettings>();
 
             return jsonBasedPersistenceProvider.Fetch<BsddSettings>();
         }
