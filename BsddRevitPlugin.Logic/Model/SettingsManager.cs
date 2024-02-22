@@ -91,6 +91,39 @@ namespace BsddRevitPlugin.Logic.Model
 
             return null;
         }
+        /// <summary>
+        /// Deletes the BSDD plugin settings from the document's extensible storage.
+        /// </summary>
+        /// <param name="doc">The document to read the settings from.</param>
+        /// <returns>The BSDD plugin settings, or null if no settings were found.</returns>
+        public static void DeleteSettingsFromDataStorage(Document doc)
+        {
+            Logger logger = LogManager.GetCurrentClassLogger();
+            Schema schema = GetSettingsSchema();
+
+            IList<DataStorage> dataStorages = GetClassificationInStorage(doc, schema);
+
+            if (dataStorages.Count > 0)
+            {
+                var dataStorage = dataStorages.First();
+                var entity = dataStorage.GetEntity(schema);
+                try
+                {
+                    using (Transaction tx = new Transaction(doc))
+                    {
+                        tx.Start("Delete dataStorage");
+                        dataStorage.DeleteEntity(schema);
+                        tx.Commit();
+                    }
+                }
+                catch (Exception exc)
+                {
+                    logger.Error(exc, "Error deleting DataStorage");
+                    throw;
+                }
+            }
+
+        }
 
         /// <summary>
         /// Saves the specified settings to the global settings variable.

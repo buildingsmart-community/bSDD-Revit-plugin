@@ -219,7 +219,7 @@ namespace BsddRevitPlugin.Logic.Model
         {
             Uri refSourceLocation = ifcClassificationReference.ReferencedSource.Location;
 
-            if (GlobalBsddSettings.bsddsettings.MainDictionary.DictionaryUri == refSourceLocation)
+            if (GlobalBsddSettings.bsddsettings.MainDictionary.IfcClassification.Location == refSourceLocation)
             {
                 return GlobalBsddSettings.bsddsettings.MainDictionary.ParameterMapping;
             }
@@ -227,7 +227,7 @@ namespace BsddRevitPlugin.Logic.Model
             {
                 foreach (var filterDictionary in GlobalBsddSettings.bsddsettings.FilterDictionaries)
                 {
-                    if (filterDictionary.DictionaryUri == refSourceLocation)
+                    if (filterDictionary.IfcClassification.Location == refSourceLocation)
                     {
                         return filterDictionary.ParameterMapping;
                     }
@@ -295,7 +295,7 @@ namespace BsddRevitPlugin.Logic.Model
 
             foreach (var dictionary in activeDictionaries)
             {
-                string bsddParameterValue = GetTypeParameterValueByElementType(elementType, dictionary.ParameterName);
+                string bsddParameterValue = GetTypeParameterValueByElementType(elementType, CreateParameterNameFromUri(dictionary.IfcClassification.Location));
                 string mappedParameterValue = GetTypeParameterValueByElementType(elementType, dictionary.ParameterMapping);
 
                 string identification = null;
@@ -326,7 +326,7 @@ namespace BsddRevitPlugin.Logic.Model
 
                 if (!string.IsNullOrEmpty(identification) || !string.IsNullOrEmpty(name))
                 {
-                    classificationData[dictionary.DictionaryUri] = (identification, name);
+                    classificationData[dictionary.IfcClassification.Location] = (identification, name);
                 }
             }
 

@@ -126,30 +126,15 @@ namespace BsddRevitPlugin.Logic.Model
             // Create a classification set in which every dictionary will be collected
             HashSet<IfcClassification> dictionaryCollection = new HashSet<IfcClassification>
                     {
-                        GetIfcClassificationFromBsddDictionary(GlobalBsddSettings.bsddsettings.MainDictionary)
+                        GlobalBsddSettings.bsddsettings.MainDictionary.IfcClassification
                     };
             foreach (var filterDictionary in GlobalBsddSettings.bsddsettings.FilterDictionaries)
             {
-                dictionaryCollection.Add(GetIfcClassificationFromBsddDictionary(filterDictionary));
+                dictionaryCollection.Add(filterDictionary.IfcClassification);
             }
 
             return dictionaryCollection;
         }
-        private static IfcClassification GetIfcClassificationFromBsddDictionary(BsddDictionary bsddDictionary)
-        {
-                var parameterName = ElementsManager.CreateParameterNameFromUri(bsddDictionary.DictionaryUri);
-
-                return new IfcClassification
-            {
-                Type = "",
-                Source = "",
-                Edition = "",
-                EditionDate = DateTime.Now,
-                Name = bsddDictionary.DictionaryName,
-                Description = "",
-                Location = bsddDictionary.DictionaryUri,
-                ClassificationFieldName = parameterName
-            };
-        }   
+       
     }
 }
