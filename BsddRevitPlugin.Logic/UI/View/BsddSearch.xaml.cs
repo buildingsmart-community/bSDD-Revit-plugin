@@ -78,7 +78,11 @@ namespace BsddRevitPlugin.Logic.UI.View
         {
             if (Browser.IsBrowserInitialized)
             {
+                #if DEBUG
                 Browser.ShowDevTools();
+                #endif
+
+
                 if (_inputBsddBridgeData == null || _inputBsddBridgeData.IfcData == null || _inputBsddBridgeData.IfcData.Count == 0)
                 {
                     return;

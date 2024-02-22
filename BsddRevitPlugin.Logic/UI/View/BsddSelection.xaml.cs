@@ -9,6 +9,7 @@ using BsddRevitPlugin.Logic.UI.Wrappers;
 using System.Reflection;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
 using Newtonsoft.Json;
+using BsddRevitPlugin.Logic.Model;
 
 /// <summary>
 /// Event handler for the selection method combo box. Clears the element manager and raises the appropriate external event based on the selected item in the combo box.
@@ -213,9 +214,15 @@ namespace BsddRevitPlugin.Logic.UI.View
         void OnIsBrowserInitializedChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             var settings = GlobalBsddSettings.bsddsettings;
+            if (settings.BsddApiEnvironment == null)
+            {
+                SettingsManager.LoadDefaultSettings();
+            }
             if (Browser.IsBrowserInitialized)
             {
+                #if DEBUG
                 Browser.ShowDevTools();
+                #endif
                 Browser.ExecuteScriptAsync("CefSharp.BindObjectAsync('bsddBridge');");
             }
         }
