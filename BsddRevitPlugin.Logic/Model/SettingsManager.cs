@@ -158,7 +158,21 @@ namespace BsddRevitPlugin.Logic.Model
             DataStorage dataStorage = dataStorages.FirstOrDefault();
             if (dataStorage == null)
             {
-                dataStorage = DataStorage.Create(doc);
+                try
+                {
+                    using (Transaction tx = new Transaction(doc))
+                    {
+                        tx.Start("Save dataStorage");
+
+                        dataStorage = DataStorage.Create(doc);
+
+                        tx.Commit();
+                    }
+                }
+                catch (Exception e)
+                {
+                    logger.Error(e);
+                }
             }
 
             Entity entity = new Entity(schema);
