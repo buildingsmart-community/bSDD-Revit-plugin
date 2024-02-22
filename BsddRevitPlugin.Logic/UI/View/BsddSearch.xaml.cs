@@ -93,8 +93,8 @@ namespace BsddRevitPlugin.Logic.UI.View
 
                 var domain = new Domain
                 {
-                    value = mainDictionary.DictionaryUri.ToString(),
-                    label = mainDictionary.DictionaryName,
+                    value = mainDictionary.IfcClassification.Location.ToString(),
+                    label = mainDictionary.IfcClassification.Name,
                 };
 
                 Search defaultSearch = null;
@@ -107,7 +107,7 @@ namespace BsddRevitPlugin.Logic.UI.View
                         var classificationReference = association as IfcClassificationReference;
                         if (classificationReference != null && classificationReference.ReferencedSource != null && classificationReference.ReferencedSource.Location != null)
                         {
-                            if (classificationReference.ReferencedSource.Location == mainDictionary.DictionaryUri)
+                            if (classificationReference.ReferencedSource.Location == mainDictionary.IfcClassification.Location)
                             {
                                 defaultSearch = new Search
                                 {

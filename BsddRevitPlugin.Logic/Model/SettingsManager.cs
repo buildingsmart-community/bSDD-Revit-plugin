@@ -16,7 +16,7 @@ namespace BsddRevitPlugin.Logic.Model
     {
 
         // bSDD plugin settings schema ID
-        private static Guid s_schemaId = new Guid("D5CF8E88-86CF-421A-9FAD-202D1A278D4C");
+        private static Guid s_schemaId = new Guid("1A53FFA0-B6FD-418B-A6A6-70D8EA8871B3");
         private const string BsddSettingsFieldName = "BsddSettings";
 
         /// <summary>
@@ -44,6 +44,9 @@ namespace BsddRevitPlugin.Logic.Model
             string settingsFilePath = Path.Combine(currentPath, "UI", "Settings"); //BsddSettings.json
 
             JsonBasedPersistenceProvider jsonBasedPersistenceProvider = new JsonBasedPersistenceProvider(settingsFilePath);
+
+            var test = jsonBasedPersistenceProvider.Fetch<BsddSettings>();
+
             return jsonBasedPersistenceProvider.Fetch<BsddSettings>();
         }
 

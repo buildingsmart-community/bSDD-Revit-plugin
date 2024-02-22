@@ -2,41 +2,41 @@
   "bsddApiEnvironment": "test",
   "mainDictionary": {
     "ifcClassification": {
-      "type":"",
-      "source":"",
-      "edition":"",
-      "editionDate":"",
-      "name":"Basis bouwproducten",
-      "description":"",
-      "location":"https://identifier.buildingsmart.org/uri/digibase/basisbouwproducten/0.8.0",
-      "ClassificationFieldName":""
+      "type": "",
+      "source": "",
+      "edition": "",
+      "editionDate": "",
+      "name": "Basis bouwproducten",
+      "description": "",
+      "location": "https://identifier.buildingsmart.org/uri/digibase/basisbouwproducten/0.8.0",
+      "ClassificationFieldName": "bsdd/identifier.buildingsmart.org/uri/digibase/basisbouwproducten/0.8.0"
     },
     "parameterMapping": "Description"
   },
   "filterDictionaries": [
     {
       "ifcClassification": {
-        "type":"",
-        "source":"",
-        "edition":"",
-        "editionDate":"",
-        "name":"IFC",
-        "description":"",
-        "location":"https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3",
-        "ClassificationFieldName":""
+        "type": "",
+        "source": "",
+        "edition": "",
+        "editionDate": "",
+        "name": "IFC",
+        "description": "",
+        "location": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3",
+        "ClassificationFieldName": "bsdd/identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3"
       },
       "parameterMapping": "Export Type to IFC As"
     },
     {
       "ifcClassification": {
-        "type":"",
-        "source":"",
-        "edition":"",
-        "editionDate":"",
-        "name":"DigiBase Demo NL-SfB tabel 1",
-        "description":"",
-        "location":"https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021",
-        "ClassificationFieldName":""
+        "type": "",
+        "source": "",
+        "edition": "",
+        "editionDate": "",
+        "name": "DigiBase Demo NL-SfB tabel 1",
+        "description": "",
+        "location": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021",
+        "ClassificationFieldName": "bsdd/identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021"
       },
       "parameterMapping": "Assembly Code"
     }
