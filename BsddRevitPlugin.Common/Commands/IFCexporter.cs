@@ -8,6 +8,8 @@ using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.Model;
 using System.Windows.Documents;
 using System.Linq;
+using Autodesk.Revit.Creation;
+using Autodesk.Revit.DB.Structure;
 
 namespace BsddRevitPlugin.Common.Commands
 {
@@ -24,7 +26,7 @@ namespace BsddRevitPlugin.Common.Commands
             {
                 UIApplication uiApp = commandData.Application;
                 UIDocument uiDoc = uiApp.ActiveUIDocument;
-                Document doc = uiDoc.Document;
+                Autodesk.Revit.DB.Document doc = uiDoc.Document;
                 ElementId activeViewId = uiDoc.ActiveView.Id;
 
                 
@@ -36,22 +38,39 @@ namespace BsddRevitPlugin.Common.Commands
 
                     string IFCversion = "IFC 2x3";
 
+
                     //Maak string van alle parameters beginnend met bsdd voor de Export User Defined Propertysets
                     string add_BSDD_UDPS = null;
                     IList<Parameter> param = new List<Parameter>();
                     param = GetAllBsddParameters(doc);
-                    /*
-                    Format:
-                    PropertySet:	<Pset Name>	I[nstance]/T[ype]	<element list separated by ','>
-                    <Property Name 1>	<Data type>	<[opt] Revit parameter name, if different from IFC>
-                    <Property Name 2>	<Data type>	<[opt] Revit parameter name, if different from IFC>
-                    ...
-                    */
-                    add_BSDD_UDPS += "PropertySet:\tBsdd\tT\tIfcElementType" + System.Environment.NewLine;
+                    
+                    // Format:
+                    // PropertySet:	<Pset Name>	I[nstance]/T[ype]	<element list separated by ','>
+                    // <Property Name 1>	<Data type>	<[opt] Revit parameter name, if different from IFC>
+                    // <Property Name 2>	<Data type>	<[opt] Revit parameter name, if different from IFC>
+                    // ...
+                    add_BSDD_UDPS += "BSDD\tT\tIfcBuildingElements" + System.Environment.NewLine;
+                    List<String> existName = new List<String>();
+                    List<String> existType = new List<String>();
+                    bool exist;
                     foreach (Parameter p in param)
                     {
-                        add_BSDD_UDPS += p.ToString() + "\t" + p.GetType() + System.Environment.NewLine;
+                        exist = false;
+                        for (var i = 0; i < existName.Count; i++)
+                        {
+                            if (existName[i] == p.Definition.Name.ToString() && existType[i] == p.StorageType.ToString())
+                            {
+                                exist = true;
+                            }   
+                        }
+                        if (exist == false)
+                        {
+                            add_BSDD_UDPS += p.Definition.Name.ToString() + "\t" + p.StorageType.ToString() + System.Environment.NewLine;
+                            existName.Add(p.Definition.Name.ToString());
+                            existType.Add(p.StorageType.ToString());
+                        }
                     }
+                    //Maak string van alle parameters beginnend met bsdd voor de Export User Defined Propertysets
 
                     // Start the IFC-transaction
                     transaction.Start("Export IFC");
@@ -225,45 +244,44 @@ namespace BsddRevitPlugin.Common.Commands
             }
         }
 
-        public IList<Parameter> GetAllBsddParameters(Document doc)
+        public IList<Parameter> GetAllBsddParameters(Autodesk.Revit.DB.Document doc)
         {
+            // Apply the filter to the elements in the active document
             FilteredElementCollector collector = new FilteredElementCollector(doc);
+            collector.WhereElementIsElementType();
+            ICollection<Element> allElements = collector.ToElements();
 
             IList<Parameter> param = new List<Parameter>();
 
-            foreach (Element e in collector)
+            foreach (Element e in allElements)
             {
                 ParameterSet pSet = e.Parameters;
-                
+                bool exist;
+
                 foreach (Parameter p in pSet)
                 {
-                    if (p.Definition.Name.StartsWith("bsdd"))
+                    if (p.Definition.Name.StartsWith("bsdd") || p.Definition.Name.StartsWith("BSDD") || p.Definition.Name.StartsWith("Bsdd"))
                     {
-                        e.GetParameters(e.Name);
+                        exist = false;
+                        foreach (Parameter pm in param)
+                        {
+                            if (pm.Definition.Name == p.Definition.Name && pm.StorageType == p.StorageType)
+                            {
+                                exist = true;
+                            }
+                        }
 
-                        param.Add(p);
+                        if(exist == false)
+                        {
+                            param.Add(p);
+                        }
                     }
                 }
             }
 
-            param = param.Distinct().ToList();
+            //param = param.Distinct().ToList();
 
             return param;
-        }
-
-        public static Uri GetParam(string domain, Element element)
-        {
-            Uri paramValue = new Uri(domain);
-
-            foreach (Parameter parameter in element.Parameters)
-            {
-                if (parameter.Definition.Name == "location")
-                {
-                    paramValue = new Uri(parameter.ToString(), UriKind.Absolute);
-                }
-            }
-
-            return paramValue;
         }
     }
 }

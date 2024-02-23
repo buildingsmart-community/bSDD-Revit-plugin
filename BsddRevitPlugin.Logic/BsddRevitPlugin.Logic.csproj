@@ -39,13 +39,13 @@
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
-    <Reference Include="ASRR.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+    <Reference Include="ASRR.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\buildingsmart-community\bSDD-Revit-plugin\lib\assr\lib-asrr-core\bin\Release\ASRR.Core.dll</HintPath>
+      <HintPath>..\lib\asrr\lib-asrr-core\bin\Debug\ASRR.Core.dll</HintPath>
     </Reference>
-    <Reference Include="ASRR.Revit.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+    <Reference Include="ASRR.Revit.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\buildingsmart-community\bSDD-Revit-plugin\lib\assr\lib-asrr-revit-core\bin\Release\ASRR.Revit.Core.dll</HintPath>
+      <HintPath>..\lib\asrr\lib-asrr-revit-core\bin\Debug\ASRR.Revit.Core.dll</HintPath>
     </Reference>
     <Reference Include="CefSharp, Version=92.0.260.0, Culture=neutral, PublicKeyToken=40c4b6fc221f4138, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -64,10 +64,12 @@
       <HintPath>C:\Program Files\Autodesk\Revit 2023\CefSharp\CefSharp.Wpf.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\buildingsmart-community\bSDD-Revit-plugin\lib\assr\lib-asrr-core\bin\Release\Newtonsoft.Json.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\asrr\lib-asrr-core\bin\Debug\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>..\..\buildingsmart-community\bSDD-Revit-plugin\lib\assr\lib-asrr-core\bin\Release\NLog.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\asrr\lib-asrr-core\bin\Debug\NLog.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
