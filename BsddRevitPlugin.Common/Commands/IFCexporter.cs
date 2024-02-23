@@ -40,8 +40,8 @@ namespace BsddRevitPlugin.Common.Commands
 
 
                     //// HIERONDER DE LINK NAAR DE PARAMETER MAPPING FILE en de EXPORTLAYERS UIT HET BESTAND
-                    string fpParameterMapping = "C:\\Users\\caoe\\OneDrive - Heijmans N.V\\Bureaublad\\DefaultUserDefinedParameterSets.txt";
-                    string fpExportLayers = "C:\\Users\\caoe'\\OneDrive - Heijmans N.V\\Bureaublad\\exportlayers-ifc-IAI.txt";
+                    string fpParameterMapping = null;
+                    string fpExportLayers = null;
                     //// HIERONDER DE LINK NAAR DE PARAMETER MAPPING FILE en de EXPORTLAYERS UIT HET BESTAND
 
 
