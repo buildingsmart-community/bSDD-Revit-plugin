@@ -83,7 +83,7 @@ namespace BsddRevitPlugin.Logic.Model
 
                     Entity classificationEntity = new Entity(schema);
                     classificationEntity.Set<string>(classificationName, classification.Name);
-                    classificationEntity.Set<string>(classificationSource, classification.Source);
+                    classificationEntity.Set<string>(classificationSource, classification.Source); // location is a workaround for IFC2x3, should be classification.Source
                     classificationEntity.Set<string>(classificationEdition, classification.Edition);
                     if (classification.EditionDate != null)
                     {
@@ -98,7 +98,9 @@ namespace BsddRevitPlugin.Logic.Model
 
                     if (existingClassification != null)
                     {
+                        transaction.Start("Update IFC Classification DataStorage");
                         existingClassification.SetEntity(classificationEntity);
+                        transaction.Commit();
                     }
                     else
                     {
