@@ -3,11 +3,11 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExtensibleStorage;
 using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
+using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
 
 
 namespace BsddRevitPlugin.Logic.Model
@@ -186,7 +186,54 @@ namespace BsddRevitPlugin.Logic.Model
 
                                 case IfcMaterial ifcMaterial:
                                     // do something with ifcMaterial
-                                       break;
+                                    break;
+                            }
+                        }
+                    }
+
+                    //Set Revit parameters for each property
+                    var isDefinedBy = ifcEntity.IsDefinedBy;
+                    if (isDefinedBy != null)
+                    {
+                        foreach (var propertySet in isDefinedBy)
+                        {
+                            foreach (var property in propertySet.HasProperties)
+                            {
+                                //Set parameter type and group for the bsdd classification parameters
+                                if (property.NominalValue.Type != null)
+                                {
+                                    //Else default specType string.text is used
+                                    specType = GetParameterTypeFromProperty(property);
+                                }
+
+                                //Create parameter name for each unique the bsdd property
+                                bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property.Name);
+
+                                //Add a project parameter for the bsdd parameter in all Revit categorices if it does not exist 
+                                //NOTE: THIS IS UP FOR DISCUSSION, AS IT MIGHT NOT BE NECESSARY TO ADD THE PARAMETER TO ALL CATEGORIES
+                                Utilities.Parameters.CreateProjectParameterForAllCategories(doc, bsddParameterName, "tempGroupName", specType, groupType, false);
+
+                                dynamic value = GetParameterValueInCorrectDatatype(property);
+
+                                //Check each type parameter from the object
+                                foreach (Parameter typeparameter in elementType.Parameters)
+                                {
+                                    string typeParameterName = typeparameter.Definition.Name;
+
+                                    //Add the bsdd value to the parameter
+                                    if (typeParameterName == bsddParameterName)
+                                    {
+                                        try
+                                        {
+                                            //because the value is dynamic, always try catch
+                                            typeparameter.Set(value);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            logger.Info($"Property {property.Name} of type {property.Type} could not be set for elementType {elementType.Name},'{elementType.Id}'. Exception: {e.Message}");
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -201,6 +248,52 @@ namespace BsddRevitPlugin.Logic.Model
                 throw;
             }
         }
+
+        private static dynamic GetParameterValueInCorrectDatatype(IfcPropertySingleValue property)
+        {
+            dynamic value = property.NominalValue.Value;
+            // Parse value to correct datatype
+            switch (property.NominalValue.Type)
+            {
+                case "IfcBoolean":
+                    value = Convert.ToBoolean(value);
+                    break;
+                case "IfcInteger":
+                    value = Convert.ToInt32(value);
+                    break;
+                case "IfcReal":
+                    value = Convert.ToDouble(value);
+                    break;
+                case "IfcDate":
+                    value = Convert.ToDateTime(value);
+                    break;
+                default:
+                    // IfcString or Default
+                    value = value.ToString();
+                    break;
+            }
+
+            return value;
+        }
+
+        private static ForgeTypeId GetParameterTypeFromProperty(IfcPropertySingleValue property)
+        {
+            switch (property.NominalValue.Type)
+            {
+                case "IfcBoolean":
+                    return SpecTypeId.Boolean.YesNo;
+                case "IfcInteger":
+                    return SpecTypeId.Int.Integer;
+                case "IfcReal":
+                    return SpecTypeId.Length;
+                case "IfcDate":
+                    return SpecTypeId.Time;
+                default:
+                    // IfcString or Default
+                    return SpecTypeId.String.Text;
+            }
+        }
+
         public static string GetMappedParameterName(IfcClassificationReference ifcClassificationReference)
         {
             Uri refSourceLocation = ifcClassificationReference.ReferencedSource.Location;
@@ -223,13 +316,23 @@ namespace BsddRevitPlugin.Logic.Model
         }
 
         /// <summary>
+        /// Creates a Revit bSDD parameter name for the from the given peropertyset and property.
+        /// </summary>
+        /// <param name="uri">The URI to create the parameter name from.</param>
+        /// <returns>The parameter name created from the URI.</returns>
+        public static string CreateParameterNameFromPropertySetAndProperty(string propertySet, string property)
+        {
+            string parameterName = $"bsdd/prop/{propertySet}/{property}";
+            return parameterName;
+        }
+        /// <summary>
         /// Creates a Revit bSDD parameter name for the from the given URI.
         /// </summary>
         /// <param name="uri">The URI to create the parameter name from.</param>
         /// <returns>The parameter name created from the URI.</returns>
         public static string CreateParameterNameFromUri(Uri uri)
         {
-            string parameterName = $"bsdd/{uri.Host}{uri.PathAndQuery}";
+            string parameterName = $"bsdd/class/{uri.Host}{uri.PathAndQuery}";
             return parameterName;
         }
 
