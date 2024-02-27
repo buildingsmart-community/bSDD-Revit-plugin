@@ -141,29 +141,28 @@ namespace BsddRevitPlugin.Common.Commands
                     //  
 
 
-                    // Add option with a new IFC Class System
+                    //// Add option with a new IFC Class System
+                    //using (var form = new System.Windows.Forms.Form())
+                    //{
+                    //    // Create OpenFileDialog
+                    //    OpenFileDialog openFileDialog = new OpenFileDialog();
+                    //    openFileDialog.Filter = "Text Files (*.txt)|*.txt";
+                    //    openFileDialog.FilterIndex = 1;
+                    //    openFileDialog.Multiselect = false;
 
-                    using (var form = new System.Windows.Forms.Form())
-                    {
-                        // Create OpenFileDialog
-                        OpenFileDialog openFileDialog = new OpenFileDialog();
-                        openFileDialog.Filter = "Text Files (*.txt)|*.txt";
-                        openFileDialog.FilterIndex = 1;
-                        openFileDialog.Multiselect = false;
+                    //    // Show OpenFileDialog and get the result
+                    //    DialogResult result = openFileDialog.ShowDialog(form);
 
-                        // Show OpenFileDialog and get the result
-                        DialogResult result = openFileDialog.ShowDialog(form);
+                    //    // Check if the user clicked OK in the OpenFileDialog
+                    //    if (result == DialogResult.OK)
+                    //    {
+                    //        // Get the selected file path
+                    //        string mappingFilePath = openFileDialog.FileName;
 
-                        // Check if the user clicked OK in the OpenFileDialog
-                        if (result == DialogResult.OK)
-                        {
-                            // Get the selected file path
-                            string mappingFilePath = openFileDialog.FileName;
-
-                            // Add the option for IFC Export Classes Family Mapping
-                            exportOptions.AddOption("ExportLayers", mappingFilePath);
-                        }
-                    }
+                    //        // Add the option for IFC Export Classes Family Mapping
+                    //        exportOptions.AddOption("ExportLayers", mappingFilePath);
+                    //    }
+                    //}
 
 
 

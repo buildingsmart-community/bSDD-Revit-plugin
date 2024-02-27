@@ -157,20 +157,6 @@ namespace BsddRevitPlugin.Logic.Model
 
                                     dictionaryCollection.Add(ifcClassificationReference.ReferencedSource);
 
-                                    //<---- this is temporary, the referencesource.location should be provided in the given json
-
-                                    string url = ifcClassificationReference.Location.ToString();
-                                    int index = url.IndexOf("/class");
-
-                                    if (index > 0)
-                                    {
-                                        url = url.Substring(0, index);
-                                    }
-                                    ifcClassificationReference.ReferencedSource.Location = new Uri(url, UriKind.Absolute);
-
-                                    //--------->
-                                    string refSourceLocation = ifcClassificationReference.ReferencedSource.Location.ToString();
-
                                     //Create parameter name for each unique the bsdd classificationReference
                                     bsddParameterName = CreateParameterNameFromIFCClassificationReferenceSourceLocation(ifcClassificationReference);
 
