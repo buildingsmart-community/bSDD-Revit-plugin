@@ -137,6 +137,9 @@
     <Content Include="html\bsdd_search\react-bsdd-search.umd.cjs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="html\bsdd_search\style.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="html\bsdd_selection\react-bsdd-selection.umd.cjs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -148,9 +151,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="html\bsdd_search\css\viewer.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="html\bsdd_search\index.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

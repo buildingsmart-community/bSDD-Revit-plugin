@@ -164,10 +164,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
         public override void Execute(UIApplication uiapp, string args)
         {
-
-            //string addinDirectory = Path.GetDirectoryName(addinLocation);
-            _bsddSearch = new BsddSearch();
-            _bsddSearch.UpdateBsddBridgeData(_bsddBridgeData);
+            _bsddSearch = new BsddSearch(_bsddBridgeData);
 
             HwndSource hwndSource = HwndSource.FromHwnd(uiapp.MainWindowHandle);
             wnd = hwndSource.RootVisual as Window;
@@ -176,7 +173,6 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
                 _bsddSearch.Owner = wnd;
                 //bsddSearch.ShowInTaskbar = false;
                 _bsddSearch.Show();
-                //bsddSearch.UpdateSelection(jsonData);
 
             }
             var uidoc = uiapp.ActiveUIDocument;
