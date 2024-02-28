@@ -77,7 +77,15 @@ namespace BsddRevitPlugin.Common.Commands
                         if (exist == false)
                         {
                             add_BSDD_UDPS += "\t" + p.Definition.Name.ToString() + "\t";
-                            if(p.StorageType.ToString() == "String")
+                            //datatypes convert 
+                            //C# byte, sbyte, short, ushort, int, uint, long, ulong, float, double, decimal, char, bool, object, string, DataTime
+                            //Ifc Area, Boolean, ClassificationReference, ColorTemperature, Count, Currency, 
+                            //ElectricalCurrent, ElectricalEfficacy, ElectricalVoltage, Force, Frequency, Identifier, 
+                            //Illuminance, Integer, Label, Length, Logical, LuminousFlux, LuminousIntensity, 
+                            //NormalisedRatio, PlaneAngle, PositiveLength, PositivePlaneAngle, PositiveRatio, Power, 
+                            //Pressure, Ratio, Real, Text, ThermalTransmittance, ThermodynamicTemperature, Volume, 
+                            //VolumetricFlowRate
+                            if (p.StorageType.ToString() == "String")
                             {
                                 add_BSDD_UDPS += "Text";
                             }
@@ -347,7 +355,7 @@ namespace BsddRevitPlugin.Common.Commands
 
                 foreach (Parameter p in pSet)
                 {
-                    if (p.Definition.Name.StartsWith("bsdd") || p.Definition.Name.StartsWith("BSDD") || p.Definition.Name.StartsWith("Bsdd"))
+                    if (p.Definition.Name.StartsWith("bsdd/prop/"))
                     {
                         exist = false;
                         foreach (Parameter pm in param)
