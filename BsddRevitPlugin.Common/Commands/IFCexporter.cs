@@ -222,14 +222,15 @@ namespace BsddRevitPlugin.Common.Commands
                                 File.Copy(mappingParameterFilePath, tempFilePath, true);
                             }
 
-                            using (StreamWriter writer = new StreamWriter(tempFilePath, true))
-                            {
-                                writer.WriteLine(add_BSDD_UDPS);
-                            }
+                            
                             //// NIEUW
                             //        // Add the option for IFC Export Classes Family Mapping
                             //        exportOptions.AddOption("ExportUserDefinedParameterMapping", true.ToString());
                             //        exportOptions.AddOption("ExportUserDefinedParameterMappingFileName", mappingParameterFilePath);
+                        }
+                        using (StreamWriter writer = new StreamWriter(tempFilePath, true))
+                        {
+                            writer.WriteLine(add_BSDD_UDPS);
                         }
                     }
 
@@ -323,7 +324,7 @@ namespace BsddRevitPlugin.Common.Commands
                     }
 
 
-                    //System.IO.File.Delete(tempFilePath);
+                    System.IO.File.Delete(tempFilePath);
                 }
                 return Result.Succeeded;
             }
