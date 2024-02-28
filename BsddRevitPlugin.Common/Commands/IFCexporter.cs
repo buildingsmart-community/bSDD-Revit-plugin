@@ -9,6 +9,8 @@ using BsddRevitPlugin.Logic.Model;
 using BsddRevitPlugin.Logic.IfcJson;
 using Autodesk.Revit.DB.IFC;
 using System.Linq;
+using System.Windows.Controls;
+
 
 namespace BsddRevitPlugin.Common.Commands
 {
@@ -48,33 +50,51 @@ namespace BsddRevitPlugin.Common.Commands
 
 
 
-                    //// ERIKS MAGIE
                     //Maak string van alle parameters beginnend met bsdd voor de Export User Defined Propertysets
-                    //string add_BSDD_UDPS = null;
-                    //IList<Parameter> param = new List<Parameter>();
-                    //param = GetAllBsddParameters(doc);
-                    /*
-                    //Format:
-                    //PropertySet:	<Pset Name>	I[nstance]/T[ype]	<element list separated by ','>
-                    //<Property Name 1>	<Data type>	<[opt] Revit parameter name, if different from IFC>
-                    //<Property Name 2>	<Data type>	<[opt] Revit parameter name, if different from IFC>
-                    //...
-                    */
-                    //add_BSDD_UDPS += "PropertySet:\tBsdd\tT\tIfcElementType" + System.Environment.NewLine;
-                    //foreach (Parameter p in param)
-                    //{
-                    //    add_BSDD_UDPS += p.ToString() + "\t" + p.GetType() + System.Environment.NewLine;
-                    //}
+                    string add_BSDD_UDPS = null;
+                    IList<Parameter> param = new List<Parameter>();
+                    param = GetAllBsddParameters(doc);
 
-
-
-                    //TEST
-                    string add_BSDD_UDPS = "PropertySet:\tBsdd\tT\tIfcElementType" + System.Environment.NewLine;
-                    string p = "\tTest123\tText";
-                    add_BSDD_UDPS += p + System.Environment.NewLine;
-                    //TEST
-
-                    //// ERIKS MAGIE
+                    // Format:
+                    // PropertySet:	<Pset Name>	I[nstance]/T[ype]	<element list separated by ','>
+                    // <Property Name 1>	<Data type>	<[opt] Revit parameter name, if different from IFC>
+                    // <Property Name 2>	<Data type>	<[opt] Revit parameter name, if different from IFC>
+                    // ...
+                    add_BSDD_UDPS += System.Environment.NewLine + System.Environment.NewLine + "PropertySet:\tBSDD\tT\tIfcWall, IfcSlab" + System.Environment.NewLine;
+                    List<String> existName = new List<String>();
+                    List<String> existType = new List<String>();
+                    bool exist;
+                    foreach (Parameter p in param)
+                    {
+                        exist = false;
+                        for (var i = 0; i < existName.Count; i++)
+                        {
+                            if (existName[i] == p.Definition.Name.ToString() && existType[i] == p.StorageType.ToString())
+                            {
+                                exist = true;
+                            }
+                        }
+                        if (exist == false)
+                        {
+                            add_BSDD_UDPS += "\t" + p.Definition.Name.ToString() + "\t";
+                            if(p.StorageType.ToString() == "String")
+                            {
+                                add_BSDD_UDPS += "Text";
+                            }
+                            else if (p.StorageType.ToString() == "Double")
+                            {
+                                add_BSDD_UDPS += "Real";
+                            }
+                            else
+                            {
+                                add_BSDD_UDPS += p.StorageType.ToString();
+                            }
+                            add_BSDD_UDPS += System.Environment.NewLine;
+                            existName.Add(p.Definition.Name.ToString());
+                            existType.Add(p.StorageType.ToString());
+                        }
+                    }
+                    //Maak string van alle parameters beginnend met bsdd voor de Export User Defined Propertysets
 
 
 
@@ -146,26 +166,10 @@ namespace BsddRevitPlugin.Common.Commands
                     //exportOptions.AddOption("ExportUserDefinedPsets", false.ToString());
                     //exportOptions.AddOption("ExportUserDefinedPsetsFileName", "");
 
-                    exportOptions.AddOption("ExportInternalRevitPropertySets", true.ToString());
+                    exportOptions.AddOption("ExportInternalRevitPropertySets", false.ToString());
                     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-                    //// NIEUW
-                    string randomFileName = System.IO.Path.GetRandomFileName();
-                    string tempFilePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), randomFileName.Remove(randomFileName.Length - 4) + ".txt");
-                    if (File.Exists(fpParameterMapping))
-                    {
-                        File.Copy(fpParameterMapping, tempFilePath, true);
-                    }
 
-                    using (StreamWriter writer = new StreamWriter(tempFilePath, true))
-                    {
-                        writer.WriteLine();
-                        writer.WriteLine(add_BSDD_UDPS);
-                    }
-                    exportOptions.AddOption("ExportUserDefinedParameterMapping", true.ToString());
-                    exportOptions.AddOption("ExportUserDefinedParameterMappingFileName", tempFilePath);
-
-                    //// NIEUW
 
 
 
@@ -182,34 +186,52 @@ namespace BsddRevitPlugin.Common.Commands
 
                     // Add UserDefinedParameterMapping to export options
                     //exportOptions.AddOption("UserDefinedParameterMapping", userDefinedParameterMapping);
-
-
-                    //using (var formP = new System.Windows.Forms.Form())
-                    //{
-                    // Create OpenFileDialog
-                    //    TaskDialog.Show("Pick ParameterMapping File", "Pick a file for Parameter Mapping");
-                    //    OpenFileDialog openFileDialog = new OpenFileDialog();
-                    //    openFileDialog.Filter = "Text Files (*.txt)|*.txt";
-                    //    openFileDialog.FilterIndex = 1;
-                    //    openFileDialog.Multiselect = false;
+                    string randomFileName = System.IO.Path.GetRandomFileName();
+                    string tempFilePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), randomFileName.Remove(randomFileName.Length - 4) + ".txt");
+                    
+                    using (var formP = new System.Windows.Forms.Form())
+                    {
+                     //Create OpenFileDialog
+                        TaskDialog.Show("Pick ParameterMapping File", "Pick a file for Parameter Mapping");
+                        OpenFileDialog openFileDialog = new OpenFileDialog();
+                        openFileDialog.Filter = "Text Files (*.txt)|*.txt";
+                        openFileDialog.FilterIndex = 1;
+                        openFileDialog.Multiselect = false;
 
                     // Show OpenFileDialog and get the result
-                    //    DialogResult resultP = openFileDialog.ShowDialog(formP);
+                        DialogResult resultP = openFileDialog.ShowDialog(formP);
 
                     // Check if the user clicked OK in the OpenFileDialog
-                    //    if (resultP == DialogResult.OK)
-                    //    {
+                        if (resultP == DialogResult.OK)
+                        {
                     // Get the selected file path
-                    //        string mappingParameterFilePath = openFileDialog.FileName;
+                            string mappingParameterFilePath = openFileDialog.FileName;
 
-                    //        // Add the option for IFC Export Classes Family Mapping
-                    //        exportOptions.AddOption("ExportUserDefinedParameterMapping", true.ToString());
-                    //        exportOptions.AddOption("ExportUserDefinedParameterMappingFileName", mappingParameterFilePath);
-                    //    }
-                    //}
+                            //// NIEUW
+                            
+                            if (File.Exists(mappingParameterFilePath))
+                            {
+                                File.Copy(mappingParameterFilePath, tempFilePath, true);
+                            }
+
+                            using (StreamWriter writer = new StreamWriter(tempFilePath, true))
+                            {
+                                writer.WriteLine(add_BSDD_UDPS);
+                            }
+                            //// NIEUW
+                            //        // Add the option for IFC Export Classes Family Mapping
+                            //        exportOptions.AddOption("ExportUserDefinedParameterMapping", true.ToString());
+                            //        exportOptions.AddOption("ExportUserDefinedParameterMappingFileName", mappingParameterFilePath);
+                        }
+                    }
+
 
                     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+                    exportOptions.AddOption("ExportUserDefinedPsets", true.ToString());
+                    exportOptions.AddOption("ExportUserDefinedPsetsFileName", tempFilePath);
+                    exportOptions.AddOption("ExportInternalRevitPropertySets", false.ToString());
+                    exportOptions.AddOption("ExportUserDefinedParameterMapping", true.ToString());
+                    exportOptions.AddOption("ExportUserDefinedParameterMappingFileName", tempFilePath);
                     exportOptions.AddOption("TessellationLevelOfDetail", 0.5.ToString());
                     exportOptions.AddOption("ExportPartsAsBuildingElements", false.ToString());
                     exportOptions.AddOption("ExportSolidModelRep", false.ToString());
@@ -293,7 +315,7 @@ namespace BsddRevitPlugin.Common.Commands
                     }
 
 
-                    System.IO.File.Delete(tempFilePath);
+                    //System.IO.File.Delete(tempFilePath);
                 }
                 return Result.Succeeded;
             }
@@ -309,62 +331,54 @@ namespace BsddRevitPlugin.Common.Commands
 
         }
 
-        public IList<Parameter> GetAllBsddParameters(Document doc)
+        public IList<Parameter> GetAllBsddParameters(Autodesk.Revit.DB.Document doc)
         {
+            // Apply the filter to the elements in the active document
             FilteredElementCollector collector = new FilteredElementCollector(doc);
+            collector.WhereElementIsElementType();
+            ICollection<Element> allElements = collector.ToElements();
 
             IList<Parameter> param = new List<Parameter>();
 
-            foreach (Element e in collector)
+            foreach (Element e in allElements)
             {
                 ParameterSet pSet = e.Parameters;
+                bool exist;
 
                 foreach (Parameter p in pSet)
                 {
-                    if (p.Definition.Name.StartsWith("bsdd"))
+                    if (p.Definition.Name.StartsWith("bsdd") || p.Definition.Name.StartsWith("BSDD") || p.Definition.Name.StartsWith("Bsdd"))
                     {
-                        e.GetParameters(e.Name);
+                        exist = false;
+                        foreach (Parameter pm in param)
+                        {
+                            if (pm.Definition.Name == p.Definition.Name && pm.StorageType == p.StorageType)
+                            {
+                                exist = true;
+                            }
+                        }
 
-                        param.Add(p);
+                        if (exist == false)
+                        {
+                            param.Add(p);
+                        }
                     }
                 }
             }
 
-            param = param.Distinct().ToList();
+            //param = param.Distinct().ToList();
 
             return param;
         }
-
-        public static Uri GetParam(string domain, Element element)
-        {
-            Uri paramValue = new Uri(domain);
-
-            foreach (Parameter parameter in element.Parameters)
-            {
-                if (parameter.Definition.Name == "location")
-                {
-                    paramValue = new Uri(parameter.ToString(), UriKind.Absolute);
-                }
-            }
-
-            return paramValue;
-        }
-
-
-
-
-
-
-        static string GetUserDefinedParameterMapping(Dictionary<string, string> parameterMapping)
-        {
-            List<string> mappings = new List<string>();
-
-            foreach (var entry in parameterMapping)
-            {
-                mappings.Add($"{entry.Key}={entry.Value}");
-            }
-
-            return string.Join(";", mappings);
-        }
     }
 }
+
+
+
+
+
+
+
+
+
+
