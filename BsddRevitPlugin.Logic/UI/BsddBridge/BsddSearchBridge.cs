@@ -4,7 +4,9 @@ using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.UI.View;
 using BsddRevitPlugin.Logic.UI.Wrappers;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.Windows;
+using static BsddRevitPlugin.Logic.UI.View.BsddSearch;
 
 namespace BsddRevitPlugin.Logic.UI.BsddBridge
 {
@@ -21,9 +23,11 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
 
         private static BsddSearch _bsddSearch;
         private static Window _bsddSearchParent;
+        private static BsddBridgeData _bsddBridgeData;
 
-        public BsddSearchBridge()
+        public BsddSearchBridge(BsddBridgeData bsddBridgeData)
         {
+            _bsddBridgeData = bsddBridgeData;
             //SetParentWindow(window);
             // Initialize the events and external events
             //EventHandlerBsddSearch = EventHandlerBsddSearchUI;
@@ -62,6 +66,54 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             // Return the serialized JSON data for the IfcData object
             return JsonConvert.SerializeObject(ifcEntity);
 
+        }
+        public string loadConfig()
+        {
+            Search defaultSearch = null;
+            var bsddApiEnvironment = _bsddBridgeData.Settings.BsddApiEnvironment;
+            var mainDictionary = _bsddBridgeData.Settings.MainDictionary;
+
+            var ifcEntity = _bsddBridgeData.IfcData[0];
+            var ifcEntityName = ifcEntity.Name;
+
+            var domain = new Domain
+            {
+                value = mainDictionary.IfcClassification.Location.ToString(),
+                label = mainDictionary.IfcClassification.Name,
+            };
+
+            // iterate over the ifcEntity hasAssociations, for every one with type == IfcClassificationReference, check if its referencedSource is the same as the domainUri then set the defaultSearch to that classificationReference it's location(value) and name(label)
+            ifcEntity.HasAssociations.ForEach(association =>
+            {
+                if (association.Type == "IfcClassificationReference")
+                {
+                    var classificationReference = association as IfcClassificationReference;
+                    if (classificationReference != null && classificationReference.ReferencedSource != null && classificationReference.ReferencedSource.Location != null)
+                    {
+                        if (classificationReference.ReferencedSource.Location == mainDictionary.IfcClassification.Location)
+                        {
+                            defaultSearch = new Search
+                            {
+                                value = classificationReference.Location?.ToString(),
+                                label = classificationReference.Name,
+                            };
+                        }
+                    }
+                }
+            });
+
+            var bsddSearchConfig = new BsddSearchConfig
+            {
+                baseUrl = bsddApiEnvironment,
+                defaultDomains = new List<Domain>
+                    {
+                        domain
+                    },
+                defaultSearch = defaultSearch,
+                ifcEntity = ifcEntity
+            };
+
+            return JsonConvert.SerializeObject(bsddSearchConfig);
         }
     }
 
