@@ -60,7 +60,7 @@ namespace BsddRevitPlugin.Common.Commands
                     // <Property Name 1>	<Data type>	<[opt] Revit parameter name, if different from IFC>
                     // <Property Name 2>	<Data type>	<[opt] Revit parameter name, if different from IFC>
                     // ...
-                    add_BSDD_UDPS += System.Environment.NewLine + System.Environment.NewLine + "PropertySet:\tBSDD\tT\tIfcWall, IfcSlab" + System.Environment.NewLine;
+                    add_BSDD_UDPS += System.Environment.NewLine + System.Environment.NewLine + "PropertySet:\tBSDD\tT\tIfcElementType" + System.Environment.NewLine;
                     List<String> existName = new List<String>();
                     List<String> existType = new List<String>();
                     bool exist;
