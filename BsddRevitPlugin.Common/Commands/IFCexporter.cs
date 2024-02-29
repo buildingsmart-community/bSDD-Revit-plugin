@@ -34,7 +34,9 @@ namespace BsddRevitPlugin.Common.Commands
                 {
 
 
-                    //IfcClassificationManager.UpdateClassifications(doc, dictionaryCollection);
+                   
+                //Set IfcClassifications in the project according to the main- and filterdictionaries
+                IfcClassificationManager.UpdateClassifications(new Transaction(doc, "Update Classifications"), doc, IfcClassificationManager.GetAllIfcClassificationsInProject());
 
                     string IFCversion = "IFC 2x3";
 

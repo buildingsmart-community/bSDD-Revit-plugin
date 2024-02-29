@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using BsddRevitPlugin.Logic.Model;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -131,7 +132,8 @@ namespace BsddRevitPlugin.Logic.IfcJson
 
         // Addition for the Revit mapping parameter, should not be present in the ifcJSON data
         [JsonProperty("classificationFieldName")]
-        public string ClassificationFieldName { get; set; }
+        public string ClassificationFieldName { get; set; } 
+        
 
     }
 

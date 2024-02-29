@@ -11,17 +11,8 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
     }
     public class BsddDictionary
     {
-        [JsonProperty("dictionaryUri")]
-        public Uri DictionaryUri { get; set; }
-
-        [JsonProperty("dictionaryName")]
-        public string DictionaryName { get; set; }
-
-        [JsonProperty("parameterName")]
-        public string ParameterName { get; set; }
-
-        [JsonProperty("parameterId")]
-        public string ParameterId { get; set; }
+        [JsonProperty("ifcClassification")]
+        public IfcClassification IfcClassification { get; set; }
 
         [JsonProperty("parameterMapping")]
         public string ParameterMapping { get; set; }
@@ -59,7 +50,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         /// <param name="domain">The domain of the main dictionary.</param>
         public void setDomain(string domain)
         {
-            Settings.MainDictionary.DictionaryUri = new Uri( domain);
+            Settings.MainDictionary.IfcClassification.Location = new Uri( domain);
         }
 
         /// <summary>
