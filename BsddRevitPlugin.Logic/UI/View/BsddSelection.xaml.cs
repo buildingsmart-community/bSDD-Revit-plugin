@@ -179,7 +179,10 @@ namespace BsddRevitPlugin.Logic.UI.View
 
         private void DockableDialogs_Loaded(object sender, RoutedEventArgs e)
         {
-            BrowserContainer.Children.Add((UIElement)_browserService.BrowserControl);
+            if (!BrowserContainer.Children.Contains((UIElement)_browserService.BrowserControl))
+            {
+                BrowserContainer.Children.Add((UIElement)_browserService.BrowserControl);
+            }
         }
 
         // Event handler for the selection method combo box
