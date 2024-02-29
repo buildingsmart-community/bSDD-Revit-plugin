@@ -4,6 +4,7 @@ using BsddRevitPlugin.Logic.IfcJson;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using BsddRevitPlugin.Logic.UI.BsddBridge;
 
 namespace BsddRevitPlugin.Logic.Model
 {
@@ -69,7 +70,7 @@ namespace BsddRevitPlugin.Logic.Model
         /// <param name="transaction">The active transaction used to save the classifications.</param>
         /// <param name="document">The document storing the saved Classification.</param>
         /// <param name="classifications">The set of Classification items to save.</param>
-        public static void UpdateClassifications(Document document, HashSet<IfcClassification> classifications)
+        public static void UpdateClassifications(Transaction transaction, Document document, HashSet<IfcClassification> classifications)
         {
             Schema schema = GetRevitClassificationSchema();
             if (schema != null)
@@ -82,7 +83,7 @@ namespace BsddRevitPlugin.Logic.Model
 
                     Entity classificationEntity = new Entity(schema);
                     classificationEntity.Set<string>(classificationName, classification.Name);
-                    classificationEntity.Set<string>(classificationSource, classification.Source);
+                    classificationEntity.Set<string>(classificationSource, classification.Source); // location is a workaround for IFC2x3, should be classification.Source
                     classificationEntity.Set<string>(classificationEdition, classification.Edition);
                     if (classification.EditionDate != null)
                     {
@@ -97,15 +98,19 @@ namespace BsddRevitPlugin.Logic.Model
 
                     if (existingClassification != null)
                     {
+                        transaction.Start("Update IFC Classification DataStorage");
                         existingClassification.SetEntity(classificationEntity);
+                        transaction.Commit();
                     }
                     else
                     {
                         // Create a new classification if one with the same location does not already exist
                         if (!existingClassifications.Any(c => GetLocationFromEntity(c, schema) == location))
                         {
+                            transaction.Start("Create IFC Classification DataStorage");
                             DataStorage newClassification = DataStorage.Create(document);
                             newClassification.SetEntity(classificationEntity);
+                            transaction.Commit();
                         }
                     }
                 }
@@ -116,5 +121,22 @@ namespace BsddRevitPlugin.Logic.Model
         {
             return dataStorage.GetEntity(schema).Get<string>(schema.GetField(classificationLocation));
         }
+
+        public static HashSet<IfcClassification> GetAllIfcClassificationsInProject()
+        {
+       
+            // Create a classification set in which every dictionary will be collected
+            HashSet<IfcClassification> dictionaryCollection = new HashSet<IfcClassification>
+                    {
+                        GlobalBsddSettings.bsddsettings.MainDictionary.IfcClassification
+                    };
+            foreach (var filterDictionary in GlobalBsddSettings.bsddsettings.FilterDictionaries)
+            {
+                dictionaryCollection.Add(filterDictionary.IfcClassification);
+            }
+
+            return dictionaryCollection;
+        }
+       
     }
 }

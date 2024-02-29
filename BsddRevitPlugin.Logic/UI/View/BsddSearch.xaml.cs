@@ -34,9 +34,9 @@ namespace BsddRevitPlugin.Logic.UI.View
         public static UIDocument UiDoc;
         private BsddBridgeData _inputBsddBridgeData;
 
-        public BsddSearch()
+        public BsddSearch(BsddBridgeData bsddBridgeData)
         {
-            
+
             InitializeComponent();
 
             string addinLocation = Assembly.GetExecutingAssembly().Location;
@@ -45,10 +45,8 @@ namespace BsddRevitPlugin.Logic.UI.View
 
             // Set the address of the CefSharp browser component to the index.html file of the plugin
             Browser.Address = addinDirectory + "/html/bsdd_search/index.html";
-            var bridgeSearch = new BsddBridge.BsddSearchBridge();
+            var bridgeSearch = new BsddBridge.BsddSearchBridge(bsddBridgeData);
             bridgeSearch.SetParentWindow(this);
-            var bridgeSelection = new BsddBridge.BsddSelectionBridge();
-            bridgeSelection.SetParentWindow(this);
             Browser.JavascriptObjectRepository.Register("bsddBridge", bridgeSearch, true);
             Browser.IsBrowserInitializedChanged += OnIsBrowserInitializedChanged;
 
@@ -80,22 +78,31 @@ namespace BsddRevitPlugin.Logic.UI.View
         {
             if (Browser.IsBrowserInitialized)
             {
+                #if DEBUG
                 Browser.ShowDevTools();
-                if (_inputBsddBridgeData == null || _inputBsddBridgeData.IfcData == null || _inputBsddBridgeData.IfcData[0] == null)
-                {
-                    return;
-                }
-
-                var jsonString = JsonConvert.SerializeObject(_inputBsddBridgeData.IfcData[0]);
-
-                // Initialize the bridge and set the initial IfcEntity
-                var script = @"
-                    CefSharp.BindObjectAsync('bsddBridge').then(() => {
-                        window.globalIfcEntity = " + jsonString + @";
-                    });
-                ";
-                Browser.ExecuteScriptAsync(script);
+                #endif
+                Browser.ExecuteScriptAsync("CefSharp.BindObjectAsync('bsddBridge');");
             }
+        }
+
+        public class BsddSearchConfig
+        {
+            public string baseUrl { get; set; }
+            public List<Domain> defaultDomains { get; set; }
+            public Search defaultSearch { get; set; }
+            public IfcEntity ifcEntity { get; set; }
+        }
+
+        public class Domain
+        {
+            public string value { get; set; }
+            public string label { get; set; }
+        }
+
+        public class Search
+        {
+            public string value { get; set; }
+            public string label { get; set; }
         }
     }
 }

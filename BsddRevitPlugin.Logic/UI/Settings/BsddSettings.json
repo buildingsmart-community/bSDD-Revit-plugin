@@ -1,25 +1,43 @@
 {
   "bsddApiEnvironment": "test",
   "mainDictionary": {
-    "dictionaryUri": "https://identifier.buildingsmart.org/uri/digibase/basisbouwproducten/0.8.0",
-    "dictionaryName": "Basis bouwproducten",
-    "parameterName": null,
-    "parameterId": null,
+    "ifcClassification": {
+      "type": "",
+      "source": "",
+      "edition": "",
+      "editionDate": "2024-02-22T09:00:00Z",
+      "name": "Basis bouwproducten",
+      "description": "",
+      "location": "https://identifier.buildingsmart.org/uri/digibase/basisbouwproducten/0.8.0",
+      "ClassificationFieldName": "bsdd/identifier.buildingsmart.org/uri/digibase/basisbouwproducten/0.8.0"
+    },
     "parameterMapping": "Description"
   },
   "filterDictionaries": [
     {
-      "dictionaryUri": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3",
-      "dictionaryName": "IFC",
-      "parameterName": null,
-      "parameterId": null,
+      "ifcClassification": {
+        "type": "",
+        "source": "",
+        "edition": "",
+        "editionDate": "2024-02-22T09:00:00Z",
+        "name": "IFC",
+        "description": "",
+        "location": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3",
+        "ClassificationFieldName": "bsdd/identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3"
+      },
       "parameterMapping": "Export Type to IFC As"
     },
     {
-      "dictionaryUri": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021",
-      "dictionaryName": "DigiBase Demo NL-SfB tabel 1",
-      "parameterName": null,
-      "parameterId": null,
+      "ifcClassification": {
+        "type": "",
+        "source": "",
+        "edition": "",
+        "editionDate": "2024-02-22T09:00:00Z",
+        "name": "DigiBase Demo NL-SfB tabel 1",
+        "description": "",
+        "location": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021",
+        "ClassificationFieldName": "bsdd/identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021"
+      },
       "parameterMapping": "Assembly Code"
     }
   ],

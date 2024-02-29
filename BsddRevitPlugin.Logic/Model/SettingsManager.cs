@@ -9,6 +9,8 @@ using System.Reflection;
 using ASRR.Core.Persistence;
 using System.IO;
 using Newtonsoft.Json;
+using static System.Net.Mime.MediaTypeNames;
+using NLog.Fluent;
 
 namespace BsddRevitPlugin.Logic.Model
 {
@@ -16,7 +18,7 @@ namespace BsddRevitPlugin.Logic.Model
     {
 
         // bSDD plugin settings schema ID
-        private static Guid s_schemaId = new Guid("D5CF8E88-86CF-421A-9FAD-202D1A278D4C");
+        private static Guid s_schemaId = new Guid("1A53FFA0-B6FD-418B-A6A6-70D8EA8871B3");
         private const string BsddSettingsFieldName = "BsddSettings";
 
         /// <summary>
@@ -40,10 +42,13 @@ namespace BsddRevitPlugin.Logic.Model
 
         public static BsddSettings LoadDefaultSettings()
         {
+            Logger logger = LogManager.GetCurrentClassLogger();
+
             string currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             string settingsFilePath = Path.Combine(currentPath, "UI", "Settings"); //BsddSettings.json
 
             JsonBasedPersistenceProvider jsonBasedPersistenceProvider = new JsonBasedPersistenceProvider(settingsFilePath);
+
             return jsonBasedPersistenceProvider.Fetch<BsddSettings>();
         }
 
@@ -91,6 +96,39 @@ namespace BsddRevitPlugin.Logic.Model
 
             return null;
         }
+        /// <summary>
+        /// Deletes the BSDD plugin settings from the document's extensible storage.
+        /// </summary>
+        /// <param name="doc">The document to read the settings from.</param>
+        /// <returns>The BSDD plugin settings, or null if no settings were found.</returns>
+        public static void DeleteSettingsFromDataStorage(Document doc)
+        {
+            Logger logger = LogManager.GetCurrentClassLogger();
+            Schema schema = GetSettingsSchema();
+
+            IList<DataStorage> dataStorages = GetClassificationInStorage(doc, schema);
+
+            if (dataStorages.Count > 0)
+            {
+                var dataStorage = dataStorages.First();
+                var entity = dataStorage.GetEntity(schema);
+                try
+                {
+                    using (Transaction tx = new Transaction(doc))
+                    {
+                        tx.Start("Delete dataStorage");
+                        dataStorage.DeleteEntity(schema);
+                        tx.Commit();
+                    }
+                }
+                catch (Exception exc)
+                {
+                    logger.Error(exc, "Error deleting DataStorage");
+                    throw;
+                }
+            }
+
+        }
 
         /// <summary>
         /// Saves the specified settings to the global settings variable.
@@ -120,7 +158,21 @@ namespace BsddRevitPlugin.Logic.Model
             DataStorage dataStorage = dataStorages.FirstOrDefault();
             if (dataStorage == null)
             {
-                dataStorage = DataStorage.Create(doc);
+                try
+                {
+                    using (Transaction tx = new Transaction(doc))
+                    {
+                        tx.Start("Save dataStorage");
+
+                        dataStorage = DataStorage.Create(doc);
+
+                        tx.Commit();
+                    }
+                }
+                catch (Exception e)
+                {
+                    logger.Error(e);
+                }
             }
 
             Entity entity = new Entity(schema);
