@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -118,6 +118,10 @@
     <ProjectReference Include="..\lib\asrr\lib-asrr-core\ASRR.Core.csproj">
       <Project>{12ea4456-8cd5-43ef-80c7-d70338c8b018}</Project>
       <Name>ASRR.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\lib\asrr\lib-asrr-revit-core\ASRR.Revit.Core.csproj">
+      <Project>{60ac09bd-db0e-40a9-b8a7-b0d40e7042e6}</Project>
+      <Name>ASRR.Revit.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
