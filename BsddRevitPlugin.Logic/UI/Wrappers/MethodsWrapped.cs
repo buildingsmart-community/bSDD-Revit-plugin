@@ -4,9 +4,8 @@ using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.Model;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
 using BsddRevitPlugin.Logic.UI.DockablePanel;
+using BsddRevitPlugin.Logic.UI.Services;
 using BsddRevitPlugin.Logic.UI.View;
-using CefSharp;
-using CefSharp.Wpf;
 using Newtonsoft.Json;
 using NLog;
 using System.Collections.Generic;
@@ -28,7 +27,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         static List<ElementType> elemList = new List<ElementType>();
 
         protected Select Selectorlist = new Select();
-        ChromiumWebBrowser browser;
+        private  IBrowserService browser;
 
         public override void Execute(UIApplication uiapp, string args)
         {
@@ -48,7 +47,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
         protected abstract List<ElementType> GetSelection(UIApplication uiapp);
 
-        public void SetBrowser(ChromiumWebBrowser browserObject)
+        public void SetBrowser(IBrowserService browserObject)
         {
             browser = browserObject;
         }
@@ -155,7 +154,6 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
     public class EventHandlerBsddSearch : RevitEventWrapper<string>
     {
         Logger logger = LogManager.GetCurrentClassLogger();
-
 
         // ModelessForm instance
         private Window wnd;

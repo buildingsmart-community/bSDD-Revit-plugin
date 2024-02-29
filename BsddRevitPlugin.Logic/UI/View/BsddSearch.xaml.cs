@@ -14,12 +14,12 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using CefSharp;
 using BsddRevitPlugin.Logic.IfcJson;
 using Newtonsoft.Json;
 using BsddRevitPlugin.Logic.UI.Wrappers;
 using System.Reflection;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
+using BsddRevitPlugin.Logic.UI.Services;
 
 namespace BsddRevitPlugin.Logic.UI.View
 {
@@ -28,6 +28,7 @@ namespace BsddRevitPlugin.Logic.UI.View
     /// </summary>
     public partial class BsddSearch : Window
     {
+        private readonly IBrowserService _browserService;
 
         private readonly Document _doc;
         public static UIApplication UiApp;
@@ -36,7 +37,7 @@ namespace BsddRevitPlugin.Logic.UI.View
 
         public BsddSearch(BsddBridgeData bsddBridgeData)
         {
-
+            _browserService = GlobalBrowserServiceFactory.Factory.CreateBrowserService();
             InitializeComponent();
 
             string addinLocation = Assembly.GetExecutingAssembly().Location;
@@ -44,11 +45,12 @@ namespace BsddRevitPlugin.Logic.UI.View
 
 
             // Set the address of the CefSharp browser component to the index.html file of the plugin
-            Browser.Address = addinDirectory + "/html/bsdd_search/index.html";
+            _browserService.Address = addinDirectory + "/html/bsdd_search/index.html";
             var bridgeSearch = new BsddBridge.BsddSearchBridge(bsddBridgeData);
             bridgeSearch.SetParentWindow(this);
-            Browser.JavascriptObjectRepository.Register("bsddBridge", bridgeSearch, true);
-            Browser.IsBrowserInitializedChanged += OnIsBrowserInitializedChanged;
+            _browserService.RegisterJsObject("bsddBridge", bridgeSearch, true);
+            _browserService.IsBrowserInitializedChanged += OnIsBrowserInitializedChanged;
+
 
         }
 
@@ -68,20 +70,25 @@ namespace BsddRevitPlugin.Logic.UI.View
             var jsonString = JsonConvert.SerializeObject(ifcData);
             var jsFunctionCall = $"updateSelection({jsonString});";
 
-            if (Browser.IsBrowserInitialized)
+            if (_browserService.IsBrowserInitialized)
             {
-                Browser.ExecuteScriptAsync(jsFunctionCall);
+                _browserService.ExecuteScriptAsync(jsFunctionCall);
             }
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            BrowserContainer.Children.Add((UIElement)_browserService.BrowserControl);
         }
 
         void OnIsBrowserInitializedChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            if (Browser.IsBrowserInitialized)
+            if (_browserService.IsBrowserInitialized)
             {
                 #if DEBUG
-                Browser.ShowDevTools();
+                _browserService.ShowDevTools();
                 #endif
-                Browser.ExecuteScriptAsync("CefSharp.BindObjectAsync('bsddBridge');");
+                _browserService.ExecuteScriptAsync("CefSharp.BindObjectAsync('bsddBridge');");
             }
         }
 
