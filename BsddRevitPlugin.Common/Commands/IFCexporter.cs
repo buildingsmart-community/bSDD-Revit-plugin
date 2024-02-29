@@ -1,15 +1,11 @@
-﻿using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Windows.Forms;
-using Autodesk.Revit.Attributes;
+﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.Model;
-using BsddRevitPlugin.Logic.IfcJson;
-using Autodesk.Revit.DB.IFC;
-using System.Linq;
-using System.Windows.Controls;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Windows.Forms;
 
 
 namespace BsddRevitPlugin.Common.Commands
@@ -34,14 +30,12 @@ namespace BsddRevitPlugin.Common.Commands
                 {
 
 
-                   
-                //Set IfcClassifications in the project according to the main- and filterdictionaries
-                IfcClassificationManager.UpdateClassifications(new Transaction(doc, "Update Classifications"), doc, IfcClassificationManager.GetAllIfcClassificationsInProject());
 
+                    //Set IfcClassifications in the project according to the main- and filterdictionaries
+                    IfcClassificationManager.UpdateClassifications(new Transaction(doc, "Update Classifications"), doc, IfcClassificationManager.GetAllIfcClassificationsInProject());
+
+                    //Set IFC version
                     string IFCversion = "IFC 2x3";
-
-
-
 
                     //// HIERONDER DE LINK NAAR DE PARAMETER MAPPING FILE en de EXPORTLAYERS UIT HET BESTAND
                     string fpParameterMapping = null;
@@ -53,32 +47,50 @@ namespace BsddRevitPlugin.Common.Commands
 
 
                     //Maak string van alle parameters beginnend met bsdd voor de Export User Defined Propertysets
+                    // Create a string to hold all parameters starting with bsdd for the Export User Defined Propertysets
                     string add_BSDD_UDPS = null;
+
+                    // Create a list to hold all BSDD parameters
                     IList<Parameter> param = new List<Parameter>();
+
+                    // Get all BSDD parameters from the document
                     param = GetAllBsddParameters(doc);
 
-                    // Format:
-                    // PropertySet:	<Pset Name>	I[nstance]/T[ype]	<element list separated by ','>
-                    // <Property Name 1>	<Data type>	<[opt] Revit parameter name, if different from IFC>
-                    // <Property Name 2>	<Data type>	<[opt] Revit parameter name, if different from IFC>
-                    // ...
-                    add_BSDD_UDPS += System.Environment.NewLine + System.Environment.NewLine + "PropertySet:\tBSDD\tT\tIfcElementType" + System.Environment.NewLine;
-                    List<String> existName = new List<String>();
-                    List<String> existType = new List<String>();
-                    bool exist;
-                    foreach (Parameter p in param)
+                    // Organize the BSDD parameters by property set name
+                    var organizedParameters = RearrageParamatersForEachPropertySet(param);
+
+                    // Loop through all property sets
+                    foreach (var parameters in organizedParameters)
                     {
-                        exist = false;
-                        for (var i = 0; i < existName.Count; i++)
+                        // Format:
+                        // PropertySet:	<Pset Name>	I[nstance]/T[ype]	<element list separated by ','>
+                        // <Property Name 1>	<Data type>	<[opt] Revit parameter name, if different from IFC>
+                        // <Property Name 2>	<Data type>	<[opt] Revit parameter name, if different from IFC>
+                        // ...
+                        // Add the initial format for the property set to the string
+                        add_BSDD_UDPS += System.Environment.NewLine + System.Environment.NewLine + $"PropertySet:\t{parameters.Key}\tT\tIfcElementType" + System.Environment.NewLine;
+
+                        // Loop through all parameters
+                        foreach (Parameter p in parameters.Value)
                         {
-                            if (existName[i] == p.Definition.Name.ToString() && existType[i] == p.StorageType.ToString())
+                            string parameterName = p.Definition.Name.ToString();
+
+                            // Split the definition name by '/'
+                            string[] parts = parameterName.Split('/');
+
+                            // Check if there are at least 3 parts
+                            if (parts.Length >= 4)
                             {
-                                exist = true;
+                                // Get the property set name
+                                add_BSDD_UDPS += "\t" + parts[3] + "\t";
                             }
-                        }
-                        if (exist == false)
-                        {
-                            add_BSDD_UDPS += "\t" + p.Definition.Name.ToString() + "\t";
+                            else
+                            {
+                                // Get the property set name
+                                add_BSDD_UDPS += "\t" + parameterName + "\t";
+                            }
+
+
                             //datatypes convert 
                             //C# byte, sbyte, short, ushort, int, uint, long, ulong, float, double, decimal, char, bool, object, string, DataTime
                             //Ifc Area, Boolean, ClassificationReference, ColorTemperature, Count, Currency, 
@@ -87,6 +99,8 @@ namespace BsddRevitPlugin.Common.Commands
                             //NormalisedRatio, PlaneAngle, PositiveLength, PositivePlaneAngle, PositiveRatio, Power, 
                             //Pressure, Ratio, Real, Text, ThermalTransmittance, ThermodynamicTemperature, Volume, 
                             //VolumetricFlowRate
+
+                            // Convert the parameter data type to the corresponding IFC data type and add it to the string
                             if (p.StorageType.ToString() == "String")
                             {
                                 add_BSDD_UDPS += "Text";
@@ -99,12 +113,19 @@ namespace BsddRevitPlugin.Common.Commands
                             {
                                 add_BSDD_UDPS += p.StorageType.ToString();
                             }
+
+
+                            // Add the parameter name to the string
+                            add_BSDD_UDPS += "\t" + parameterName;
+
+                            // Add a new line to the string
                             add_BSDD_UDPS += System.Environment.NewLine;
-                            existName.Add(p.Definition.Name.ToString());
-                            existType.Add(p.StorageType.ToString());
+
                         }
+                        // Create a string of all parameters starting with bsdd for the Export User Defined Propertysets
                     }
-                    //Maak string van alle parameters beginnend met bsdd voor de Export User Defined Propertysets
+
+
 
 
 
@@ -198,33 +219,33 @@ namespace BsddRevitPlugin.Common.Commands
                     //exportOptions.AddOption("UserDefinedParameterMapping", userDefinedParameterMapping);
                     string randomFileName = System.IO.Path.GetRandomFileName();
                     string tempFilePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), randomFileName.Remove(randomFileName.Length - 4) + ".txt");
-                    
+
                     using (var formP = new System.Windows.Forms.Form())
                     {
-                     //Create OpenFileDialog
+                        //Create OpenFileDialog
                         TaskDialog.Show("Pick ParameterMapping File", "Pick a file for Parameter Mapping");
                         OpenFileDialog openFileDialog = new OpenFileDialog();
                         openFileDialog.Filter = "Text Files (*.txt)|*.txt";
                         openFileDialog.FilterIndex = 1;
                         openFileDialog.Multiselect = false;
 
-                    // Show OpenFileDialog and get the result
+                        // Show OpenFileDialog and get the result
                         DialogResult resultP = openFileDialog.ShowDialog(formP);
 
-                    // Check if the user clicked OK in the OpenFileDialog
+                        // Check if the user clicked OK in the OpenFileDialog
                         if (resultP == DialogResult.OK)
                         {
-                    // Get the selected file path
+                            // Get the selected file path
                             string mappingParameterFilePath = openFileDialog.FileName;
 
                             //// NIEUW
-                            
+
                             if (File.Exists(mappingParameterFilePath))
                             {
                                 File.Copy(mappingParameterFilePath, tempFilePath, true);
                             }
 
-                            
+
                             //// NIEUW
                             //        // Add the option for IFC Export Classes Family Mapping
                             //        exportOptions.AddOption("ExportUserDefinedParameterMapping", true.ToString());
@@ -380,6 +401,37 @@ namespace BsddRevitPlugin.Common.Commands
             //param = param.Distinct().ToList();
 
             return param;
+        }
+        public Dictionary<string, IList<Parameter>> RearrageParamatersForEachPropertySet(IList<Parameter> parameters)
+        {
+            // Create a dictionary to hold the parameters grouped by property set name
+            Dictionary<string, IList<Parameter>> propertySetGroups = new Dictionary<string, IList<Parameter>>();
+
+            // Loop through all parameters
+            foreach (Parameter p in parameters)
+            {
+                // Split the definition name by '/'
+                string[] parts = p.Definition.Name.Split('/');
+
+                // Check if there are at least 3 parts
+                if (parts.Length >= 3)
+                {
+                    // Get the property set name
+                    string propertySetName = parts[2];
+
+                    // Check if the property set name is already in the dictionary
+                    if (!propertySetGroups.ContainsKey(propertySetName))
+                    {
+                        // If not, add it with a new list
+                        propertySetGroups[propertySetName] = new List<Parameter>();
+                    }
+
+                    // Add the parameter to the list for this property set name
+                    propertySetGroups[propertySetName].Add(p);
+                }
+            }
+
+            return propertySetGroups;
         }
     }
 }
