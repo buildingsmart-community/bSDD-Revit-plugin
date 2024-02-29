@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+	<AddIn Type="Application">
+		<Name>bSDD-Revit-plugin</Name>
+		<FullClassName>BsddRevitPlugin.V2023.Startup</FullClassName>
+		<Text>bSDD Revit plugin</Text>
+		<Description>Add data from the buildingSMART Data Dictionary to your Revit models</Description>
+		<VisibilityMode>AlwaysVisible</VisibilityMode>
+		<Assembly>BsddRevitPlugin/BsddRevitPlugin.dll</Assembly>
+		<AddInId>efe16d50-a954-42ce-b65d-90972fe94ae7</AddInId>
+		<VendorId>WVHM</VendorId>
+		<VendorDescription></VendorDescription>
+	</AddIn>
+</RevitAddIns>
