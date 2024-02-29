@@ -111,7 +111,7 @@ namespace BsddRevitPlugin.Logic.Model
             {
                 using (Transaction tx = new Transaction(doc))
                 {
-                    tx.Start("Update Parameters");
+                    tx.Start("Save bsdd data to element");
 
                     // Create a classification set in which every dictionary will be collected
                     HashSet<IfcClassification> dictionaryCollection = new HashSet<IfcClassification>();
