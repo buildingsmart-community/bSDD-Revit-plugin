@@ -29,6 +29,7 @@ namespace BsddRevitPlugin.Common.Commands
             Logger logger = LogManager.GetCurrentClassLogger();
             try
             {
+
                 UIApplication uiApp = commandData.Application;
                 UIDocument uiDoc = uiApp.ActiveUIDocument;
                 Document doc = uiDoc.Document;
@@ -517,15 +518,16 @@ namespace BsddRevitPlugin.Common.Commands
             configuration.SplitWallsAndColumns = false;
 
             //Additional Content
-            #if REVIT_2023
+            //Should check if this works
+#if REVIT_2023
             configuration.ExportLinkedFiles = false;
             configuration.ActiveViewId = document.ActiveView.Id.IntegerValue;
-            #elif REVIT_2024
+#elif REVIT_2024
             configuration.ExportLinkedFiles = LinkedFileExportAs.DontExport;
             configuration.ActiveViewId = document.ActiveView.Id;
-            #else
+#else
             // Default option
-            #endif
+#endif
             configuration.VisibleElementsOfCurrentView = true;
             configuration.ExportRoomsInView = false;
             configuration.IncludeSteelElements = true;
