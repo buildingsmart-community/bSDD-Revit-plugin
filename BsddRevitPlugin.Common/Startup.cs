@@ -5,6 +5,7 @@ using Autodesk.Revit.DB.Events;
 using Autodesk.Revit.DB.ExtensibleStorage;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Events;
+using BIM.IFC.Export.UI;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
 using BsddRevitPlugin.Logic.UI.Services;
 using BsddRevitPlugin.Logic.UI.View;
@@ -48,6 +49,10 @@ namespace BsddRevitPlugin.Common
         }
 
         /// <summary>
+        /// The binding to the Export IFC command in Revit.
+        /// </summary>
+        private AddInCommandBinding m_ifcCommandBinding;
+        /// <summary>
         /// This method is called when the add-in is started up. It registers a dockable panel for the Revit project and adds ribbon buttons to the UI.
         /// </summary>
         /// <param name="application">The UIControlledApplication object representing the Revit application.</param>
@@ -60,8 +65,6 @@ namespace BsddRevitPlugin.Common
 
             // Subscribe to the DocumentOpened event
             _application.ControlledApplication.DocumentOpened += Application_DocumentOpened;
-
-
 
 
             // Register Dockable panel for Revit project when it is opened.

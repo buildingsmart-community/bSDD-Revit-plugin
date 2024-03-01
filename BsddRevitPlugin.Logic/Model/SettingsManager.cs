@@ -116,7 +116,7 @@ namespace BsddRevitPlugin.Logic.Model
                 {
                     using (Transaction tx = new Transaction(doc))
                     {
-                        tx.Start("Delete dataStorage");
+                        tx.Start("Delete settings dataStorage");
                         dataStorage.DeleteEntity(schema);
                         tx.Commit();
                     }
@@ -162,7 +162,7 @@ namespace BsddRevitPlugin.Logic.Model
                 {
                     using (Transaction tx = new Transaction(doc))
                     {
-                        tx.Start("Save dataStorage");
+                        tx.Start("Create new settings in DataStorage");
 
                         dataStorage = DataStorage.Create(doc);
 
@@ -184,7 +184,7 @@ namespace BsddRevitPlugin.Logic.Model
             {
                 using (Transaction tx = new Transaction(doc))
                 {
-                    tx.Start("Update dataStorage");
+                    tx.Start("Update settings in DataStorage");
                     dataStorage.SetEntity(entity);
                     tx.Commit();
                 }
