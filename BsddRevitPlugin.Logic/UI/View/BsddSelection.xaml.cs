@@ -27,7 +27,8 @@ namespace BsddRevitPlugin.Logic.UI.View
         EventMakeSelection SelectEHMS;
         EventSelectAll SelectEHSA;
         EventSelectView SelectEHSV;
-        ExternalEvent SelectEEMS, SelectEESA, SelectEESV;
+        EventUseLastSelection eventUseLastSelection;
+        ExternalEvent SelectEEMS, SelectEESA, SelectEESV, SelectEULS;
         private BsddBridgeData _inputBsddBridgeData;
 
 
@@ -48,28 +49,31 @@ namespace BsddRevitPlugin.Logic.UI.View
             string addinLocation = Assembly.GetExecutingAssembly().Location;
             string addinDirectory = System.IO.Path.GetDirectoryName(addinLocation);
 
-            // Set the address of the CefSharp browser component to the index.html file of the plugin
-            _browserService.Address = addinDirectory + "/html/bsdd_selection/index.html";
-            _browserService.RegisterJsObject("bsddBridge", new BsddBridge.BsddSelectionBridge(), true);
-            _browserService.IsBrowserInitializedChanged += OnIsBrowserInitializedChanged;
-
-            // Sort the list of elements by category, family, and type
-            PropertyGroupDescription groupDescription = new PropertyGroupDescription("Category");
-
             // Initialize the events
             SelectEHMS = new EventMakeSelection();
             SelectEHSA = new EventSelectAll();
             SelectEHSV = new EventSelectView();
+            eventUseLastSelection = new EventUseLastSelection();
 
             // Give current browser to event
             SelectEHMS.SetBrowser(_browserService);
             SelectEHSA.SetBrowser(_browserService);
             SelectEHSV.SetBrowser(_browserService);
+            eventUseLastSelection.SetBrowser(_browserService);
 
             // Initialize external events
             SelectEEMS = ExternalEvent.Create(SelectEHMS);
             SelectEESA = ExternalEvent.Create(SelectEHSA);
             SelectEESV = ExternalEvent.Create(SelectEHSV);
+            SelectEULS = ExternalEvent.Create(eventUseLastSelection);
+
+            // Set the address of the CefSharp browser component to the index.html file of the plugin
+            _browserService.Address = addinDirectory + "/html/bsdd_selection/index.html";
+            _browserService.RegisterJsObject("bsddBridge", new BsddSelectionBridge(SelectEULS), true);
+            _browserService.IsBrowserInitializedChanged += OnIsBrowserInitializedChanged;
+
+            // Sort the list of elements by category, family, and type
+            PropertyGroupDescription groupDescription = new PropertyGroupDescription("Category");
 
             // Add the selection methods to the selection method combo box
             SM.Items.Add(new ComboBoxItem() { Content = "Selection method:", IsSelected = true, IsEnabled = false });
@@ -226,9 +230,9 @@ namespace BsddRevitPlugin.Logic.UI.View
             }
             if (_browserService.IsBrowserInitialized)
             {
-                #if DEBUG
+#if DEBUG
                 _browserService.ShowDevTools();
-                #endif
+#endif
                 _browserService.ExecuteScriptAsync("CefSharp.BindObjectAsync('bsddBridge');");
             }
         }
