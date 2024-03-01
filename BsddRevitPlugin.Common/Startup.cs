@@ -7,6 +7,7 @@ using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Events;
 using BIM.IFC.Export.UI;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
+using BsddRevitPlugin.Logic.UI.Services;
 using BsddRevitPlugin.Logic.UI.View;
 using BsddRevitPlugin.Resources;
 using NLog;
@@ -26,6 +27,17 @@ namespace BsddRevitPlugin.Common
     [Regeneration(RegenerationOption.Manual)]
     public class Startup : IExternalApplication
     {
+        private UIControlledApplication _application;
+        private IBrowserService _selectionBrowserService;
+
+        public Startup(UIControlledApplication application, IBrowserServiceFactory browserServiceFactory)
+        {
+            GlobalBrowserServiceFactory.Factory = browserServiceFactory;
+
+            _application = application;
+            _selectionBrowserService = browserServiceFactory.CreateBrowserService();
+        }
+
         /// <summary>
         /// This method is called when the add-in is shut down.
         /// </summary>
@@ -48,12 +60,11 @@ namespace BsddRevitPlugin.Common
         public Result OnStartup(UIControlledApplication application)
         {
 
-
             // Subscribe to the DocumentCreated event
-            application.ControlledApplication.DocumentCreated += Application_DocumentCreated;
+            _application.ControlledApplication.DocumentCreated += Application_DocumentCreated;
 
             // Subscribe to the DocumentOpened event
-            application.ControlledApplication.DocumentOpened += Application_DocumentOpened;
+            _application.ControlledApplication.DocumentOpened += Application_DocumentOpened;
 
 
             // Register Dockable panel for Revit project when it is opened.
@@ -163,7 +174,7 @@ namespace BsddRevitPlugin.Common
         private void RegisterDockPanel(UIControlledApplication app)
         {
             // Create a new BsddSelection object and link it to the main window.
-            BsddSelection MainDockableWindow = new BsddSelection();
+            BsddSelection MainDockableWindow = new BsddSelection(_selectionBrowserService);
             DockablePaneProviderData data = new DockablePaneProviderData();
 
             // Create a new DockablePane Id.

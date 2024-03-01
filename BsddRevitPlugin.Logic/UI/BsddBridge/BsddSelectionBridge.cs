@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.Model;
+using BsddRevitPlugin.Logic.UI.View;
 using BsddRevitPlugin.Logic.UI.Wrappers;
 using Newtonsoft.Json;
 using System.Collections.Generic;
@@ -15,6 +16,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
     /// </summary>
     public class BsddSelectionBridge
     {
+        private ExternalEvent _bsddLastSelectionEvent;
         private EventHandlerBsddSearch _eventHandlerBsddSearch;
         private UpdateElementtypeWithIfcData _updateElementtypeWithIfcData;
         private UpdateSettings _updateSettings;
@@ -24,9 +26,10 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         /// <summary>
         /// Initializes a new instance of the <see cref="BsddSelectionBridge"/> class.
         /// </summary>
-        public BsddSelectionBridge()
+        public BsddSelectionBridge(ExternalEvent bsddLastSelectionEvent)
         {
-            _eventHandlerBsddSearch = new EventHandlerBsddSearch();
+            _bsddLastSelectionEvent = bsddLastSelectionEvent;
+            _eventHandlerBsddSearch = new EventHandlerBsddSearch(_bsddLastSelectionEvent);
             _updateSettings = new UpdateSettings();
             _updateElementtypeWithIfcData = new UpdateElementtypeWithIfcData();
             _exEventUpdateElement = ExternalEvent.Create(_updateElementtypeWithIfcData);
@@ -73,6 +76,9 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             }
             _updateSettings.SetSettings(settings);
             _exEventUpdateSettings.Raise();
+
+            // Update the selection UI with the last selection
+            _bsddLastSelectionEvent.Raise();
         }
         public string loadSettings()
         {
