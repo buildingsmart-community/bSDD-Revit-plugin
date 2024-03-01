@@ -1,4 +1,6 @@
-﻿using Autodesk.Revit.UI;
+﻿
+#define REVIT_2024
+using Autodesk.Revit.UI;
 
 namespace BsddRevitPlugin.V2024
 {
@@ -8,6 +10,8 @@ namespace BsddRevitPlugin.V2024
         {
             var browserServiceFactory = new Services.BrowserServiceFactory2024();
             var startup = new BsddRevitPlugin.Common.Startup(application, browserServiceFactory);
+
+
             return startup.OnStartup(application);
         }
 

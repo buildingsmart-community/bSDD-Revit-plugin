@@ -1,27 +1,17 @@
 ﻿using Autodesk.Revit.Attributes;
-using Autodesk.Revit.Creation;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExtensibleStorage;
-using Autodesk.Revit.DB.IFC;
 using Autodesk.Revit.UI;
-using Autodesk.Revit.UI.Events;
 using BIM.IFC.Export.UI;
-using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.Model;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Schema;
 using NLog;
-using Revit.IFC.Common.Enums;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Web.Script.Serialization;
-using System.Windows.Controls;
 using System.Windows.Forms;
 using Document = Autodesk.Revit.DB.Document;
-using OpenFileDialog = System.Windows.Forms.OpenFileDialog;
 using SaveFileDialog = System.Windows.Forms.SaveFileDialog;
 
 
@@ -39,6 +29,7 @@ namespace BsddRevitPlugin.Common.Commands
             Logger logger = LogManager.GetCurrentClassLogger();
             try
             {
+
                 UIApplication uiApp = commandData.Application;
                 UIDocument uiDoc = uiApp.ActiveUIDocument;
                 Document doc = uiDoc.Document;
@@ -65,8 +56,6 @@ namespace BsddRevitPlugin.Common.Commands
                 //ifcCommandOverrideApplication.OnIFCExport(uiApp, commandEvent);
 
 
-                //Pass the setting of the myIFCExportConfiguration to the IFCExportOptions
-                bsddIFCExportConfiguration.UpdateOptions(IFCExportOptions, activeViewId);
 
                 using (Transaction transaction = new Transaction(doc, "Export IFC"))
                 {
@@ -169,7 +158,7 @@ namespace BsddRevitPlugin.Common.Commands
                     string randomFileName = System.IO.Path.GetRandomFileName();
                     string tempFilePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), randomFileName.Remove(randomFileName.Length - 4) + ".txt");
 
-                    
+
                     #region exportOptions hardcoded
                     // Start IFC Export Options (when
                     IFCExportOptions exportOptions = new IFCExportOptions();
@@ -290,8 +279,14 @@ namespace BsddRevitPlugin.Common.Commands
                         writer.WriteLine(add_BSDD_UDPS);
                     }
 
-                    IFCExportOptions.AddOption("ExportUserDefinedPsetsFileName", tempFilePath.ToString());
+                    //IFCExportOptions.AddOption("ExportUserDefinedParameterMapping", true.ToString());
+                    //IFCExportOptions.AddOption("ExportUserDefinedPsetsFileName", tempFilePath.ToString());
 
+                    bsddIFCExportConfiguration.ExportUserDefinedPsets = true;
+                    bsddIFCExportConfiguration.ExportUserDefinedPsetsFileName = tempFilePath;   
+
+                    //Pass the setting of the myIFCExportConfiguration to the IFCExportOptions
+                    bsddIFCExportConfiguration.UpdateOptions(IFCExportOptions, activeViewId);
 
                     //// Add option with a new IFC Class System
                     //using (var form = new System.Windows.Forms.Form())
@@ -509,7 +504,8 @@ namespace BsddRevitPlugin.Common.Commands
             }
             return configuration;
         }
-        public static IFCExportConfiguration GetDefaultExportConfiguration(Autodesk.Revit.DB.Document document) {
+        public static IFCExportConfiguration GetDefaultExportConfiguration(Autodesk.Revit.DB.Document document)
+        {
 
             //Create an instance of the IFC Export Configuration Class
             IFCExportConfiguration configuration = IFCExportConfiguration.CreateDefaultConfiguration();
@@ -526,9 +522,17 @@ namespace BsddRevitPlugin.Common.Commands
             configuration.SplitWallsAndColumns = false;
 
             //Additional Content
+            //Should check if this works
+#if REVIT_2023
             configuration.ExportLinkedFiles = false;
-            configuration.VisibleElementsOfCurrentView = true;
             configuration.ActiveViewId = document.ActiveView.Id.IntegerValue;
+#elif REVIT_2024
+            configuration.ExportLinkedFiles = LinkedFileExportAs.DontExport;
+            configuration.ActiveViewId = document.ActiveView.Id;
+#else
+            // Default option
+#endif
+            configuration.VisibleElementsOfCurrentView = true;
             configuration.ExportRoomsInView = false;
             configuration.IncludeSteelElements = true;
             configuration.Export2DElements = false;
@@ -563,8 +567,8 @@ namespace BsddRevitPlugin.Common.Commands
 
             //Geographic Reference
 
-            return configuration; 
-        
+            return configuration;
+
         }
         public static IList<DataStorage> GetSavedConfigurations(Autodesk.Revit.DB.Document document, Schema schema)
         {
