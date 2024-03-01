@@ -4,9 +4,8 @@ using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.Model;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
 using BsddRevitPlugin.Logic.UI.DockablePanel;
+using BsddRevitPlugin.Logic.UI.Services;
 using BsddRevitPlugin.Logic.UI.View;
-using CefSharp;
-using CefSharp.Wpf;
 using Newtonsoft.Json;
 using NLog;
 using System.Collections.Generic;
@@ -25,22 +24,30 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
     {
         Logger logger = LogManager.GetCurrentClassLogger();
 
-        static List<ElementType> elemList = new List<ElementType>();
+        // This list will store the last selected elements
+        public static List<ElementType> LastSelectedElements { get; private set; } = new List<ElementType>();
 
         protected Select Selectorlist = new Select();
-        ChromiumWebBrowser browser;
+        private IBrowserService browser;
 
         public override void Execute(UIApplication uiapp, string args)
         {
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uidoc.Document;
-            elemList = GetSelection(uiapp);
 
-            // Filter elements to remove non-element categories
-            elemList = ListFilter(elemList);
+            if (!(this is EventUseLastSelection))
+            {
+                var elemList = GetSelection(uiapp);
+                // Update LastSelectedElements for other events
+                LastSelectedElements.Clear();
+                LastSelectedElements.AddRange(elemList);
+
+                // Filter elements to remove non-element categories
+                LastSelectedElements = ListFilter(LastSelectedElements);
+            }
 
             // Pack data into json format
-            List<IfcEntity> selectionData = SelectionToIfcJson(doc, elemList);
+            List<IfcEntity> selectionData = SelectionToIfcJson(doc, LastSelectedElements);
 
             // Send MainData to BsddSelection html
             UpdateBsddSelection(selectionData);
@@ -48,7 +55,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
         protected abstract List<ElementType> GetSelection(UIApplication uiapp);
 
-        public void SetBrowser(ChromiumWebBrowser browserObject)
+        public void SetBrowser(IBrowserService browserObject)
         {
             browser = browserObject;
         }
@@ -99,6 +106,15 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         protected override List<ElementType> GetSelection(UIApplication uiapp)
         {
             return Selectorlist.AllElementsView(uiapp);
+        }
+    }
+
+    public class EventUseLastSelection : EventRevitSelection
+    {
+        protected override List<ElementType> GetSelection(UIApplication uiapp)
+        {
+            // Use the last selected elements
+            return EventRevitSelection.LastSelectedElements;
         }
     }
 
@@ -156,15 +172,20 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
     {
         Logger logger = LogManager.GetCurrentClassLogger();
 
-
         // ModelessForm instance
         private Window wnd;
         private BsddSearch _bsddSearch;
         private BsddBridgeData _bsddBridgeData;
+        private ExternalEvent _bsddLastSelectionEvent;
+
+        public EventHandlerBsddSearch(ExternalEvent bsddLastSelectionEvent)
+        {
+            _bsddLastSelectionEvent = bsddLastSelectionEvent;
+        }
 
         public override void Execute(UIApplication uiapp, string args)
         {
-            _bsddSearch = new BsddSearch(_bsddBridgeData);
+            _bsddSearch = new BsddSearch(_bsddBridgeData, _bsddLastSelectionEvent);
 
             HwndSource hwndSource = HwndSource.FromHwnd(uiapp.MainWindowHandle);
             wnd = hwndSource.RootVisual as Window;
