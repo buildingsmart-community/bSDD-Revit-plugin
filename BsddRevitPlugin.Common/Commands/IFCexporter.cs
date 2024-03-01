@@ -4,6 +4,7 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExtensibleStorage;
 using Autodesk.Revit.DB.IFC;
 using Autodesk.Revit.UI;
+using Autodesk.Revit.UI.Events;
 using BIM.IFC.Export.UI;
 using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.Model;
@@ -19,6 +20,7 @@ using System.Linq;
 using System.Web.Script.Serialization;
 using System.Windows.Controls;
 using System.Windows.Forms;
+using Document = Autodesk.Revit.DB.Document;
 using OpenFileDialog = System.Windows.Forms.OpenFileDialog;
 using SaveFileDialog = System.Windows.Forms.SaveFileDialog;
 
@@ -42,80 +44,37 @@ namespace BsddRevitPlugin.Common.Commands
                 Document doc = uiDoc.Document;
                 ElementId activeViewId = uiDoc.ActiveView.Id;
 
+
+                //Create an Instance of the IFC Export Class
+                IFCExportOptions IFCExportOptions = new IFCExportOptions();
+
+                //Get the bsdd confguration from document or create a new one
+                IFCExportConfiguration bsddIFCExportConfiguration = GetOrSetBsddConfiguration(doc);
+
+                //Somehow UpdateOptions() can't handle the activeViewId, so we set it manually to -1
+                bsddIFCExportConfiguration.ActivePhaseId = -1;
+
+                // Create an instance of the IFCCommandOverrideApplication class
+                IFCCommandOverrideApplication ifcCommandOverrideApplication = new IFCCommandOverrideApplication();
+
+                ////Trying to fix phases
+                ////Also check https://forums.autodesk.com/t5/revit-api-forum/ifc-export-options/td-p/9686404
+                //// Create an instance of CommandEvent
+                //CommandEventArgs commandEvent = null;
+                //// Call the OnIFCExport methods
+                //ifcCommandOverrideApplication.OnIFCExport(uiApp, commandEvent);
+
+
+                //Pass the setting of the myIFCExportConfiguration to the IFCExportOptions
+                bsddIFCExportConfiguration.UpdateOptions(IFCExportOptions, activeViewId);
+
                 using (Transaction transaction = new Transaction(doc, "Export IFC"))
                 {
 
-
-                    //Create an Instance of the IFC Export Class
-                    IFCExportOptions IFCExportOptions = new IFCExportOptions();
-
-                    //Get the bsdd confguration from document or create a new one
-                    IFCExportConfiguration bsddIFCExportConfiguration = GetOrSetBsddConfiguration(doc);
-
-                    //Define the of a 3d view to export
-                    ElementId ExportViewId = null;
-
-                    //Pass the setting of the myIFCExportConfiguration to the IFCExportOptions
-                    bsddIFCExportConfiguration.UpdateOptions(IFCExportOptions, activeViewId);
-
-
-                    //AddSavedConfigurations(doc);
-                    //IFCExportConfigurationsMap configurationsMap = new IFCExportConfigurationsMap();
-                    //configurationsMap.AddBuiltInConfigurations();
-                    //configurationsMap.AddSavedConfigurations();
-                    //configurationsMap.AddOrReplace(myIFCExportConfiguration);
-                    //configurationsMap.UpdateSavedConfigurations(configurationsMap);
-
-                    //UpdateSavedConfigurations(doc, configurationsMap);
-
-
-                    //Schema schema = GetExportSchema();
-                    //var savedConfigurations = GetSavedConfigurations(doc, schema);
-
-                    //foreach (var storedSetup in savedConfigurations)
-                    //{
-                    //    try
-                    //    {
-                    //        Entity configEntity = storedSetup.GetEntity(schema);
-                    //        string configData = configEntity.Get<string>(s_configMapField);
-
-                    //    }
-                    //    catch (Exception e)
-                    //    {
-                    //        logger.Info(e);
-                    //    }
-                    //}
-                    //myIFCExportConfiguration.Name = "Test";
-                    //myIFCExportConfiguration.ActiveViewId = activeViewId.IntegerValue;
-                    //myIFCExportConfiguration.ExportUserDefinedPsets = true;
-                    //myIFCExportConfiguration.VisibleElementsOfCurrentView = true;
-
-
-                    //AddOrReplace(myIFCExportConfiguration);
-                    //UpdateSavedConfigurations(doc, new IFCExportConfigurationsMap());
-
-
-                    //IFCExportConfigurationsMap test = new IFCExportConfigurationsMap();
-                    //test.UpdateSavedConfigurations();
-
-                    //IFCExportConfigurationsMap.UpdateSavedConfigurations();
-
-                    //IFCExportConfigurationsMap.GetSavedConfigurations(schema);
-
-                    //Set IfcClassifications in the project according to the main- and filterdictionaries
                     IfcClassificationManager.UpdateClassifications(new Transaction(doc, "Update Classifications"), doc, IfcClassificationManager.GetAllIfcClassificationsInProject());
 
                     //Set IFC version
                     string IFCversion = "IFC 2x3";
-
-                    //// HIERONDER DE LINK NAAR DE PARAMETER MAPPING FILE en de EXPORTLAYERS UIT HET BESTAND
-                    string fpParameterMapping = null;
-                    string fpExportLayers = null;
-                    //// HIERONDER DE LINK NAAR DE PARAMETER MAPPING FILE en de EXPORTLAYERS UIT HET BESTAND
-
-
-
-
 
                     //Maak string van alle parameters beginnend met bsdd voor de Export User Defined Propertysets
                     // Create a string to hold all parameters starting with bsdd for the Export User Defined Propertysets
@@ -210,63 +169,7 @@ namespace BsddRevitPlugin.Common.Commands
                     string randomFileName = System.IO.Path.GetRandomFileName();
                     string tempFilePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), randomFileName.Remove(randomFileName.Length - 4) + ".txt");
 
-                    #region Try to get in-session: did not work
-
-                    // Get the active IFC export configuration
-                    IFCExportConfiguration activeConfiguration = IFCExportConfiguration.GetInSession();
-                    IFCExportConfigurationsMap iFCExportConfigurationsMap = new IFCExportConfigurationsMap();
-
-                    //var conf = iFCExportConfigurationsMap.AddBuiltInConfigurations();
-
-                    IFCExportConfiguration inSessionConfiguration = new IFCExportConfiguration
-                    {
-
-                    };
-
-                    // Create a new IFC export options object
-                    IFCExportOptions exportOpt = new IFCExportOptions();
-
-                    // Set the options based on the active configuration
-                    exportOpt.FileVersion = activeConfiguration.IFCVersion;
-                    exportOpt.SpaceBoundaryLevel = activeConfiguration.SpaceBoundaries;
-                    exportOpt.ExportBaseQuantities = activeConfiguration.ExportBaseQuantities;
-                    exportOpt.WallAndColumnSplitting = activeConfiguration.SplitWallsAndColumns;
-                    exportOpt.AddOption("VisibleElementsOfCurrentView", activeConfiguration.VisibleElementsOfCurrentView.ToString());
-                    exportOpt.AddOption("Use2DRoomBoundaryForVolume", activeConfiguration.Use2DRoomBoundaryForVolume.ToString());
-                    exportOpt.AddOption("UseFamilyAndTypeNameForReference", activeConfiguration.UseFamilyAndTypeNameForReference.ToString());
-                    exportOpt.AddOption("ExportInternalRevitPropertySets", activeConfiguration.ExportInternalRevitPropertySets.ToString());
-                    exportOpt.AddOption("ExportIFCCommonPropertySets", activeConfiguration.ExportIFCCommonPropertySets.ToString());
-                    exportOpt.AddOption("Export2DElements", activeConfiguration.Export2DElements.ToString());
-                    exportOpt.AddOption("ExportPartsAsBuildingElements", activeConfiguration.ExportPartsAsBuildingElements.ToString());
-                    exportOpt.AddOption("UseActiveViewGeometry", activeConfiguration.UseActiveViewGeometry.ToString());
-                    exportOpt.AddOption("ExportSpecificSchedules", activeConfiguration.ExportSpecificSchedules.ToString());
-                    exportOpt.AddOption("IncludeSiteElevation", activeConfiguration.IncludeSiteElevation.ToString());
-                    exportOpt.AddOption("UseOnlyTriangulation", activeConfiguration.UseOnlyTriangulation.ToString());
-                    exportOpt.AddOption("ExportBoundingBox", activeConfiguration.ExportBoundingBox.ToString());
-                    exportOpt.AddOption("ExportSolidModelRep", activeConfiguration.ExportSolidModelRep.ToString());
-                    exportOpt.AddOption("ExportSchedulesAsPsets", activeConfiguration.ExportSchedulesAsPsets.ToString());
-                    exportOpt.AddOption("ExportUserDefinedPsetsFileName", activeConfiguration.ExportUserDefinedPsetsFileName.ToString());
-                    exportOpt.AddOption("ExportLinkedFiles", activeConfiguration.ExportLinkedFiles.ToString());
-                    exportOpt.AddOption("IncludeSteelElements", activeConfiguration.IncludeSteelElements.ToString());
-                    exportOpt.AddOption("StoreIFCGUID", true.ToString());
-                    exportOpt.FilterViewId = new ElementId(activeConfiguration.ActiveViewId);
-
-                    if (param.Count > 0)
-                    {
-                        exportOpt.AddOption("ExportUserDefinedPsets", true.ToString());
-                        exportOpt.AddOption("ExportUserDefinedParameterMappingFileName", tempFilePath);
-
-                    }
-                    else
-                    {
-                        exportOpt.AddOption("ExportUserDefinedPsets", activeConfiguration.ExportUserDefinedPsets.ToString());
-
-                    }
-
-                    logger.Info($"exportOptions {exportOpt.FileVersion}");
-                    logger.Info($"exportOptions ExportBaseQuantities {exportOpt.ExportBaseQuantities}");
-
-                    #endregion
+                    
                     #region exportOptions hardcoded
                     // Start IFC Export Options (when
                     IFCExportOptions exportOptions = new IFCExportOptions();
@@ -373,7 +276,7 @@ namespace BsddRevitPlugin.Common.Commands
 
 
                     // Get the selected file path
-                    string mappingParameterFilePath = activeConfiguration.ExportUserDefinedPsetsFileName;
+                    string mappingParameterFilePath = bsddIFCExportConfiguration.ExportUserDefinedParameterMappingFileName;
 
                     //Copy user defined parameter mapping file to temp file
                     if (File.Exists(mappingParameterFilePath))
@@ -387,71 +290,32 @@ namespace BsddRevitPlugin.Common.Commands
                         writer.WriteLine(add_BSDD_UDPS);
                     }
 
-
-                    ////using (var formP = new System.Windows.Forms.Form())
-                    ////{
-                    ////    //Create OpenFileDialog
-                    ////    TaskDialog.Show("Pick ParameterMapping File", "Pick a file for Parameter Mapping");
-                    ////    OpenFileDialog openFileDialog = new OpenFileDialog();
-                    ////    openFileDialog.Filter = "Text Files (*.txt)|*.txt";
-                    ////    openFileDialog.FilterIndex = 1;
-                    ////    openFileDialog.Multiselect = false;
-
-                    ////    // Show OpenFileDialog and get the result
-                    ////    DialogResult resultP = openFileDialog.ShowDialog(formP);
-
-                    ////    // Check if the user clicked OK in the OpenFileDialog
-                    ////    if (resultP == DialogResult.OK)
-                    ////    {
-                    ////        // Get the selected file path
-                    ////        string mappingParameterFilePath = openFileDialog.FileName;
-
-                    ////        //// NIEUW
-
-                    ////        if (File.Exists(mappingParameterFilePath))
-                    ////        {
-                    ////            File.Copy(mappingParameterFilePath, tempFilePath, true);
-                    ////        }
+                    IFCExportOptions.AddOption("ExportUserDefinedPsetsFileName", tempFilePath.ToString());
 
 
-                    ////        //// NIEUW
-                    ////        //        // Add the option for IFC Export Classes Family Mapping
-                    ////        //        exportOptions.AddOption("ExportUserDefinedParameterMapping", true.ToString());
-                    ////        //        exportOptions.AddOption("ExportUserDefinedParameterMappingFileName", mappingParameterFilePath);
-                    ////    }
-                    ////    using (StreamWriter writer = new StreamWriter(tempFilePath, true))
-                    ////    {
-                    ////        writer.WriteLine(add_BSDD_UDPS);
-                    ////    }
-                    ////}
+                    //// Add option with a new IFC Class System
+                    //using (var form = new System.Windows.Forms.Form())
+                    //{
+                    //    // Create OpenFileDialog
+                    //    TaskDialog.Show("Export Layers", "Pick a file for Export Layers");
+                    //    OpenFileDialog openFileDialog = new OpenFileDialog();
+                    //    openFileDialog.Filter = "Text Files (*.txt)|*.txt";
+                    //    openFileDialog.FilterIndex = 1;
+                    //    openFileDialog.Multiselect = false;
 
+                    //    // Show OpenFileDialog and get the result
+                    //    DialogResult result = openFileDialog.ShowDialog(form);
 
+                    //    // Check if the user clicked OK in the OpenFileDialog
+                    //    if (result == DialogResult.OK)
+                    //    {
+                    //        // Get the selected file path
+                    //        string mappingFilePath = openFileDialog.FileName;
 
-
-                    // Add option with a new IFC Class System
-
-                    using (var form = new System.Windows.Forms.Form())
-                    {
-                        // Create OpenFileDialog
-                        TaskDialog.Show("Export Layers", "Pick a file for Export Layers");
-                        OpenFileDialog openFileDialog = new OpenFileDialog();
-                        openFileDialog.Filter = "Text Files (*.txt)|*.txt";
-                        openFileDialog.FilterIndex = 1;
-                        openFileDialog.Multiselect = false;
-
-                        // Show OpenFileDialog and get the result
-                        DialogResult result = openFileDialog.ShowDialog(form);
-
-                        // Check if the user clicked OK in the OpenFileDialog
-                        if (result == DialogResult.OK)
-                        {
-                            // Get the selected file path
-                            string mappingFilePath = openFileDialog.FileName;
-
-                            // Add the option for IFC Export Classes Family Mapping
-                            exportOptions.AddOption("ExportLayers", mappingFilePath);
-                        }
-                    }
+                    //        // Add the option for IFC Export Classes Family Mapping
+                    //        exportOptions.AddOption("ExportLayers", mappingFilePath);
+                    //    }
+                    //}
 
 
                     TaskDialog.Show("IFC-Export", "Save IFC As");
@@ -475,7 +339,8 @@ namespace BsddRevitPlugin.Common.Commands
                         if (!string.IsNullOrEmpty(filePath))
                         {
                             // Export the IFC file
-                            doc.Export(directory, fileName, exportOpt);
+                            //doc.Export(directory, fileName, exportOpt);
+                            doc.Export(directory, fileName, IFCExportOptions);
 
                             // Commit the transaction
                             transaction.Commit();
@@ -572,7 +437,7 @@ namespace BsddRevitPlugin.Common.Commands
         }
 
         // bSDD plugin settings schema ID
-        private Schema m_jsonSchema = null;
+        private Schema m_jsonSchema = GetExportSchema();
         private static Guid s_jsonSchemaId = new Guid("c2a3e6fe-ce51-4f35-8ff1-20c34567b687");
         private const string ifcExportFieldName = "IFCExportConfigurationMap";
         private const string s_configMapField = "MapField";
@@ -630,13 +495,18 @@ namespace BsddRevitPlugin.Common.Commands
             IFCExportConfiguration configuration = GetDefaultExportConfiguration(document);
 
             //Add to DataStorage
-            DataStorage configStorage;
-            configStorage = DataStorage.Create(document);
-            Entity mapEntity = new Entity(m_jsonSchema);
-            string configData = configuration.SerializeConfigToJson();
-            mapEntity.Set<string>(s_configMapField, configData);
-            configStorage.SetEntity(mapEntity);
 
+            using (Transaction transaction = new Transaction(document, "Create DataStorage"))
+            {
+                transaction.Start();
+                DataStorage configStorage;
+                configStorage = DataStorage.Create(document);
+                Entity mapEntity = new Entity(m_jsonSchema);
+                string configData = configuration.SerializeConfigToJson();
+                mapEntity.Set<string>(s_configMapField, configData);
+                configStorage.SetEntity(mapEntity);
+                transaction.Commit();
+            }
             return configuration;
         }
         public static IFCExportConfiguration GetDefaultExportConfiguration(Autodesk.Revit.DB.Document document) {
@@ -644,12 +514,14 @@ namespace BsddRevitPlugin.Common.Commands
             //Create an instance of the IFC Export Configuration Class
             IFCExportConfiguration configuration = IFCExportConfiguration.CreateDefaultConfiguration();
 
+            configuration.Name = bsddExportConfigurationName;
+
             //Apply the IFC Export Setting (Those are equivalent to the Export Setting in the IFC Export User Interface)
             //General
-            configuration.IFCVersion = IFCVersion.IFC2x3;
+            configuration.IFCVersion = IFCVersion.IFC2x3CV2;
             configuration.ExchangeRequirement = 0;
             configuration.IFCFileType = 0;
-            configuration.ActivePhaseId = 0;
+            configuration.ActivePhaseId = -1;
             configuration.SpaceBoundaries = 0;
             configuration.SplitWallsAndColumns = false;
 
@@ -694,167 +566,13 @@ namespace BsddRevitPlugin.Common.Commands
             return configuration; 
         
         }
-        public static IList<DataStorage> GetSavedConfigurations(Document document, Schema schema)
+        public static IList<DataStorage> GetSavedConfigurations(Autodesk.Revit.DB.Document document, Schema schema)
         {
             FilteredElementCollector collector = new FilteredElementCollector(document);
             collector.OfClass(typeof(DataStorage));
             Func<DataStorage, bool> hasTargetData = ds => (ds.GetEntity(schema) != null && ds.GetEntity(schema).IsValid());
 
             return collector.Cast<DataStorage>().Where<DataStorage>(hasTargetData).ToList<DataStorage>();
-        }
-        public void UpdateSavedConfigurations(Document doc , IFCExportConfigurationsMap initialConfigs)
-        {
-            // update the configurations to new map schema.
-            if (m_jsonSchema == null)
-            {
-                m_jsonSchema = Schema.Lookup(s_jsonSchemaId);
-            }
-
-            // Are there any setups to save or resave?
-            List<IFCExportConfiguration> setupsToSave = new List<IFCExportConfiguration>();
-            foreach (IFCExportConfiguration configuration in m_configurations.Values)
-            {
-                // Store in-session settings in the cached in-session configuration
-                if (configuration.IsInSession)
-                {
-                    IFCExportConfiguration.SetInSession(configuration);
-                    continue;
-                }
-
-                // Only add to setupsToSave if it is a new or changed configuration
-                if (initialConfigs.HasName(configuration.Name))
-                {
-                    if (!ConfigurationComparer.ConfigurationsAreEqual(initialConfigs[configuration.Name], configuration))
-                        setupsToSave.Add(configuration);
-                    else if (!configuration.IsBuiltIn)
-                        setupsToSave.Add(configuration);
-                }
-                else
-                    setupsToSave.Add(configuration);
-            }
-
-            // If there are no setups to save, and if the schema is not present (which means there are no
-            // previously existing setups which might have been deleted) we can skip the rest of this method.
-            if (setupsToSave.Count <= 0 && m_jsonSchema == null)
-                return;
-
-            if (m_jsonSchema == null)
-            {
-                SchemaBuilder builder = new SchemaBuilder(s_jsonSchemaId);
-                builder.SetSchemaName("IFCExportConfigurationMap");
-                builder.AddSimpleField(s_configMapField, typeof(String));
-                m_jsonSchema = builder.Finish();
-            }
-
-            // It won't start any transaction if there is no change to the configurations
-            if (setupsToSave.Count > 0)
-            {
-                // Overwrite all saved configs with the new list
-                Transaction transaction = new Transaction(doc, "Update export settings");
-                try
-                {
-                    transaction.Start(BIM.IFC.Export.UI.Properties.Resources.SaveConfigurationChanges);
-                    IList<DataStorage> savedConfigurations = GetSavedConfigurations(doc, m_jsonSchema);
-                    int savedConfigurationCount = savedConfigurations.Count<DataStorage>();
-                    int savedConfigurationIndex = 0;
-                    foreach (IFCExportConfiguration configuration in setupsToSave)
-                    {
-                        DataStorage configStorage;
-                        if (savedConfigurationIndex >= savedConfigurationCount)
-                        {
-                            configStorage = DataStorage.Create(IFCCommandOverrideApplication.TheDocument);
-                        }
-                        else
-                        {
-                            configStorage = savedConfigurations[savedConfigurationIndex];
-                            savedConfigurationIndex++;
-                        }
-
-                        Entity mapEntity = new Entity(m_jsonSchema);
-                        string configData = configuration.SerializeConfigToJson();
-                        mapEntity.Set<string>(s_configMapField, configData);
-                        configStorage.SetEntity(mapEntity);
-                    }
-
-                    List<ElementId> elementsToDelete = new List<ElementId>();
-                    for (; savedConfigurationIndex < savedConfigurationCount; savedConfigurationIndex++)
-                    {
-                        DataStorage configStorage = savedConfigurations[savedConfigurationIndex];
-                        elementsToDelete.Add(configStorage.Id);
-                    }
-                    if (elementsToDelete.Count > 0)
-                        IFCCommandOverrideApplication.TheDocument.Delete(elementsToDelete);
-
-                    transaction.Commit();
-                }
-                catch (System.Exception)
-                {
-                    if (transaction.HasStarted())
-                        transaction.RollBack();
-                }
-            }
-        }
-        /// <summary>
-        /// Adds a configuration to the map.
-        /// </summary>
-        /// <param name="configuration">The configuration.</param>
-        public void AddOrReplace(IFCExportConfiguration configuration)
-        {
-            if (m_configurations.ContainsKey(configuration.Name))
-            {
-                if (m_configurations[configuration.Name].IsBuiltIn)
-                    m_configurations[configuration.Name].UpdateBuiltInConfiguration(configuration);
-                else
-                    m_configurations[configuration.Name] = configuration;
-            }
-            else
-            {
-                m_configurations.Add(configuration.Name, configuration);
-            }
-        }
-        public void AddSavedConfigurations(Document document)
-        {
-            try
-            {
-                // In this latest schema, the entire configuration for one config is stored as a json string in the entirety
-                if (m_jsonSchema == null)
-                {
-                    m_jsonSchema = Schema.Lookup(s_jsonSchemaId);
-                    if (m_jsonSchema != null)
-                    {
-                        foreach (DataStorage storedSetup in GetSavedConfigurations(document, m_jsonSchema))
-                        {
-                            try
-                            {
-                                Entity configEntity = storedSetup.GetEntity(m_jsonSchema);
-                                string configData = configEntity.Get<string>(s_configMapField);
-
-                                JavaScriptSerializer ser = new JavaScriptSerializer();
-                                ser.RegisterConverters(new JavaScriptConverter[] { new IFCExportConfigurationConverter() });
-                                IFCExportConfiguration configuration = ser.Deserialize<IFCExportConfiguration>(configData);
-                                AddOrReplace(configuration);
-                            }
-                            catch (Exception)
-                            {
-                                // don't skip all configurations if an exception occurs for one
-                            }
-                        }
-                    }
-                }
-
-                // Add the last selected configurations if any
-                if (IFCExport.LastSelectedConfig != null && IFCExport.LastSelectedConfig.Count > 0)
-                {
-                    foreach (KeyValuePair<string, IFCExportConfiguration> lastSelConfig in IFCExport.LastSelectedConfig)
-                    {
-                        AddOrReplace(lastSelConfig.Value);
-                    }
-                }
-            }
-            catch (System.Exception)
-            {
-                // to avoid fail to show the dialog if any exception throws in reading schema.
-            }
         }
 
 
