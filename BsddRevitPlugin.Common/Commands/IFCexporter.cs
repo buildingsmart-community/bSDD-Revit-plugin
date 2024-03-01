@@ -56,8 +56,6 @@ namespace BsddRevitPlugin.Common.Commands
                 //ifcCommandOverrideApplication.OnIFCExport(uiApp, commandEvent);
 
 
-                //Pass the setting of the myIFCExportConfiguration to the IFCExportOptions
-                bsddIFCExportConfiguration.UpdateOptions(IFCExportOptions, activeViewId);
 
                 using (Transaction transaction = new Transaction(doc, "Export IFC"))
                 {
@@ -281,8 +279,14 @@ namespace BsddRevitPlugin.Common.Commands
                         writer.WriteLine(add_BSDD_UDPS);
                     }
 
-                    IFCExportOptions.AddOption("ExportUserDefinedPsetsFileName", tempFilePath.ToString());
+                    //IFCExportOptions.AddOption("ExportUserDefinedParameterMapping", true.ToString());
+                    //IFCExportOptions.AddOption("ExportUserDefinedPsetsFileName", tempFilePath.ToString());
 
+                    bsddIFCExportConfiguration.ExportUserDefinedPsets = true;
+                    bsddIFCExportConfiguration.ExportUserDefinedPsetsFileName = tempFilePath;   
+
+                    //Pass the setting of the myIFCExportConfiguration to the IFCExportOptions
+                    bsddIFCExportConfiguration.UpdateOptions(IFCExportOptions, activeViewId);
 
                     //// Add option with a new IFC Class System
                     //using (var form = new System.Windows.Forms.Form())

@@ -213,9 +213,9 @@ namespace BsddRevitPlugin.Logic.Model
                        foreach (var propertySet in isDefinedBy)
                        {
                            foreach (var property in propertySet.HasProperties)
-                           {
-                               //Set parameter type and group for the bsdd classification parameters
-                               if (property.NominalValue.Type != null)
+                            {
+                                //Set parameter type and group for the bsdd classification parameters
+                                if (property.NominalValue.Type != null)
                                {
                                    //Else default specType string.text is used
                                    specType = GetParameterTypeFromProperty(property);
@@ -234,6 +234,7 @@ namespace BsddRevitPlugin.Logic.Model
                                foreach (Parameter typeparameter in elementType.Parameters)
                                {
                                    string typeParameterName = typeparameter.Definition.Name;
+
 
                                    //Add the bsdd value to the parameter
                                    if (typeParameterName == bsddParameterName)
@@ -308,6 +309,7 @@ namespace BsddRevitPlugin.Logic.Model
                 case "IfcDate":
                     try
                     {
+                        //TODO: Check what seems to be a valid DateTime to get and convert
                         value = Convert.ToDateTime(value).ToString();
 
                     }
