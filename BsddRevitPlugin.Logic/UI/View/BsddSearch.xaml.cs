@@ -1,6 +1,5 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BSDDconnect = BsddRevitPlugin.Logic.UI.Wrappers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,9 +33,11 @@ namespace BsddRevitPlugin.Logic.UI.View
         public static UIApplication UiApp;
         public static UIDocument UiDoc;
         private BsddBridgeData _inputBsddBridgeData;
+        private ExternalEvent _bsddLastSelectionEvent;
 
-        public BsddSearch(BsddBridgeData bsddBridgeData)
+        public BsddSearch(BsddBridgeData bsddBridgeData, ExternalEvent bsddLastSelectionEvent)
         {
+            _bsddLastSelectionEvent = bsddLastSelectionEvent;
             _browserService = GlobalBrowserServiceFactory.Factory.CreateBrowserService();
             InitializeComponent();
 
@@ -46,7 +47,7 @@ namespace BsddRevitPlugin.Logic.UI.View
 
             // Set the address of the CefSharp browser component to the index.html file of the plugin
             _browserService.Address = addinDirectory + "/html/bsdd_search/index.html";
-            var bridgeSearch = new BsddBridge.BsddSearchBridge(bsddBridgeData);
+            var bridgeSearch = new BsddSearchBridge(bsddBridgeData, _bsddLastSelectionEvent);
             bridgeSearch.SetParentWindow(this);
             _browserService.RegisterJsObject("bsddBridge", bridgeSearch, true);
             _browserService.IsBrowserInitializedChanged += OnIsBrowserInitializedChanged;
@@ -85,9 +86,9 @@ namespace BsddRevitPlugin.Logic.UI.View
         {
             if (_browserService.IsBrowserInitialized)
             {
-                #if DEBUG
+#if DEBUG
                 _browserService.ShowDevTools();
-                #endif
+#endif
                 _browserService.ExecuteScriptAsync("CefSharp.BindObjectAsync('bsddBridge');");
             }
         }
