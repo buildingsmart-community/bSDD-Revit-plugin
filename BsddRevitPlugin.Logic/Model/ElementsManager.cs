@@ -316,7 +316,7 @@ namespace BsddRevitPlugin.Logic.Model
                     catch (Exception)
                     {
 
-                        value = "00-00-0000";
+                        value = value.ToString();
                     }
                     break;
                 default:
