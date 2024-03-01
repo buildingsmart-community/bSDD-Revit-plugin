@@ -1,37 +1,38 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
-    <ProjectGuid>{8404F487-DC2E-4E21-A29D-A164A94E0920}</ProjectGuid>
+    <ProjectGuid>{DCF53DDF-4D42-4766-84B9-80060EEABF8F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BsddRevitPlugin.V2023</RootNamespace>
+    <RootNamespace>BsddRevitPlugin.V2024</RootNamespace>
     <AssemblyName>BsddRevitPlugin</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64'">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AdWindows, Version=5.0.3.1, Culture=neutral, processorArchitecture=MSIL">
@@ -42,21 +43,17 @@
     <Reference Include="ASRR.Core">
       <HintPath>..\BsddRevitPlugin.Logic\bin\Debug\ASRR.Core.dll</HintPath>
     </Reference>
-    <Reference Include="CefSharp, Version=92.0.260.0, Culture=neutral, PublicKeyToken=40c4b6fc221f4138, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files\Autodesk\Revit 2023\CefSharp\CefSharp.dll</HintPath>
+    <Reference Include="CefSharp">
+      <HintPath>..\..\..\..\..\..\Program Files\Autodesk\Revit 2024\CefSharp\CefSharp.dll</HintPath>
     </Reference>
-    <Reference Include="CefSharp.BrowserSubprocess.Core, Version=92.0.260.0, Culture=neutral, PublicKeyToken=40c4b6fc221f4138, processorArchitecture=AMD64">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files\Autodesk\Revit 2023\CefSharp\CefSharp.BrowserSubprocess.Core.dll</HintPath>
+    <Reference Include="CefSharp.BrowserSubprocess.Core">
+      <HintPath>..\..\..\..\..\..\Program Files\Autodesk\Revit 2024\CefSharp\CefSharp.BrowserSubprocess.Core.dll</HintPath>
     </Reference>
-    <Reference Include="CefSharp.Core, Version=92.0.260.0, Culture=neutral, PublicKeyToken=40c4b6fc221f4138, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files\Autodesk\Revit 2023\CefSharp\CefSharp.Core.dll</HintPath>
+    <Reference Include="CefSharp.Core">
+      <HintPath>..\..\..\..\..\..\Program Files\Autodesk\Revit 2024\CefSharp\CefSharp.Core.dll</HintPath>
     </Reference>
-    <Reference Include="CefSharp.Wpf, Version=92.0.260.0, Culture=neutral, PublicKeyToken=40c4b6fc221f4138, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files\Autodesk\Revit 2023\CefSharp\CefSharp.Wpf.dll</HintPath>
+    <Reference Include="CefSharp.Wpf">
+      <HintPath>..\..\..\..\..\..\Program Files\Autodesk\Revit 2024\CefSharp\CefSharp.Wpf.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -72,7 +69,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="RevitAPIIFC">
-      <HintPath>C:\Program Files\Autodesk\Revit 2023\RevitAPIIFC.dll</HintPath>
+      <HintPath>C:\Program Files\Autodesk\Revit 2024\RevitAPIIFC.dll</HintPath>
     </Reference>
     <Reference Include="RevitAPIUI, Version=24.0.0.0, Culture=neutral, processorArchitecture=AMD64">
       <HintPath>..\packages\Revit_All_Main_Versions_API_x64.2024.0.0\lib\net48\RevitAPIUI.dll</HintPath>
@@ -101,9 +98,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\BrowserControl2023.cs" />
-    <Compile Include="Services\BrowserService2023.cs" />
-    <Compile Include="Services\BrowserServiceFactory2023.cs" />
+    <Compile Include="Services\BrowserControl2024.cs" />
+    <Compile Include="Services\BrowserService2024.cs" />
+    <Compile Include="Services\BrowserServiceFactory2024.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -119,10 +116,6 @@
       <Project>{12ea4456-8cd5-43ef-80c7-d70338c8b018}</Project>
       <Name>ASRR.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\lib\asrr\lib-asrr-revit-core\ASRR.Revit.Core.csproj">
-      <Project>{60ac09bd-db0e-40a9-b8a7-b0d40e7042e6}</Project>
-      <Name>ASRR.Revit.Core</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -135,9 +128,8 @@
   <Import Project="..\BsddRevitPlugin.Common\BsddRevitPlugin.Common.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>if $(ConfigurationName) == Debug xcopy /Y /E "$(TargetDir)" "$(AppData)\Autodesk\Revit\Addins\2023\BsddRevitPlugin\"
-
-if $(ConfigurationName) == Debug xcopy /Y /E "$(ProjectDir)\BsddRevitPlugin.addin" "$(AppData)\Autodesk\Revit\Addins\2023\"</PostBuildEvent>
+    <PostBuildEvent>if $(ConfigurationName) == Debug xcopy /Y /E "$(TargetDir)" "$(AppData)\Autodesk\Revit\Addins\2024\BsddRevitPlugin\"
+if $(ConfigurationName) == Debug xcopy /Y /E "$(ProjectDir)\BsddRevitPlugin.addin" "$(AppData)\Autodesk\Revit\Addins\2024\"</PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
