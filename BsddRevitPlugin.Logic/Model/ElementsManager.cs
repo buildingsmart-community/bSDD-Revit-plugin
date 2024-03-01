@@ -8,6 +8,8 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static System.Net.Mime.MediaTypeNames;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 
 namespace BsddRevitPlugin.Logic.Model
@@ -181,7 +183,20 @@ namespace BsddRevitPlugin.Logic.Model
                                         {
                                             typeparameter.Set(ifcClassificationReference.Identification);
                                         }
+                                        //Allways add a type
+                                        if (typeParameterName == "Export Type to IFC As")
+                                        {
+                                            typeparameter.Set(ifcEntity.Type);
+                                        }
+                                        //Allways add a predifined type
+                                        if (typeParameterName == "Type IFC Predefined Type")
+                                        {
+                                            //add check if Type even exists
+                                            typeparameter.Set(ifcEntity.PredefinedType + "Type");
+                                          
+                                        }
                                     }
+
                                     break;
 
                                 case IfcMaterial ifcMaterial:
@@ -198,9 +213,9 @@ namespace BsddRevitPlugin.Logic.Model
                        foreach (var propertySet in isDefinedBy)
                        {
                            foreach (var property in propertySet.HasProperties)
-                           {
-                               //Set parameter type and group for the bsdd classification parameters
-                               if (property.NominalValue.Type != null)
+                            {
+                                //Set parameter type and group for the bsdd classification parameters
+                                if (property.NominalValue.Type != null)
                                {
                                    //Else default specType string.text is used
                                    specType = GetParameterTypeFromProperty(property);
@@ -219,6 +234,7 @@ namespace BsddRevitPlugin.Logic.Model
                                foreach (Parameter typeparameter in elementType.Parameters)
                                {
                                    string typeParameterName = typeparameter.Definition.Name;
+
 
                                    //Add the bsdd value to the parameter
                                    if (typeParameterName == bsddParameterName)
@@ -263,21 +279,58 @@ namespace BsddRevitPlugin.Logic.Model
                     }
                     catch (InvalidCastException)
                     {
+                        value = 0; 
                         // Handle or ignore the error when value is not a boolean
                     }
                     break;
                 case "IfcInteger":
-                    value = Convert.ToInt32(value);
+                    try
+                    {
+                        value = Convert.ToInt32(value);
+
+                    }
+                    catch (Exception)
+                    {
+                        value = 0;
+                    }
                     break;
                 case "IfcReal":
-                    value = Convert.ToDouble(value);
+                    try
+                    {
+
+                        value = Convert.ToDouble(value);
+                    }
+                    catch (Exception)
+                    {
+
+                        value = 0;
+                    }
                     break;
                 case "IfcDate":
-                    value = Convert.ToDateTime(value);
+                    try
+                    {
+                        //TODO: Check what seems to be a valid DateTime to get and convert
+                        value = Convert.ToDateTime(value).ToString();
+
+                    }
+                    catch (Exception)
+                    {
+
+                        value = value.ToString();
+                    }
                     break;
                 default:
                     // IfcString or Default
-                    value = value.ToString();
+                    try
+                    {
+
+                        value = value.ToString();
+                    }
+                    catch (Exception)
+                    {
+
+                        value = "";
+                    }
                     break;
             }
 
@@ -295,7 +348,8 @@ namespace BsddRevitPlugin.Logic.Model
                 case "IfcReal":
                     return SpecTypeId.Length;
                 case "IfcDate":
-                    return SpecTypeId.Time;
+                    //Revit does not support date, so use string
+                    return SpecTypeId.String.Text;
                 default:
                     // IfcString or Default
                     return SpecTypeId.String.Text;
