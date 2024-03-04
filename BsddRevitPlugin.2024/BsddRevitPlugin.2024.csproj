@@ -49,16 +49,24 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="CefSharp">
-      <HintPath>..\..\..\..\..\..\Program Files\Autodesk\Revit 2024\CefSharp\CefSharp.dll</HintPath>
+      <HintPath>C:\Program Files\Autodesk\Revit 2024\CefSharp\CefSharp.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
     </Reference>
     <Reference Include="CefSharp.BrowserSubprocess.Core">
-      <HintPath>..\..\..\..\..\..\Program Files\Autodesk\Revit 2024\CefSharp\CefSharp.BrowserSubprocess.Core.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files\Autodesk\Revit 2024\CefSharp\CefSharp.BrowserSubprocess.Core.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="CefSharp.Core">
-      <HintPath>..\..\..\..\..\..\Program Files\Autodesk\Revit 2024\CefSharp\CefSharp.Core.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files\Autodesk\Revit 2024\CefSharp\CefSharp.Core.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="CefSharp.Wpf">
-      <HintPath>..\..\..\..\..\..\Program Files\Autodesk\Revit 2024\CefSharp\CefSharp.Wpf.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files\Autodesk\Revit 2024\CefSharp\CefSharp.Wpf.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
