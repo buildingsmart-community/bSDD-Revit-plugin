@@ -1,6 +1,7 @@
 ﻿using ASRR.Core.Persistence;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExtensibleStorage;
+using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
 using Newtonsoft.Json;
@@ -260,6 +261,42 @@ namespace BsddRevitPlugin.Logic.Model
 
                     tx.Commit();
                 }
+
+            }
+            catch (Exception e)
+            {
+                logger.Info(e.Message);
+                throw;
+            }
+        }
+        public static void SelectElementsWithIfcData(Document doc, IfcEntity ifcEntity)
+        {
+            Logger logger = LogManager.GetCurrentClassLogger();
+
+            logger.Info($"Element json {JsonConvert.SerializeObject(ifcEntity)}");
+
+            try
+            {
+                    //Get the elementType
+                    int idInt = Convert.ToInt32(ifcEntity.Tag);
+                    ElementId typeId = new ElementId(idInt);
+                    ElementType elementType = doc.GetElement(typeId) as ElementType;
+
+                    FilteredElementCollector collector = new FilteredElementCollector(doc);
+                    ICollection<ElementId> elementIds = collector.OfClass(typeof(ElementType)).ToElementIds();
+
+                    try
+                    {
+
+                        // Select the elements in the UI
+                        UIDocument uiDoc = new UIDocument(doc);
+                        uiDoc.Selection.SetElementIds(elementIds);
+                    }
+                    catch
+                    {
+                        Console.WriteLine("Could not select any elements");
+                    }
+
 
             }
             catch (Exception e)
