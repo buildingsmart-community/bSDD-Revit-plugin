@@ -194,7 +194,7 @@ namespace BsddRevitPlugin.Logic.Model
                                             //Allways add a predifined type
                                             case "Type IFC Predefined Type":
                                                 //add check if Type even exists
-                                                typeparameter.Set(ifcEntity.PredefinedType + "Type");
+                                                typeparameter.Set(ifcEntity.PredefinedType);
                                                 break;
 
                                             default:

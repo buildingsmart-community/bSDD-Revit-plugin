@@ -22,6 +22,8 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         private UpdateSettings _updateSettings;
         private ExternalEvent _exEventUpdateElement;
         private ExternalEvent _exEventUpdateSettings;
+        private SelectElementsWithIfcData selectElementsWithIfcData;
+        private ExternalEvent _exEventSelectElement;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BsddSelectionBridge"/> class.
@@ -31,9 +33,13 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             _bsddLastSelectionEvent = bsddLastSelectionEvent;
             _eventHandlerBsddSearch = new EventHandlerBsddSearch(_bsddLastSelectionEvent);
             _updateSettings = new UpdateSettings();
+
             _updateElementtypeWithIfcData = new UpdateElementtypeWithIfcData();
             _exEventUpdateElement = ExternalEvent.Create(_updateElementtypeWithIfcData);
             _exEventUpdateSettings = ExternalEvent.Create(_updateSettings);
+
+            selectElementsWithIfcData = new SelectElementsWithIfcData();
+            _exEventSelectElement = ExternalEvent.Create(selectElementsWithIfcData);
         }
 
         /// <summary>
@@ -54,7 +60,26 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             };
             _eventHandlerBsddSearch.setBsddBridgeData(bsddBridgeData);
             _eventHandlerBsddSearch.Raise("openSearch");
+
             return JsonConvert.SerializeObject(ifcEntity);
+        }
+
+        /// <summary>
+        /// This method is exposed to JavaScript in CefSharp. 
+        /// It opens the bSDD Search panel with the selected object parameters.
+        /// </summary>
+        /// <param name="ifcJsonData">The IFC data to search, in JSON format.</param>
+        /// <returns>The serialized IFC data, in JSON format.</returns>
+        public void bsddSelect(string ifcJsonData)
+        {
+
+            var converter = new IfcJsonConverter();
+            var ifcEntity = JsonConvert.DeserializeObject<IfcEntity>(ifcJsonData, converter);
+            
+
+            selectElementsWithIfcData.SetIfcData(ifcEntity);
+            _exEventSelectElement.Raise();
+
         }
 
         /// <summary>

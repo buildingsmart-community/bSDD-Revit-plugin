@@ -1,21 +1,16 @@
-﻿using ASRR.Core.Persistence;
-using Autodesk.Revit.Attributes;
+﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Events;
-using Autodesk.Revit.DB.ExtensibleStorage;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Events;
-using BIM.IFC.Export.UI;
-using BsddRevitPlugin.Logic.UI.BsddBridge;
+using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.UI.Services;
 using BsddRevitPlugin.Logic.UI.View;
+using BsddRevitPlugin.Logic.UI.Wrappers;
 using BsddRevitPlugin.Resources;
 using NLog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 
 namespace BsddRevitPlugin.Common
@@ -27,6 +22,10 @@ namespace BsddRevitPlugin.Common
     [Regeneration(RegenerationOption.Manual)]
     public class Startup : IExternalApplication
     {
+        EventUseLastSelection eventUseLastSelection;
+        ExternalEvent SelectEULS;
+
+
         private UIControlledApplication _application;
         private IBrowserService _selectionBrowserService;
 
@@ -66,6 +65,11 @@ namespace BsddRevitPlugin.Common
             // Subscribe to the DocumentOpened event
             _application.ControlledApplication.DocumentOpened += Application_DocumentOpened;
 
+            // Subscribe to the DocumentChanged event
+            _application.ControlledApplication.DocumentChanged += Application_DocumentChanged;
+
+            _application.ViewActivated += Application_ViewActivated;
+
 
             // Register Dockable panel for Revit project when it is opened.
             RegisterDockPanel(application);
@@ -75,27 +79,71 @@ namespace BsddRevitPlugin.Common
 #if DEBUG 
             // Open logs.
             Main.Instance.OpenLogs();
-            #endif
+#endif
 
             return Result.Succeeded;
         }
-
-
 
         // Event handler for DocumentOpened event
         private void Application_DocumentOpened(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)
 
         {
-            //BsddRevitPlugin.Logic.Model.SettingsManager.DeleteSettingsFromDataStorage(e.Document);
-            BsddRevitPlugin.Logic.Model.SettingsManager.ApplySettingsToGlobalParametersAndDataStorage(e.Document);
+            RefreshSettingsAndSelection(e.Document);
         }
 
         private void Application_DocumentCreated(object sender, Autodesk.Revit.DB.Events.DocumentCreatedEventArgs e)
 
         {
+            RefreshSettingsAndSelection(e.Document);
+        }
+
+
+        // Event handler for DocumentCevent
+        private void Application_DocumentChanged(object sender, Autodesk.Revit.DB.Events.DocumentChangedEventArgs e)
+
+        {
+            RefreshSettingsAndSelection(e.GetDocument());
+        }
+
+        Document _currentDocument = null;
+        private void Application_ViewActivated(object sender, ViewActivatedEventArgs e)
+        {
+            // Check if the document of the new active view is different from the current document
+            if (_currentDocument == null || _currentDocument.PathName != e.Document.PathName)
+            {
+                _currentDocument = e.Document;
+
+                RefreshSettingsAndSelection(_currentDocument);
+            }
+        }
+        private void RefreshSettingsAndSelection(Document doc)
+        {
 
             //BsddRevitPlugin.Logic.Model.SettingsManager.DeleteSettingsFromDataStorage(e.Document);
-            BsddRevitPlugin.Logic.Model.SettingsManager.ApplySettingsToGlobalParametersAndDataStorage(e.Document);
+            BsddRevitPlugin.Logic.Model.SettingsManager.ApplySettingsToGlobalParametersAndDataStorage(doc);
+
+            // Initialize the events
+            eventUseLastSelection = new EventUseLastSelection();
+
+            // Give current browser to event
+            eventUseLastSelection.SetBrowser(_selectionBrowserService);
+            eventUseLastSelection.UpdateLastSelection(doc);
+
+            // Initialize external events
+            SelectEULS = ExternalEvent.Create(eventUseLastSelection);
+
+            // Update the selection UI with the last selection
+            SelectEULS.Raise();
+
+
+            // Pack data into json format
+            List<IfcEntity> selectionData = BsddRevitPlugin.Logic.Model.ElementsManager.SelectionToIfcJson(doc, EventRevitSelection.LastSelectedElements);
+
+            // Send MainData to BsddSelection html
+            eventUseLastSelection.UpdateBsddSelection(selectionData);
+
+
+
         }
         // BitmapImage NewBitmapImage(
         //     Assembly a, string imageName)
@@ -127,8 +175,8 @@ namespace BsddRevitPlugin.Common
             string executingAssemblyName = assembly.GetName().Name;
             Console.WriteLine(executingAssemblyName);
             string eTabName = "bSDD";
-            
-            
+
+
 
 
             try
@@ -154,13 +202,13 @@ namespace BsddRevitPlugin.Common
             selectionPanelButton.ToolTip = "Show/hide bSDD selection panel";
             selectionPanelButton.LargeImage = ResourceImage.GetIcon("BsddLabel.ico");
 
-            #if DEBUG
+#if DEBUG
             // Create parameter change button.
             PushButtonData tempTestButtonData = new PushButtonData("TestButton", "Test-\rknop", executingAssemblyPath, "BsddRevitPlugin.Common.Commands.TempTestButton");
             PushButton tempTestButton = panel.AddItem(tempTestButtonData) as PushButton;
             tempTestButton.ToolTip = "This is a sample Revit button";
             tempTestButton.LargeImage = ResourceImage.GetIcon("BsddLabel.ico");
-            #endif
+#endif
 
         }
 
@@ -175,7 +223,6 @@ namespace BsddRevitPlugin.Common
             // Create a new BsddSelection object and link it to the main window.
             BsddSelection MainDockableWindow = new BsddSelection(_selectionBrowserService);
             DockablePaneProviderData data = new DockablePaneProviderData();
-
             // Create a new DockablePane Id.
             DockablePaneId dpid = new DockablePaneId(new Guid("D7C963CE-B3CA-426A-8D51-6E8254D21158"));
 
