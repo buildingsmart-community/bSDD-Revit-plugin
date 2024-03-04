@@ -14,6 +14,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BsddRevitPlugin.Installer", "BsddRevitPlugin.Installer\BsddRevitPlugin.Installer.csproj", "{9889A04D-AC37-404C-B2C2-01DE989866ED}"
 	ProjectSection(ProjectDependencies) = postProject
 		{8404F487-DC2E-4E21-A29D-A164A94E0920} = {8404F487-DC2E-4E21-A29D-A164A94E0920}
+		{DCF53DDF-4D42-4766-84B9-80060EEABF8F} = {DCF53DDF-4D42-4766-84B9-80060EEABF8F}
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BsddRevitPlugin.Resources", "BsddRevitPlugin.Resources\BsddRevitPlugin.Resources.csproj", "{4C519D66-46F3-43DF-BCF5-CC1847654828}"
