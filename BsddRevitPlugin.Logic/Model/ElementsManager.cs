@@ -173,27 +173,31 @@ namespace BsddRevitPlugin.Logic.Model
                                     {
                                         string typeParameterName = typeparameter.Definition.Name;
 
-                                        //Add the bsdd value to the parameter
-                                        if (typeParameterName == bsddParameterName)
+                                        switch (typeParameterName)
                                         {
-                                            typeparameter.Set(ifcClassificationReference.Identification + ":" + ifcClassificationReference.Name);
-                                        }
-                                        //Add the bsdd value to the mapped parameter
-                                        if (typeParameterName == parameterMappedName)
-                                        {
-                                            typeparameter.Set(ifcClassificationReference.Identification);
-                                        }
-                                        //Allways add a type
-                                        if (typeParameterName == "Export Type to IFC As")
-                                        {
-                                            typeparameter.Set(ifcEntity.Type);
-                                        }
-                                        //Allways add a predifined type
-                                        if (typeParameterName == "Type IFC Predefined Type")
-                                        {
-                                            //add check if Type even exists
-                                            typeparameter.Set(ifcEntity.PredefinedType + "Type");
-                                          
+                                            //Add the bsdd value to the parameter
+                                            case var name when name == bsddParameterName:
+                                                typeparameter.Set(ifcClassificationReference.Identification + ":" + ifcClassificationReference.Name);
+                                                break;
+
+                                            //Add the bsdd value to the mapped parameter
+                                            case var name when name == parameterMappedName:
+                                                typeparameter.Set(ifcClassificationReference.Identification);
+                                                break;
+
+                                            //Allways add a type
+                                            case "Export Type to IFC As":
+                                                typeparameter.Set(ifcEntity.Type);
+                                                break;
+
+                                            //Allways add a predifined type
+                                            case "Type IFC Predefined Type":
+                                                //add check if Type even exists
+                                                typeparameter.Set(ifcEntity.PredefinedType + "Type");
+                                                break;
+
+                                            default:
+                                                break;
                                         }
                                     }
 

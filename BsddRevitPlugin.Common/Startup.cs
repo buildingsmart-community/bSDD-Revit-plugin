@@ -72,10 +72,10 @@ namespace BsddRevitPlugin.Common
 
             // Add ribbon buttons to the UI.
             AddRibbonButtons(application);
-
+#if DEBUG 
             // Open logs.
             Main.Instance.OpenLogs();
-
+            #endif
 
             return Result.Succeeded;
         }
@@ -89,7 +89,6 @@ namespace BsddRevitPlugin.Common
             //BsddRevitPlugin.Logic.Model.SettingsManager.DeleteSettingsFromDataStorage(e.Document);
             BsddRevitPlugin.Logic.Model.SettingsManager.ApplySettingsToGlobalParametersAndDataStorage(e.Document);
         }
-
 
         private void Application_DocumentCreated(object sender, Autodesk.Revit.DB.Events.DocumentCreatedEventArgs e)
 
