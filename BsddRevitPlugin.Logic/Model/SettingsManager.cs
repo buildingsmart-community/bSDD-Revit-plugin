@@ -11,6 +11,8 @@ using System.IO;
 using Newtonsoft.Json;
 using static System.Net.Mime.MediaTypeNames;
 using NLog.Fluent;
+using BsddRevitPlugin.Logic.UI.Wrappers;
+using BsddRevitPlugin.Logic.UI.View;
 
 namespace BsddRevitPlugin.Logic.Model
 {
@@ -200,7 +202,7 @@ namespace BsddRevitPlugin.Logic.Model
         /// Applies the settings to global parameters and document's extensible storage.
         /// </summary>
         /// <param name="doc">The Revit document.</param>
-        public static void ApplySettingsToGlobalParametersAndDataStorage(Document doc)
+        public static BsddSettings ApplySettingsToGlobalParametersAndDataStorage(Document doc)
         {
             BsddSettings settings = ReadSettingsFromDataStorage(doc);
             if (settings == null)
@@ -209,6 +211,8 @@ namespace BsddRevitPlugin.Logic.Model
             }
             SaveSettingsToGlobalVariable(settings);
             SaveSettingsToDataStorage(doc, settings);
+            return settings;
+
         }
     }
 }
