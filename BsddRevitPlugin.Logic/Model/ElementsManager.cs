@@ -9,8 +9,6 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static System.Net.Mime.MediaTypeNames;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 
 namespace BsddRevitPlugin.Logic.Model
@@ -216,48 +214,48 @@ namespace BsddRevitPlugin.Logic.Model
                     var isDefinedBy = ifcEntity.IsDefinedBy;
                     if (isDefinedBy != null)
                     {
-                       foreach (var propertySet in isDefinedBy)
-                       {
-                           foreach (var property in propertySet.HasProperties)
+                        foreach (var propertySet in isDefinedBy)
+                        {
+                            foreach (var property in propertySet.HasProperties)
                             {
                                 //Set parameter type and group for the bsdd classification parameters
                                 if (property.NominalValue.Type != null)
-                               {
-                                   //Else default specType string.text is used
-                                   specType = GetParameterTypeFromProperty(property);
-                               }
+                                {
+                                    //Else default specType string.text is used
+                                    specType = GetParameterTypeFromProperty(property);
+                                }
 
-                               //Create parameter name for each unique the bsdd property
-                               bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property.Name);
+                                //Create parameter name for each unique the bsdd property
+                                bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property.Name);
 
-                               //Add a project parameter for the bsdd parameter in all Revit categorices if it does not exist 
-                               //NOTE: THIS IS UP FOR DISCUSSION, AS IT MIGHT NOT BE NECESSARY TO ADD THE PARAMETER TO ALL CATEGORIES
-                               Utilities.Parameters.CreateProjectParameterForAllCategories(doc, bsddParameterName, "tempGroupName", specType, groupType, false);
+                                //Add a project parameter for the bsdd parameter in all Revit categorices if it does not exist 
+                                //NOTE: THIS IS UP FOR DISCUSSION, AS IT MIGHT NOT BE NECESSARY TO ADD THE PARAMETER TO ALL CATEGORIES
+                                Utilities.Parameters.CreateProjectParameterForAllCategories(doc, bsddParameterName, "tempGroupName", specType, groupType, false);
 
-                               dynamic value = GetParameterValueInCorrectDatatype(property);
+                                dynamic value = GetParameterValueInCorrectDatatype(property);
 
-                               //Check each type parameter from the object
-                               foreach (Parameter typeparameter in elementType.Parameters)
-                               {
-                                   string typeParameterName = typeparameter.Definition.Name;
+                                //Check each type parameter from the object
+                                foreach (Parameter typeparameter in elementType.Parameters)
+                                {
+                                    string typeParameterName = typeparameter.Definition.Name;
 
 
-                                   //Add the bsdd value to the parameter
-                                   if (typeParameterName == bsddParameterName)
-                                   {
-                                       try
-                                       {
-                                           //because the value is dynamic, always try catch
-                                           typeparameter.Set(value);
-                                       }
-                                       catch (Exception e)
-                                       {
-                                           logger.Info($"Property {property.Name} of type {property.Type} could not be set for elementType {elementType.Name},'{elementType.Id}'. Exception: {e.Message}");
-                                       }
-                                   }
-                               }
-                           }
-                       }
+                                    //Add the bsdd value to the parameter
+                                    if (typeParameterName == bsddParameterName)
+                                    {
+                                        try
+                                        {
+                                            //because the value is dynamic, always try catch
+                                            typeparameter.Set(value);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            logger.Info($"Property {property.Name} of type {property.Type} could not be set for elementType {elementType.Name},'{elementType.Id}'. Exception: {e.Message}");
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
 
                     tx.Commit();
@@ -270,33 +268,41 @@ namespace BsddRevitPlugin.Logic.Model
                 throw;
             }
         }
-        public static void SelectElementsWithIfcData(Document doc, IfcEntity ifcEntity)
+        public static void SelectElementsWithIfcData(UIDocument uidoc, IfcEntity ifcEntity)
         {
             Logger logger = LogManager.GetCurrentClassLogger();
 
             logger.Info($"Element json {JsonConvert.SerializeObject(ifcEntity)}");
+            Document doc = uidoc.Document;
 
             try
             {
-                    //Get the elementType
-                    int idInt = Convert.ToInt32(ifcEntity.Tag);
-                    ElementId typeId = new ElementId(idInt);
-                    ElementType elementType = doc.GetElement(typeId) as ElementType;
+                //Get the elementType
+                int idInt = Convert.ToInt32(ifcEntity.Tag);
+                ElementId typeId = new ElementId(idInt);
+                ElementType elementType = doc.GetElement(typeId) as ElementType;
 
-                    FilteredElementCollector collector = new FilteredElementCollector(doc);
-                    ICollection<ElementId> elementIds = collector.OfClass(typeof(ElementType)).ToElementIds();
+                //Get all instances of the elementtype
+                FilteredElementCollector collector = new FilteredElementCollector(doc);
+                var elements = collector
+                    .WhereElementIsNotElementType()
+                    .Where(e => e.GetTypeId() == elementType.Id)
+                    .ToList();
+              
+                //Get element ids
+                List<ElementId> elementIds = elements.Select(e => e.Id).ToList();
 
-                    try
-                    {
 
-                        // Select the elements in the UI
-                        UIDocument uiDoc = new UIDocument(doc);
-                        uiDoc.Selection.SetElementIds(elementIds);
-                    }
-                    catch
-                    {
-                        Console.WriteLine("Could not select any elements");
-                    }
+                try
+                {
+
+                    // Select the elements in the UI
+                    uidoc.Selection.SetElementIds(elementIds);
+                }
+                catch
+                {
+                    Console.WriteLine("Could not select any elements");
+                }
 
 
             }
@@ -321,7 +327,7 @@ namespace BsddRevitPlugin.Logic.Model
                     }
                     catch (InvalidCastException)
                     {
-                        value = 0; 
+                        value = 0;
                         // Handle or ignore the error when value is not a boolean
                     }
                     break;
