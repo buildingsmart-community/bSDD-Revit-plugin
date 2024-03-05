@@ -27,7 +27,6 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         private ExternalEvent _exEventSelectElement;
         EventUseLastSelection eventUseLastSelection;
         private EventUseLastSelection _eventUseLastSelection;
-        private ExternalEvent testEvent;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BsddSelectionBridge"/> class.
@@ -113,7 +112,6 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
 
 
             // Update the selection UI with the last selection
-            testEvent = ExternalEvent.Create(_eventUseLastSelection);
             _bsddLastSelectionEvent.Raise();
 
             // Pack data into json format

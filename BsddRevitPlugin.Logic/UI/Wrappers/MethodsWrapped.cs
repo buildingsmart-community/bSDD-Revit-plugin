@@ -62,7 +62,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             }
 
             // Pack data into json format
-            List<IfcEntity> selectionData = SelectionToIfcJson(doc, GlobalSelection.LastSelectedElements);
+            List<IfcEntity> selectionData = SelectionToIfcJson(doc, GlobalSelection.LastSelectedElementsWithDocs[doc.PathName]);
 
             // Send MainData to BsddSelection html
             UpdateBsddSelection(selectionData);
