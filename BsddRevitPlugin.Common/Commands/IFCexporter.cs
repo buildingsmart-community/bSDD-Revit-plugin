@@ -35,15 +35,16 @@ namespace BsddRevitPlugin.Common.Commands
                 Document doc = uiDoc.Document;
                 ElementId activeViewId = uiDoc.ActiveView.Id;
 
+                IfcExportManager ifcexportManager = new IfcExportManager(); 
 
                 //Create an Instance of the IFC Export Class
                 IFCExportOptions IFCExportOptions = new IFCExportOptions();
 
                 //Get the bsdd confguration from document or create a new one
-                IFCExportConfiguration bsddIFCExportConfiguration = IfcExportManager.GetOrSetBsddConfiguration(doc);
+                IFCExportConfiguration bsddIFCExportConfiguration = ifcexportManager.GetOrSetBsddConfiguration(doc);
 
                 //Somehow UpdateOptions() can't handle the activeViewId, so we set it manually to -1
-                bsddIFCExportConfiguration.ActivePhaseId = -1;
+                //bsddIFCExportConfiguration.ActivePhaseId = -1;
 
                 // Create an instance of the IFCCommandOverrideApplication class
                 IFCCommandOverrideApplication ifcCommandOverrideApplication = new IFCCommandOverrideApplication();
@@ -73,10 +74,10 @@ namespace BsddRevitPlugin.Common.Commands
                     IList<Parameter> param = new List<Parameter>();
 
                     // Get all BSDD parameters from the document
-                    param = IfcExportManager.GetAllBsddParameters(doc);
+                    param = ifcexportManager.GetAllBsddParameters(doc);
 
                     // Organize the BSDD parameters by property set name
-                    var organizedParameters = IfcExportManager.RearrageParamatersForEachPropertySet(param);
+                    var organizedParameters = ifcexportManager.RearrageParamatersForEachPropertySet(param);
 
                     // Loop through all property sets
                     foreach (var parameters in organizedParameters)
@@ -283,7 +284,7 @@ namespace BsddRevitPlugin.Common.Commands
                     //IFCExportOptions.AddOption("ExportUserDefinedPsetsFileName", tempFilePath.ToString());
 
                     bsddIFCExportConfiguration.ExportUserDefinedPsets = true;
-                    bsddIFCExportConfiguration.ExportUserDefinedPsetsFileName = tempFilePath;   
+                    bsddIFCExportConfiguration.ExportUserDefinedPsetsFileName = tempFilePath;
 
                     //Pass the setting of the myIFCExportConfiguration to the IFCExportOptions
                     bsddIFCExportConfiguration.UpdateOptions(IFCExportOptions, activeViewId);
@@ -360,18 +361,8 @@ namespace BsddRevitPlugin.Common.Commands
 
         }
 
-
+        
 
 
     }
 }
-
-
-
-
-
-
-
-
-
-
