@@ -1,11 +1,13 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using Autodesk.Revit.UI.Events;
 using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.Model;
 using BsddRevitPlugin.Logic.UI.View;
 using BsddRevitPlugin.Logic.UI.Wrappers;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -32,7 +34,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         /// <summary>
         /// Initializes a new instance of the <see cref="BsddSelectionBridge"/> class.
         /// </summary>
-        public BsddSelectionBridge(ExternalEvent bsddLastSelectionExEvent, EventUseLastSelection bsddLastSelectionEvent)
+        public BsddSelectionBridge(ExternalEvent bsddLastSelectionExEvent)
         {
             _bsddLastSelectionEvent = bsddLastSelectionExEvent;
             _eventHandlerBsddSearch = new EventHandlerBsddSearch(_bsddLastSelectionEvent);
@@ -45,7 +47,6 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             selectElementsWithIfcData = new SelectElementsWithIfcData();
             _exEventSelectElement = ExternalEvent.Create(selectElementsWithIfcData);
 
-            _eventUseLastSelection = bsddLastSelectionEvent;
         }
 
         /// <summary>
@@ -110,23 +111,6 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
 
             // Update the selection UI with the last selection
             _bsddLastSelectionEvent.Raise();
-
-            List<ElementType> types = new List<ElementType>();
-            try
-            {
-                types.AddRange(GlobalSelection.LastSelectedElementsWithDocs[GlobalDocument.currentDocument.PathName]);
-            }
-            catch (System.Exception)
-            {
-                
-            }
-
-            // Pack data into json format
-            List<IfcEntity> selectionData = ElementsManager.SelectionToIfcJson(GlobalDocument.currentDocument, types);
-
-            // Send MainData to BsddSelection html
-            _eventUseLastSelection.UpdateBsddSelection(selectionData);
-
 
         }
         public string loadSettings()

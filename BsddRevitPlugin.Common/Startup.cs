@@ -14,6 +14,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime;
+using System.Threading;
+using System.Windows.Threading;
 
 namespace BsddRevitPlugin.Common
 {
@@ -38,6 +40,7 @@ namespace BsddRevitPlugin.Common
 
             _application = application;
             _selectionBrowserService = browserServiceFactory.CreateBrowserService();
+            GlobalBrowserService.publicSelectionBrowserService = _selectionBrowserService;
         }
 
         /// <summary>
@@ -61,6 +64,7 @@ namespace BsddRevitPlugin.Common
         /// <returns>A Result object indicating whether the startup was successful.</returns>
         public Result OnStartup(UIControlledApplication application)
         {
+
 
             // Subscribe to the DocumentCreated event
             _application.ControlledApplication.DocumentCreated += Application_DocumentCreated;
@@ -113,14 +117,17 @@ namespace BsddRevitPlugin.Common
         {
             string oldview = "";
             string newview = "";
-            try
+            if (e.PreviousActiveView != null)
             {
-                oldview = e.PreviousActiveView.Document.PathName;
+                try
+                {
+                    oldview = e.PreviousActiveView.Document.PathName;
 
-            }
-            catch (Exception)
-            {
+                }
+                catch (Exception)
+                {
 
+                }
             }
             try
             {
