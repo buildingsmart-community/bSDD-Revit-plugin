@@ -89,32 +89,6 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
                 browser.ExecuteScriptAsync(jsFunctionCall);
             }
         }
-        public void UpdateLastSelection(Document doc)
-        {
-            if (GlobalSelection.LastSelectedElements.Count > 0)
-            {
-                if (GlobalSelection.LastSelectedElements.First().Document.PathName != doc.PathName)
-                {
-                    //If current selection is from another document
-
-                    if (GlobalSelection.LastSelectedElementsWithDocs.ContainsKey(doc.PathName))
-                    {
-                        //if contains, always make sure the value is the updated list
-                        GlobalSelection.LastSelectedElements.Clear();
-                        GlobalSelection.LastSelectedElements.AddRange(GlobalSelection.LastSelectedElementsWithDocs[doc.PathName]);
-                    }
-                    else
-                    {
-                        //if first time, clear list
-                        GlobalSelection.LastSelectedElements.Clear();
-
-                    }
-
-                }
-            }
-
-            
-        }
     }
 
     /// <summary>

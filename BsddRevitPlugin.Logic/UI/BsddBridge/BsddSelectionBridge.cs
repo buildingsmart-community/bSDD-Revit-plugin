@@ -1,4 +1,5 @@
-﻿using Autodesk.Revit.UI;
+﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.Model;
 using BsddRevitPlugin.Logic.UI.View;
@@ -107,15 +108,21 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             _updateSettings.SetSettings(settings);
             _exEventUpdateSettings.Raise();
 
-
-            _eventUseLastSelection.UpdateLastSelection(GlobalDocument.currentDocument);
-
-
             // Update the selection UI with the last selection
             _bsddLastSelectionEvent.Raise();
 
+            List<ElementType> types = new List<ElementType>();
+            try
+            {
+                types.AddRange(GlobalSelection.LastSelectedElementsWithDocs[GlobalDocument.currentDocument.PathName]);
+            }
+            catch (System.Exception)
+            {
+                
+            }
+
             // Pack data into json format
-            List<IfcEntity> selectionData = BsddRevitPlugin.Logic.Model.ElementsManager.SelectionToIfcJson(GlobalDocument.currentDocument, GlobalSelection.LastSelectedElements);
+            List<IfcEntity> selectionData = ElementsManager.SelectionToIfcJson(GlobalDocument.currentDocument, types);
 
             // Send MainData to BsddSelection html
             _eventUseLastSelection.UpdateBsddSelection(selectionData);

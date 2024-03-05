@@ -111,12 +111,29 @@ namespace BsddRevitPlugin.Common
 
         private void Application_ViewActivated(object sender, ViewActivatedEventArgs e)
         {
-            
-            var oldview = e.PreviousActiveView.Document.PathName;
-            var newview = e.CurrentActiveView.Document.PathName;
+            string oldview = "";
+            string newview = "";
+            try
+            {
+                oldview = e.PreviousActiveView.Document.PathName;
+
+            }
+            catch (Exception)
+            {
+
+            }
+            try
+            {
+                newview = e.CurrentActiveView.Document.PathName;
+
+            }
+            catch (Exception)
+            {
+
+            }
 
             // Check if the document of the new active view is different from the current document
-            if (oldview != newview)
+            if (oldview != "" && oldview != newview)
             {
                 RefreshSettingsAndSelection(e.CurrentActiveView.Document);
             }
@@ -134,7 +151,6 @@ namespace BsddRevitPlugin.Common
 
             // Give current browser to event
             eventUseLastSelection.SetBrowser(_selectionBrowserService);
-            eventUseLastSelection.UpdateLastSelection(doc);
 
             // Initialize external events
             SelectEULS = ExternalEvent.Create(eventUseLastSelection);
@@ -143,8 +159,17 @@ namespace BsddRevitPlugin.Common
             SelectEULS.Raise();
 
 
+            List<ElementType> types = new List<ElementType>();
+            try
+            {
+                types.AddRange(GlobalSelection.LastSelectedElementsWithDocs[doc.PathName]);
+            }
+            catch (System.Exception)
+            {
+
+            }
             // Pack data into json format
-            List<IfcEntity> selectionData = BsddRevitPlugin.Logic.Model.ElementsManager.SelectionToIfcJson(doc, GlobalSelection.LastSelectedElements);
+            List<IfcEntity> selectionData = BsddRevitPlugin.Logic.Model.ElementsManager.SelectionToIfcJson(doc, types);
 
             // Send MainData to BsddSelection html
             eventUseLastSelection.UpdateBsddSelection(selectionData);
