@@ -125,7 +125,8 @@ namespace BsddRevitPlugin.Common
         private void Application_DocumentChanged(object sender, Autodesk.Revit.DB.Events.DocumentChangedEventArgs e)
 
         {
-            RefreshSettingsAndSelection(e.GetDocument());
+            //Doubt this is nesssecary
+            //RefreshSettingsAndSelection(e.GetDocument());
         }
 
         private void Application_ViewActivated(object sender, ViewActivatedEventArgs e)
