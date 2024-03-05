@@ -171,7 +171,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             var uidoc = uiapp.ActiveUIDocument;
             var doc = uidoc.Document;
 
-            SelectElementsWithIfcData(doc, ifcData);
+            SelectElementsWithIfcData(uidoc, ifcData);
         }
         public void SetIfcData(IfcEntity ifcDataObject)
         {

@@ -28,8 +28,6 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         private ExternalEvent _exEventUpdateSettings;
         private SelectElementsWithIfcData selectElementsWithIfcData;
         private ExternalEvent _exEventSelectElement;
-        EventUseLastSelection eventUseLastSelection;
-        private EventUseLastSelection _eventUseLastSelection;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BsddSelectionBridge"/> class.
