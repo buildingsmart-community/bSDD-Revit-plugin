@@ -26,10 +26,6 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
     {
         Logger logger = LogManager.GetCurrentClassLogger();
 
-        // This list will store the last selected elements
-        public static List<ElementType> LastSelectedElements { get; private set; } = new List<ElementType>();
-        public static Dictionary<Document ,  List<ElementType> > LastSelectedElementsWithDocs { get; private set; } = new Dictionary<Document, List<ElementType>>();
-
         protected Select Selectorlist = new Select();
         private IBrowserService browser;
 
@@ -41,21 +37,24 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             if (!(this is EventUseLastSelection))
             {
                 var elemList = GetSelection(uiapp);
+                elemList = ListFilter(elemList);
                 // Update LastSelectedElements for other events
-                LastSelectedElements.Clear();
-                LastSelectedElements.AddRange(elemList);
-                LastSelectedElements = ListFilter(LastSelectedElements);
+                //GlobalSelection.LastSelectedElements.Clear();
+                //GlobalSelection.LastSelectedElements.AddRange(elemList);
 
-                if (LastSelectedElementsWithDocs.ContainsKey(doc))
+                if (GlobalSelection.LastSelectedElementsWithDocs.ContainsKey(doc.PathName))
                 {
                     //if contains, always make sure the value is the updated list
-                    LastSelectedElementsWithDocs[doc].Clear();
-                    LastSelectedElementsWithDocs[doc] = LastSelectedElements;
+                    GlobalSelection.LastSelectedElementsWithDocs[doc.PathName] = new List<ElementType>();
+                    GlobalSelection.LastSelectedElementsWithDocs[doc.PathName].Clear();
+                    GlobalSelection.LastSelectedElementsWithDocs[doc.PathName].AddRange(elemList);
                 }
                 else
                 {
                     //if first time, add to dictionary
-                    LastSelectedElementsWithDocs.Add(doc, LastSelectedElements);
+                    List<ElementType> elemtypes = new List<ElementType>();
+                    elemtypes.AddRange(elemList);
+                    GlobalSelection.LastSelectedElementsWithDocs.Add(doc.PathName, elemtypes);
 
                 }
 
@@ -63,7 +62,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             }
 
             // Pack data into json format
-            List<IfcEntity> selectionData = SelectionToIfcJson(doc, LastSelectedElements);
+            List<IfcEntity> selectionData = SelectionToIfcJson(doc, GlobalSelection.LastSelectedElements);
 
             // Send MainData to BsddSelection html
             UpdateBsddSelection(selectionData);
@@ -92,25 +91,29 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         }
         public void UpdateLastSelection(Document doc)
         {
-
-            if (LastSelectedElements.First().Document.PathName != doc.PathName)
+            if (GlobalSelection.LastSelectedElements.Count > 0)
             {
-                //If current selection is from another document
-
-                if (LastSelectedElementsWithDocs.ContainsKey(doc))
+                if (GlobalSelection.LastSelectedElements.First().Document.PathName != doc.PathName)
                 {
-                    //if contains, always make sure the value is the updated list
-                    LastSelectedElements.Clear();
-                    LastSelectedElements.AddRange(LastSelectedElementsWithDocs[doc]);
-                }
-                else
-                {
-                    //if first time, clear list
-                    LastSelectedElements.Clear();
+                    //If current selection is from another document
+
+                    if (GlobalSelection.LastSelectedElementsWithDocs.ContainsKey(doc.PathName))
+                    {
+                        //if contains, always make sure the value is the updated list
+                        GlobalSelection.LastSelectedElements.Clear();
+                        GlobalSelection.LastSelectedElements.AddRange(GlobalSelection.LastSelectedElementsWithDocs[doc.PathName]);
+                    }
+                    else
+                    {
+                        //if first time, clear list
+                        GlobalSelection.LastSelectedElements.Clear();
+
+                    }
 
                 }
-
             }
+
+            
         }
     }
 
@@ -152,7 +155,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         protected override List<ElementType> GetSelection(UIApplication uiapp)
         {
             // Use the last selected elements
-            return EventRevitSelection.LastSelectedElements;
+            return GlobalSelection.LastSelectedElementsWithDocs[GlobalDocument.currentDocument.PathName];
         }
     }
 

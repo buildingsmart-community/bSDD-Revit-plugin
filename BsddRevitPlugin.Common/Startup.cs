@@ -3,6 +3,7 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Events;
 using BsddRevitPlugin.Logic.IfcJson;
+using BsddRevitPlugin.Logic.UI.BsddBridge;
 using BsddRevitPlugin.Logic.UI.Services;
 using BsddRevitPlugin.Logic.UI.View;
 using BsddRevitPlugin.Logic.UI.Wrappers;
@@ -12,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime;
 
 namespace BsddRevitPlugin.Common
 {
@@ -28,6 +30,7 @@ namespace BsddRevitPlugin.Common
 
         private UIControlledApplication _application;
         private IBrowserService _selectionBrowserService;
+        private BsddSelection MainDockableWindow;
 
         public Startup(UIControlledApplication application, IBrowserServiceFactory browserServiceFactory)
         {
@@ -68,6 +71,7 @@ namespace BsddRevitPlugin.Common
             // Subscribe to the DocumentChanged event
             _application.ControlledApplication.DocumentChanged += Application_DocumentChanged;
 
+            // Subscribe to the ViewActivated event
             _application.ViewActivated += Application_ViewActivated;
 
 
@@ -108,19 +112,22 @@ namespace BsddRevitPlugin.Common
         Document _currentDocument = null;
         private void Application_ViewActivated(object sender, ViewActivatedEventArgs e)
         {
+            
             // Check if the document of the new active view is different from the current document
-            if (_currentDocument == null || _currentDocument.PathName != e.Document.PathName)
+            if (_currentDocument == null || _currentDocument.PathName != e.CurrentActiveView.Document.PathName)
             {
-                _currentDocument = e.Document;
+                _currentDocument = e.CurrentActiveView.Document; 
 
                 RefreshSettingsAndSelection(_currentDocument);
             }
         }
         private void RefreshSettingsAndSelection(Document doc)
         {
+            GlobalDocument.currentDocument = doc;
 
             //BsddRevitPlugin.Logic.Model.SettingsManager.DeleteSettingsFromDataStorage(e.Document);
-            BsddRevitPlugin.Logic.Model.SettingsManager.ApplySettingsToGlobalParametersAndDataStorage(doc);
+            var settings = BsddRevitPlugin.Logic.Model.SettingsManager.ApplySettingsToGlobalParametersAndDataStorage(doc);
+            MainDockableWindow.UpdateSettings(settings);
 
             // Initialize the events
             eventUseLastSelection = new EventUseLastSelection();
@@ -137,7 +144,7 @@ namespace BsddRevitPlugin.Common
 
 
             // Pack data into json format
-            List<IfcEntity> selectionData = BsddRevitPlugin.Logic.Model.ElementsManager.SelectionToIfcJson(doc, EventRevitSelection.LastSelectedElements);
+            List<IfcEntity> selectionData = BsddRevitPlugin.Logic.Model.ElementsManager.SelectionToIfcJson(doc, GlobalSelection.LastSelectedElements);
 
             // Send MainData to BsddSelection html
             eventUseLastSelection.UpdateBsddSelection(selectionData);
@@ -221,7 +228,7 @@ namespace BsddRevitPlugin.Common
         private void RegisterDockPanel(UIControlledApplication app)
         {
             // Create a new BsddSelection object and link it to the main window.
-            BsddSelection MainDockableWindow = new BsddSelection(_selectionBrowserService);
+            MainDockableWindow = new BsddSelection(_selectionBrowserService);
             DockablePaneProviderData data = new DockablePaneProviderData();
             // Create a new DockablePane Id.
             DockablePaneId dpid = new DockablePaneId(new Guid("D7C963CE-B3CA-426A-8D51-6E8254D21158"));

@@ -6,6 +6,7 @@ using BsddRevitPlugin.Logic.UI.Wrappers;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace BsddRevitPlugin.Logic.UI.BsddBridge
 {
@@ -24,13 +25,16 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         private ExternalEvent _exEventUpdateSettings;
         private SelectElementsWithIfcData selectElementsWithIfcData;
         private ExternalEvent _exEventSelectElement;
+        EventUseLastSelection eventUseLastSelection;
+        private EventUseLastSelection _eventUseLastSelection;
+        private ExternalEvent testEvent;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BsddSelectionBridge"/> class.
         /// </summary>
-        public BsddSelectionBridge(ExternalEvent bsddLastSelectionEvent)
+        public BsddSelectionBridge(ExternalEvent bsddLastSelectionExEvent, EventUseLastSelection bsddLastSelectionEvent)
         {
-            _bsddLastSelectionEvent = bsddLastSelectionEvent;
+            _bsddLastSelectionEvent = bsddLastSelectionExEvent;
             _eventHandlerBsddSearch = new EventHandlerBsddSearch(_bsddLastSelectionEvent);
             _updateSettings = new UpdateSettings();
 
@@ -40,6 +44,8 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
 
             selectElementsWithIfcData = new SelectElementsWithIfcData();
             _exEventSelectElement = ExternalEvent.Create(selectElementsWithIfcData);
+
+            _eventUseLastSelection = bsddLastSelectionEvent;
         }
 
         /// <summary>
@@ -102,8 +108,21 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             _updateSettings.SetSettings(settings);
             _exEventUpdateSettings.Raise();
 
+
+            _eventUseLastSelection.UpdateLastSelection(GlobalDocument.currentDocument);
+
+
             // Update the selection UI with the last selection
+            testEvent = ExternalEvent.Create(_eventUseLastSelection);
             _bsddLastSelectionEvent.Raise();
+
+            // Pack data into json format
+            List<IfcEntity> selectionData = BsddRevitPlugin.Logic.Model.ElementsManager.SelectionToIfcJson(GlobalDocument.currentDocument, GlobalSelection.LastSelectedElements);
+
+            // Send MainData to BsddSelection html
+            _eventUseLastSelection.UpdateBsddSelection(selectionData);
+
+
         }
         public string loadSettings()
         {

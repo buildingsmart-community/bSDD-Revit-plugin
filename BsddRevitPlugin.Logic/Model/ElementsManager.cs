@@ -17,6 +17,7 @@ namespace BsddRevitPlugin.Logic.Model
 {
     public static class ElementsManager
     {
+
         // Element IFCClassification schema
         private static Guid s_schemaId = new Guid("79717CB2-D47B-4EC0-8E74-83A43E7D9F0A");
         private const string s_IfcClassificationData = "IfcClassificationData";
