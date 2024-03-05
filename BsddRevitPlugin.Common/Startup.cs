@@ -109,16 +109,16 @@ namespace BsddRevitPlugin.Common
             RefreshSettingsAndSelection(e.GetDocument());
         }
 
-        Document _currentDocument = null;
         private void Application_ViewActivated(object sender, ViewActivatedEventArgs e)
         {
             
-            // Check if the document of the new active view is different from the current document
-            if (_currentDocument == null || _currentDocument.PathName != e.CurrentActiveView.Document.PathName)
-            {
-                _currentDocument = e.CurrentActiveView.Document; 
+            var oldview = e.PreviousActiveView.Document.PathName;
+            var newview = e.CurrentActiveView.Document.PathName;
 
-                RefreshSettingsAndSelection(_currentDocument);
+            // Check if the document of the new active view is different from the current document
+            if (oldview != newview)
+            {
+                RefreshSettingsAndSelection(e.CurrentActiveView.Document);
             }
         }
         private void RefreshSettingsAndSelection(Document doc)
