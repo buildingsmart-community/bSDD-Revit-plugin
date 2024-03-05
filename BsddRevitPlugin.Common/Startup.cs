@@ -99,12 +99,24 @@ namespace BsddRevitPlugin.Common
         private void Application_DocumentOpened(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)
 
         {
+            //Create an Instance of the IFC Export Manager
+            IfcExportManager ifcexportManager = new IfcExportManager();
+
+            //Get the bsdd confguration from document or create a new one
+            IFCExportConfiguration bsddIFCExportConfiguration = ifcexportManager.GetOrSetBsddConfiguration(e.Document);
+
             RefreshSettingsAndSelection(e.Document);
         }
 
         private void Application_DocumentCreated(object sender, Autodesk.Revit.DB.Events.DocumentCreatedEventArgs e)
 
         {
+            //Create an Instance of the IFC Export Manager
+            IfcExportManager ifcexportManager = new IfcExportManager();
+
+            //Get the bsdd confguration from document or create a new one
+            IFCExportConfiguration bsddIFCExportConfiguration = ifcexportManager.GetOrSetBsddConfiguration(e.Document);
+
             RefreshSettingsAndSelection(e.Document);
         }
 
