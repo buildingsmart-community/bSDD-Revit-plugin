@@ -2,6 +2,8 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using System;
+using System.Threading;
+using System.Windows.Threading;
 
 namespace BsddRevitPlugin.Common.Commands
 {
@@ -24,6 +26,7 @@ namespace BsddRevitPlugin.Common.Commands
     {
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
+            
             DockablePaneId dpid = new DockablePaneId(new Guid("{D7C963CE-B3CA-426A-8D51-6E8254D21158}"));
             DockablePane dp = commandData.Application.GetDockablePane(dpid);
             if (dp.IsShown())
