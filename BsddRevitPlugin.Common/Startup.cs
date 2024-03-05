@@ -2,7 +2,9 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Events;
+using BIM.IFC.Export.UI;
 using BsddRevitPlugin.Logic.IfcJson;
+using BsddRevitPlugin.Logic.Model;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
 using BsddRevitPlugin.Logic.UI.Services;
 using BsddRevitPlugin.Logic.UI.View;
@@ -15,6 +17,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Runtime;
 using System.Threading;
+using System.Windows.Controls;
 using System.Windows.Threading;
 
 namespace BsddRevitPlugin.Common
@@ -140,20 +143,21 @@ namespace BsddRevitPlugin.Common
             }
 
             // Check if the document of the new active view is different from the current document
-            if (oldview != "" && oldview != newview)
+            if (oldview != newview)
             {
                 RefreshSettingsAndSelection(e.CurrentActiveView.Document);
             }
         }
         private void RefreshSettingsAndSelection(Document doc)
         {
+            //Allways set current document
             GlobalDocument.currentDocument = doc;
 
-            //BsddRevitPlugin.Logic.Model.SettingsManager.DeleteSettingsFromDataStorage(e.Document);
+            //Set settings to global parameters and data storage, trigger UI update
             var settings = BsddRevitPlugin.Logic.Model.SettingsManager.ApplySettingsToGlobalParametersAndDataStorage(doc);
             MainDockableWindow.UpdateSettings(settings);
 
-            // Initialize the events
+            // Initialize the event
             eventUseLastSelection = new EventUseLastSelection();
 
             // Give current browser to event
