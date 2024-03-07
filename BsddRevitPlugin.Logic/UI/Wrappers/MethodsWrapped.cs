@@ -9,7 +9,9 @@ using BsddRevitPlugin.Logic.UI.View;
 using Newtonsoft.Json;
 using NLog;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Interop;
 using static BsddRevitPlugin.Logic.Model.ElementsManager;
 using Document = Autodesk.Revit.DB.Document;
@@ -24,9 +26,6 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
     {
         Logger logger = LogManager.GetCurrentClassLogger();
 
-        // This list will store the last selected elements
-        public static List<ElementType> LastSelectedElements { get; private set; } = new List<ElementType>();
-
         protected Select Selectorlist = new Select();
         private IBrowserService browser;
 
@@ -38,16 +37,32 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             if (!(this is EventUseLastSelection))
             {
                 var elemList = GetSelection(uiapp);
+                elemList = ListFilter(elemList);
                 // Update LastSelectedElements for other events
-                LastSelectedElements.Clear();
-                LastSelectedElements.AddRange(elemList);
+                //GlobalSelection.LastSelectedElements.Clear();
+                //GlobalSelection.LastSelectedElements.AddRange(elemList);
 
-                // Filter elements to remove non-element categories
-                LastSelectedElements = ListFilter(LastSelectedElements);
+                if (GlobalSelection.LastSelectedElementsWithDocs.ContainsKey(doc.PathName))
+                {
+                    //if contains, always make sure the value is the updated list
+                    GlobalSelection.LastSelectedElementsWithDocs[doc.PathName] = new List<ElementType>();
+                    GlobalSelection.LastSelectedElementsWithDocs[doc.PathName].Clear();
+                    GlobalSelection.LastSelectedElementsWithDocs[doc.PathName].AddRange(elemList);
+                }
+                else
+                {
+                    //if first time, add to dictionary
+                    List<ElementType> elemtypes = new List<ElementType>();
+                    elemtypes.AddRange(elemList);
+                    GlobalSelection.LastSelectedElementsWithDocs.Add(doc.PathName, elemtypes);
+
+                }
+
+
             }
 
             // Pack data into json format
-            List<IfcEntity> selectionData = SelectionToIfcJson(doc, LastSelectedElements);
+            List<IfcEntity> selectionData = SelectionToIfcJson(doc, GlobalSelection.LastSelectedElementsWithDocs[doc.PathName]);
 
             // Send MainData to BsddSelection html
             UpdateBsddSelection(selectionData);
@@ -60,7 +75,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             browser = browserObject;
         }
 
-        private void UpdateBsddSelection(List<IfcEntity> ifcData)
+        public void UpdateBsddSelection(List<IfcEntity> ifcData)
         {
             var settings = new JsonSerializerSettings
             {
@@ -114,7 +129,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         protected override List<ElementType> GetSelection(UIApplication uiapp)
         {
             // Use the last selected elements
-            return EventRevitSelection.LastSelectedElements;
+            return GlobalSelection.LastSelectedElementsWithDocs[GlobalDocument.currentDocument.PathName];
         }
     }
 
@@ -134,6 +149,29 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             var doc = uidoc.Document;
 
             SetIfcDataToRevitElement(doc, ifcData);
+        }
+        public void SetIfcData(IfcEntity ifcDataObject)
+        {
+            ifcData = ifcDataObject;
+        }
+
+    }
+
+    /// <summary>
+    /// Represents a class that triggers the writing of IFC data into a Revit type object.
+    /// </summary>
+    public class SelectElementsWithIfcData : RevitEventWrapper<string>
+    {
+        Logger logger = LogManager.GetCurrentClassLogger();
+
+        IfcEntity ifcData;
+
+        public override void Execute(UIApplication uiapp, string args)
+        {
+            var uidoc = uiapp.ActiveUIDocument;
+            var doc = uidoc.Document;
+
+            SelectElementsWithIfcData(uidoc, ifcData);
         }
         public void SetIfcData(IfcEntity ifcDataObject)
         {

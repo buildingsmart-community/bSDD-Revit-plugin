@@ -71,6 +71,16 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             return JsonConvert.SerializeObject(ifcEntity);
 
         }
+        /// <summary>
+        /// Closes UI 
+        /// </summary>
+        /// <returns>The response from the bSDD API.</returns>
+        public void cancel()
+        {
+            //Close UI
+            _bsddSearchParent.Dispatcher.Invoke(() => _bsddSearchParent.Close());
+
+        }
         public string loadConfig()
         {
             Search defaultSearch = null;

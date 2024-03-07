@@ -227,6 +227,7 @@ namespace BsddRevitPlugin.Logic.UI.View
             if (settings.BsddApiEnvironment == null)
             {
                 SettingsManager.LoadDefaultSettings();
+                SettingsManager.ApplySettingsToGlobalParametersAndDataStorage(GlobalDocument.currentDocument);
             }
             if (_browserService.IsBrowserInitialized)
             {
