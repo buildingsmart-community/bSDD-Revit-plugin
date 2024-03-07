@@ -1,10 +1,27 @@
-﻿using BsddRevitPlugin.Logic.IfcJson;
+﻿using Autodesk.Revit.DB;
+using BsddRevitPlugin.Logic.IfcJson;
+using BsddRevitPlugin.Logic.UI.Services;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
 namespace BsddRevitPlugin.Logic.UI.BsddBridge
 {
+    public static class GlobalBrowserService
+    {
+        public static IBrowserService publicSelectionBrowserService;
+    }
+    public static class GlobalSelection
+    {
+        // This list will store the last selected elements
+        public static List<ElementType> LastSelectedElements { get; private set; } = new List<ElementType>();
+        public static Dictionary<string, List<ElementType>> LastSelectedElementsWithDocs { get; private set; } = new Dictionary<string, List<ElementType>>();
+
+    }
+    public static class GlobalDocument
+    {
+        public static Document currentDocument;
+    }
     public static class GlobalBsddSettings
     {
         public static BsddSettings bsddsettings = new BsddSettings();

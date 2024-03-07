@@ -1,5 +1,5 @@
 ﻿
-#define REVIT_2024
+
 using Autodesk.Revit.UI;
 
 namespace BsddRevitPlugin.V2024

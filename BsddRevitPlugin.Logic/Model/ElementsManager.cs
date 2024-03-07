@@ -1,6 +1,7 @@
 ﻿using ASRR.Core.Persistence;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExtensibleStorage;
+using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
 using Newtonsoft.Json;
@@ -8,14 +9,13 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static System.Net.Mime.MediaTypeNames;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 
 namespace BsddRevitPlugin.Logic.Model
 {
     public static class ElementsManager
     {
+
         // Element IFCClassification schema
         private static Guid s_schemaId = new Guid("79717CB2-D47B-4EC0-8E74-83A43E7D9F0A");
         private const string s_IfcClassificationData = "IfcClassificationData";
@@ -173,27 +173,31 @@ namespace BsddRevitPlugin.Logic.Model
                                     {
                                         string typeParameterName = typeparameter.Definition.Name;
 
-                                        //Add the bsdd value to the parameter
-                                        if (typeParameterName == bsddParameterName)
+                                        switch (typeParameterName)
                                         {
-                                            typeparameter.Set(ifcClassificationReference.Identification + ":" + ifcClassificationReference.Name);
-                                        }
-                                        //Add the bsdd value to the mapped parameter
-                                        if (typeParameterName == parameterMappedName)
-                                        {
-                                            typeparameter.Set(ifcClassificationReference.Identification);
-                                        }
-                                        //Allways add a type
-                                        if (typeParameterName == "Export Type to IFC As")
-                                        {
-                                            typeparameter.Set(ifcEntity.Type);
-                                        }
-                                        //Allways add a predifined type
-                                        if (typeParameterName == "Type IFC Predefined Type")
-                                        {
-                                            //add check if Type even exists
-                                            typeparameter.Set(ifcEntity.PredefinedType + "Type");
-                                          
+                                            //Add the bsdd value to the parameter
+                                            case var name when name == bsddParameterName:
+                                                typeparameter.Set(ifcClassificationReference.Identification + ":" + ifcClassificationReference.Name);
+                                                break;
+
+                                            //Add the bsdd value to the mapped parameter
+                                            case var name when name == parameterMappedName:
+                                                typeparameter.Set(ifcClassificationReference.Identification);
+                                                break;
+
+                                            //Allways add a type
+                                            case "Export Type to IFC As":
+                                                typeparameter.Set(ifcEntity.Type);
+                                                break;
+
+                                            //Allways add a predifined type
+                                            case "Type IFC Predefined Type":
+                                                //add check if Type even exists
+                                                typeparameter.Set(ifcEntity.PredefinedType);
+                                                break;
+
+                                            default:
+                                                break;
                                         }
                                     }
 
@@ -210,52 +214,96 @@ namespace BsddRevitPlugin.Logic.Model
                     var isDefinedBy = ifcEntity.IsDefinedBy;
                     if (isDefinedBy != null)
                     {
-                       foreach (var propertySet in isDefinedBy)
-                       {
-                           foreach (var property in propertySet.HasProperties)
+                        foreach (var propertySet in isDefinedBy)
+                        {
+                            foreach (var property in propertySet.HasProperties)
                             {
                                 //Set parameter type and group for the bsdd classification parameters
                                 if (property.NominalValue.Type != null)
-                               {
-                                   //Else default specType string.text is used
-                                   specType = GetParameterTypeFromProperty(property);
-                               }
+                                {
+                                    //Else default specType string.text is used
+                                    specType = GetParameterTypeFromProperty(property);
+                                }
 
-                               //Create parameter name for each unique the bsdd property
-                               bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property.Name);
+                                //Create parameter name for each unique the bsdd property
+                                bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property.Name);
 
-                               //Add a project parameter for the bsdd parameter in all Revit categorices if it does not exist 
-                               //NOTE: THIS IS UP FOR DISCUSSION, AS IT MIGHT NOT BE NECESSARY TO ADD THE PARAMETER TO ALL CATEGORIES
-                               Utilities.Parameters.CreateProjectParameterForAllCategories(doc, bsddParameterName, "tempGroupName", specType, groupType, false);
+                                //Add a project parameter for the bsdd parameter in all Revit categorices if it does not exist 
+                                //NOTE: THIS IS UP FOR DISCUSSION, AS IT MIGHT NOT BE NECESSARY TO ADD THE PARAMETER TO ALL CATEGORIES
+                                Utilities.Parameters.CreateProjectParameterForAllCategories(doc, bsddParameterName, "tempGroupName", specType, groupType, false);
 
-                               dynamic value = GetParameterValueInCorrectDatatype(property);
+                                dynamic value = GetParameterValueInCorrectDatatype(property);
 
-                               //Check each type parameter from the object
-                               foreach (Parameter typeparameter in elementType.Parameters)
-                               {
-                                   string typeParameterName = typeparameter.Definition.Name;
+                                //Check each type parameter from the object
+                                foreach (Parameter typeparameter in elementType.Parameters)
+                                {
+                                    string typeParameterName = typeparameter.Definition.Name;
 
 
-                                   //Add the bsdd value to the parameter
-                                   if (typeParameterName == bsddParameterName)
-                                   {
-                                       try
-                                       {
-                                           //because the value is dynamic, always try catch
-                                           typeparameter.Set(value);
-                                       }
-                                       catch (Exception e)
-                                       {
-                                           logger.Info($"Property {property.Name} of type {property.Type} could not be set for elementType {elementType.Name},'{elementType.Id}'. Exception: {e.Message}");
-                                       }
-                                   }
-                               }
-                           }
-                       }
+                                    //Add the bsdd value to the parameter
+                                    if (typeParameterName == bsddParameterName)
+                                    {
+                                        try
+                                        {
+                                            //because the value is dynamic, always try catch
+                                            typeparameter.Set(value);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            logger.Info($"Property {property.Name} of type {property.Type} could not be set for elementType {elementType.Name},'{elementType.Id}'. Exception: {e.Message}");
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
 
                     tx.Commit();
                 }
+
+            }
+            catch (Exception e)
+            {
+                logger.Info(e.Message);
+                throw;
+            }
+        }
+        public static void SelectElementsWithIfcData(UIDocument uidoc, IfcEntity ifcEntity)
+        {
+            Logger logger = LogManager.GetCurrentClassLogger();
+
+            logger.Info($"Element json {JsonConvert.SerializeObject(ifcEntity)}");
+            Document doc = uidoc.Document;
+
+            try
+            {
+                //Get the elementType
+                int idInt = Convert.ToInt32(ifcEntity.Tag);
+                ElementId typeId = new ElementId(idInt);
+                ElementType elementType = doc.GetElement(typeId) as ElementType;
+
+                //Get all instances of the elementtype
+                FilteredElementCollector collector = new FilteredElementCollector(doc);
+                var elements = collector
+                    .WhereElementIsNotElementType()
+                    .Where(e => e.GetTypeId() == elementType.Id)
+                    .ToList();
+              
+                //Get element ids
+                List<ElementId> elementIds = elements.Select(e => e.Id).ToList();
+
+
+                try
+                {
+
+                    // Select the elements in the UI
+                    uidoc.Selection.SetElementIds(elementIds);
+                }
+                catch
+                {
+                    Console.WriteLine("Could not select any elements");
+                }
+
 
             }
             catch (Exception e)
@@ -279,7 +327,7 @@ namespace BsddRevitPlugin.Logic.Model
                     }
                     catch (InvalidCastException)
                     {
-                        value = 0; 
+                        value = 0;
                         // Handle or ignore the error when value is not a boolean
                     }
                     break;
