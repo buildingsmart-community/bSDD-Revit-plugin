@@ -21,7 +21,6 @@ using Document = Autodesk.Revit.DB.Document;
 /// </summary>
 namespace BsddRevitPlugin.Logic.UI.Wrappers
 {
-
     public abstract class EventRevitSelection : RevitEventWrapper<string>
     {
         Logger logger = LogManager.GetCurrentClassLogger();
@@ -77,10 +76,6 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
         public void UpdateBsddSelection(List<IfcEntity> ifcData)
         {
-            var settings = new JsonSerializerSettings
-            {
-                NullValueHandling = NullValueHandling.Ignore
-            };
             var jsonString = JsonConvert.SerializeObject(ifcData);
             var jsFunctionCall = $"updateSelection({jsonString});";
 

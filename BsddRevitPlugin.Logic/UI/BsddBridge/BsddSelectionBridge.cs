@@ -3,6 +3,7 @@ using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Events;
 using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.Model;
+using BsddRevitPlugin.Logic.UI.Services;
 using BsddRevitPlugin.Logic.UI.View;
 using BsddRevitPlugin.Logic.UI.Wrappers;
 using Newtonsoft.Json;
@@ -28,11 +29,14 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         private ExternalEvent _exEventUpdateSettings;
         private SelectElementsWithIfcData selectElementsWithIfcData;
         private ExternalEvent _exEventSelectElement;
+        private SelectionManager _selectionManager;
+
+        private IBrowserService _browserService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BsddSelectionBridge"/> class.
         /// </summary>
-        public BsddSelectionBridge(ExternalEvent bsddLastSelectionExEvent)
+        public BsddSelectionBridge(ExternalEvent bsddLastSelectionExEvent, SelectionManager selectionManager)
         {
             _bsddLastSelectionEvent = bsddLastSelectionExEvent;
             _eventHandlerBsddSearch = new EventHandlerBsddSearch(_bsddLastSelectionEvent);
@@ -44,7 +48,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
 
             selectElementsWithIfcData = new SelectElementsWithIfcData();
             _exEventSelectElement = ExternalEvent.Create(selectElementsWithIfcData);
-
+            _selectionManager = selectionManager;
         }
 
         /// <summary>
@@ -110,6 +114,8 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             // Update the selection UI with the last selection
             _bsddLastSelectionEvent.Raise();
 
+            //Update the selection manager with the new settings
+            _selectionManager.UpdateBsddLastSelection();
         }
         public string loadSettings()
         {
