@@ -29,6 +29,7 @@ namespace BsddRevitPlugin.Logic.UI.View
         EventSelectView SelectEHSV;
         EventUseLastSelection eventUseLastSelection;
         ExternalEvent SelectEEMS, SelectEESA, SelectEESV, SelectEULS;
+        SelectionManager selectionManager;
         private BsddBridgeData _inputBsddBridgeData;
 
 
@@ -48,6 +49,10 @@ namespace BsddRevitPlugin.Logic.UI.View
 
             string addinLocation = Assembly.GetExecutingAssembly().Location;
             string addinDirectory = System.IO.Path.GetDirectoryName(addinLocation);
+
+
+            selectionManager = new SelectionManager();
+            selectionManager.SetBrowser(_browserService);
 
             // Initialize the events
             SelectEHMS = new EventMakeSelection();
@@ -69,7 +74,7 @@ namespace BsddRevitPlugin.Logic.UI.View
 
             // Set the address of the CefSharp browser component to the index.html file of the plugin
             _browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/bsdd_selection/index.html";
-            _browserService.RegisterJsObject("bsddBridge", new BsddSelectionBridge(SelectEULS), true);
+            _browserService.RegisterJsObject("bsddBridge", new BsddSelectionBridge(SelectEULS, selectionManager), true);
             _browserService.IsBrowserInitializedChanged += OnIsBrowserInitializedChanged;
 
             // Sort the list of elements by category, family, and type
