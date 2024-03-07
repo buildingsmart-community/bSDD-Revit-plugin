@@ -168,7 +168,8 @@ namespace BsddRevitPlugin.Logic.Model
 
             //Apply the IFC Export Setting (Those are equivalent to the Export Setting in the IFC Export User Interface)
             //General
-            configuration.IFCVersion = IFCVersion.IFC2x3CV2;
+            //configuration.IFCVersion = IFCVersion.IFC2x3CV2;
+            configuration.IFCVersion = IFCVersion.IFC4;
             configuration.ExchangeRequirement = 0;
             configuration.IFCFileType = 0;
             configuration.SpaceBoundaries = 0;
