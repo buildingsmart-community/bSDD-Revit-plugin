@@ -29,7 +29,7 @@ namespace BsddRevitPlugin.Logic.UI.View
         EventSelectView SelectEHSV;
         EventUseLastSelection eventUseLastSelection;
         ExternalEvent SelectEEMS, SelectEESA, SelectEESV, SelectEULS;
-        UpdateUI updateUIEvent;
+        UpdateUIonSave updateUIEvent;
         private BsddBridgeData _inputBsddBridgeData;
 
 
@@ -50,7 +50,7 @@ namespace BsddRevitPlugin.Logic.UI.View
             string addinLocation = Assembly.GetExecutingAssembly().Location;
             string addinDirectory = System.IO.Path.GetDirectoryName(addinLocation);
 
-            updateUIEvent = new UpdateUI();
+            updateUIEvent = new UpdateUIonSave();
             updateUIEvent.SetBrowser(_browserService);
 
             // Initialize the events

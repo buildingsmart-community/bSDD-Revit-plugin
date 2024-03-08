@@ -23,7 +23,7 @@ using Document = Autodesk.Revit.DB.Document;
 /// </summary>
 namespace BsddRevitPlugin.Logic.UI.Wrappers
 {
-    public class UpdateUI : RevitEventWrapper<BsddSettings>
+    public class UpdateUIonSave : RevitEventWrapper<BsddSettings>
     {
         Logger logger = LogManager.GetCurrentClassLogger();
 
