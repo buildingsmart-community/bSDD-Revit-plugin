@@ -10,6 +10,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.DB.IFC;
+using System.Windows.Controls;
+using System.IO;
+using System.Windows.Shapes;
+using System.Runtime.Remoting.Contexts;
+using Autodesk.Revit.UI.Selection;
+using Autodesk.Revit.UI;
 
 
 namespace BsddRevitPlugin.Logic.Model
@@ -497,6 +503,7 @@ namespace BsddRevitPlugin.Logic.Model
         /// <returns>A IfcData object representing the ifcJSON structure.</returns>
         public static List<IfcEntity> SelectionToIfcJson(Document doc, List<ElementType> elemList)
         {
+            
             if (doc == null || elemList == null)
             {
                 throw new ArgumentNullException(doc == null ? nameof(doc) : nameof(elemList));
@@ -511,7 +518,7 @@ namespace BsddRevitPlugin.Logic.Model
                     continue;
                 }
 
-                var ifcData = CreateIfcEntity(elem);
+                var ifcData = CreateIfcEntity(elem, doc);
                 ifcEntities.Add(ifcData);
             }
 
@@ -526,13 +533,13 @@ namespace BsddRevitPlugin.Logic.Model
         /// <summary>
         /// Transforms a Revit element type into an IFC entity.
         /// </summary>
-        private static IfcEntity CreateIfcEntity(ElementType elem)
+        private static IfcEntity CreateIfcEntity(ElementType elem, Document doc)
         {
             string familyName = GetElementTypeFamilyName(elem, GetTypeParameterValueByElementType(elem, "IfcName"));
             string typeName = GetElementTypeName(elem, GetTypeParameterValueByElementType(elem, "IfcType"));
             string ifcTag = elem.Id.ToString();
             string typeDescription = GetTypeParameterValueByElementType(elem, "Description");
-            string ifcType = elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS)?.AsString();
+            string ifcType = IFCMappingValue(doc, elem);
             string ifcPredefinedType = elem.get_Parameter(BuiltInParameter.IFC_EXPORT_PREDEFINEDTYPE_TYPE)?.AsString();
 
             var associations = GetElementTypeAssociations(elem);
@@ -705,34 +712,75 @@ namespace BsddRevitPlugin.Logic.Model
 
             return paramValue;
         }
-
-        public static void AccessIFCMappingTable(Document doc, ExporterIFC exporter)
+        
+        public static String IFCMappingValue(Document doc, Element elem)
         {
-            // Get all categories in the document
-            Categories categories = doc.Settings.Categories;
-
-            // Dictionary to store the mapping between Revit categories and IFC class names
-            Dictionary<Category, string> mappingTable = new Dictionary<Category, string>();
-
-            // Iterate through each category
-            foreach (ElementId categoryId in categories)
+                 
+            if(elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS)?.AsString() != null &&
+                elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS)?.AsString() != "")
             {
-                // Get the IFC entity type (class name) for the current category
-                string ifcClassName = ExporterIFCUtils.GetIFCClassNameByCategory(categoryId, exporter);
-
-                Category category = Category.GetCategory(doc, categoryId);
-
-                // Add the mapping to the dictionary
-                if (!string.IsNullOrEmpty(ifcClassName))
-                {
-                    mappingTable.Add(category, ifcClassName);
-                }
+                return elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS)?.AsString();
             }
 
-            // Now you have a mapping table between Revit categories and their corresponding IFC class names
-            // You can access this mapping as needed
-        }
+            //krijg category van element
+            Category elemCategory = elem.Category;
+            String cat = elemCategory.Name.ToString();
 
+            /* Vind alle subcategories van de categorie
+            if (elemCategory != null)
+            {
+                // Retrieve the subcategories of the element's category
+                foreach (Category subcategory in elemCategory.SubCategories)
+                {
+                    string subcategoryName = subcategory.Name;
+                    // Now you have the subcategory name!
+                    // You can use it as needed in your code.
+                    // For example, print it to the console:
+                }
+            }
+            //Vind alle subcategories van de categorie */
+
+
+            //txt opbouw per regel: Category<tab> Subcategory<tab> Layer name < tab > Color number<tab>
+            String exportCategoryTableFilePath = doc.Application.ExportIFCCategoryTable;
+
+            // Dictionary to store the mapping between Revit categories and IFC class names
+            Dictionary<string, string> mappingTable = new Dictionary<string, string>();
+
+            String line;
+            try
+            {
+                //Pass the file path and file name to the StreamReader constructor
+                StreamReader sr = new StreamReader(exportCategoryTableFilePath);
+                line = sr.ReadLine();
+                String sep = "\t";
+                while (line != null)
+                {
+                    if (line.StartsWith("#") || line == null)
+                    {
+
+                    }
+                    else
+                    {
+                        string[] splitContent = line.Split(sep.ToCharArray());
+                        // Dictionary to store the mapping between Revit categories and IFC class names
+                        mappingTable.Add(splitContent[0] + "\t" + splitContent[1], splitContent[2]);
+                    }
+
+                    //Read the next line
+                    line = sr.ReadLine();
+                }
+                //close the file
+                sr.Close();
+                Console.ReadLine();
+            }
+            catch
+            {
+
+            };
+
+            return mappingTable[cat + "\t"];
+        }
     }
 }
 
