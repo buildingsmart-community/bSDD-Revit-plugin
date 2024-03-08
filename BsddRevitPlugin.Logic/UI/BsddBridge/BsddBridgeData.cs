@@ -7,10 +7,6 @@ using System.Collections.Generic;
 
 namespace BsddRevitPlugin.Logic.UI.BsddBridge
 {
-    public static class GlobalBrowserService
-    {
-        public static IBrowserService publicSelectionBrowserService;
-    }
     public static class GlobalSelection
     {
         // This list will store the last selected elements
