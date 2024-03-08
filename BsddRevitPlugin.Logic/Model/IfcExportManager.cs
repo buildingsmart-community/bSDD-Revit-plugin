@@ -14,29 +14,7 @@ namespace BsddRevitPlugin.Logic.Model
 {
     public class IfcExportManager
     {
-        public ForgeTypeId GetParameterForgeTypeId(Document doc, Parameter p)
-        {
-
-            BindingMap bindingMap = doc.ParameterBindings;
-            DefinitionBindingMapIterator it = bindingMap.ForwardIterator();
-
-            
-            while (it.MoveNext())
-            {
-                InternalDefinition def = it.Key as InternalDefinition;
-                if (def != null)
-                {
-                    // Use the InternalDefinition here
-                    if (def.Name == p.Definition.Name.ToString())
-                    {
-                        return null;
-
-                    }
-                }
-            }
-
-            return null;
-        }
+       
         public IList<Parameter> GetAllBsddParameters(Autodesk.Revit.DB.Document doc)
         {
             // Apply the filter to the elements in the active document
