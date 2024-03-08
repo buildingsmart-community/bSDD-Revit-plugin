@@ -38,13 +38,13 @@ namespace BsddRevitPlugin.Common.Commands
                 IfcExportManager ifcexportManager = new IfcExportManager(); 
 
                 //Create an Instance of the IFC Export Class
-                IFCExportOptions IFCExportOptions = new IFCExportOptions();
+                IFCExportOptions ifcExportOptions = new IFCExportOptions();
 
                 //Get the bsdd confguration from document or create a new one
                 IFCExportConfiguration bsddIFCExportConfiguration = ifcexportManager.GetOrSetBsddConfiguration(doc);
 
                 //Somehow UpdateOptions() can't handle the activeViewId, so we set it manually to -1
-                //bsddIFCExportConfiguration.ActivePhaseId = -1;
+                bsddIFCExportConfiguration.ActivePhaseId = -1;
 
                 // Create an instance of the IFCCommandOverrideApplication class
                 IFCCommandOverrideApplication ifcCommandOverrideApplication = new IFCCommandOverrideApplication();
@@ -135,6 +135,12 @@ namespace BsddRevitPlugin.Common.Commands
                             else if (p.StorageType.ToString() == "Double")
                             {
                                 add_BSDD_UDPS += "Real";
+                            }
+                            else if (p.StorageType.ToString() == "Integer")
+                            {
+                                var forgeType = ifcexportManager.GetParameterForgeTypeId(doc,p);
+                                //This isn't always a boolean: need to figure out how to determine if it is a boolean or an actual integer parameter
+                                add_BSDD_UDPS += "Boolean";
                             }
                             else
                             {
@@ -287,7 +293,7 @@ namespace BsddRevitPlugin.Common.Commands
                     bsddIFCExportConfiguration.ExportUserDefinedPsetsFileName = tempFilePath;
 
                     //Pass the setting of the myIFCExportConfiguration to the IFCExportOptions
-                    bsddIFCExportConfiguration.UpdateOptions(IFCExportOptions, activeViewId);
+                    bsddIFCExportConfiguration.UpdateOptions(ifcExportOptions, activeViewId);
 
                     //// Add option with a new IFC Class System
                     //using (var form = new System.Windows.Forms.Form())
@@ -336,7 +342,7 @@ namespace BsddRevitPlugin.Common.Commands
                         {
                             // Export the IFC file
                             //doc.Export(directory, fileName, exportOpt);
-                            doc.Export(directory, fileName, IFCExportOptions);
+                            doc.Export(directory, fileName, ifcExportOptions);
 
                             // Commit the transaction
                             transaction.Commit();

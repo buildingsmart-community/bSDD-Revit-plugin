@@ -75,6 +75,9 @@ namespace BsddRevitPlugin.Common
             // Subscribe to the DocumentOpened event
             _application.ControlledApplication.DocumentOpened += Application_DocumentOpened;
 
+            // Subscribe to the DocumentClosed event
+            _application.ControlledApplication.DocumentClosing += Application_DocumentClosing;
+
             // Subscribe to the DocumentChanged event
             //_application.ControlledApplication.DocumentChanged += Application_DocumentChanged;
 
@@ -121,12 +124,19 @@ namespace BsddRevitPlugin.Common
         }
 
 
-        // Event handler for DocumentCevent
+        // Event handler for DocumentChanged event
         private void Application_DocumentChanged(object sender, Autodesk.Revit.DB.Events.DocumentChangedEventArgs e)
 
         {
             //Doubt this is nesssecary
             //RefreshSettingsAndSelection(e.GetDocument());
+        }  
+        // Event handler for DocumentClosed event
+        private void Application_DocumentClosing(object sender, Autodesk.Revit.DB.Events.DocumentClosingEventArgs e)
+
+        {
+            //remove last selection from closing doc
+            GlobalSelection.LastSelectedElementsWithDocs.Remove(e.Document.PathName);
         }
 
         private void Application_ViewActivated(object sender, ViewActivatedEventArgs e)
