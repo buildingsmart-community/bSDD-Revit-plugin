@@ -112,7 +112,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             _exEventUpdateSettings.Raise();
 
             // Update the selection UI with the last selection
-            _bsddLastSelectionEvent.Raise();
+            //_bsddLastSelectionEvent.Raise();
 
             //Update the selection manager with the new settings
             _selectionManager.UpdateBsddLastSelection();

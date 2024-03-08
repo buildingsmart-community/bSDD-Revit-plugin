@@ -227,6 +227,30 @@ namespace BsddRevitPlugin.Logic.Model
 
                                 //Create parameter name for each unique the bsdd property
                                 bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property.Name);
+                                ////Commenting this switch: Issue with LoadBearing etc being allready added as a param without all categories
+                                //switch (property.Name)
+                                //{
+                                //    //Allways add a type
+                                //    case "Load Bearing":
+                                //        bsddParameterName = "LoadBearing";
+                                //        break;
+
+                                //    //Allways add a predifined type
+                                //    case "Is External":
+                                //        //add check if Type even exists
+                                //        bsddParameterName = "IsExternal";
+                                //        break;
+
+                                //    //Allways add a predifined type
+                                //    case "Fire Rating":
+                                //        //add check if Type even exists
+                                //        bsddParameterName = "FireRating";
+                                //        break;
+
+                                //    default:
+                                //        bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property.Name);
+                                //        break;
+                                //}
 
                                 //Add a project parameter for the bsdd parameter in all Revit categorices if it does not exist 
                                 //NOTE: THIS IS UP FOR DISCUSSION, AS IT MIGHT NOT BE NECESSARY TO ADD THE PARAMETER TO ALL CATEGORIES
@@ -316,70 +340,103 @@ namespace BsddRevitPlugin.Logic.Model
         private static dynamic GetParameterValueInCorrectDatatype(IfcPropertySingleValue property)
         {
             dynamic value = property.NominalValue.Value;
-            // Parse value to correct datatype
-            switch (property.NominalValue.Type)
+
+            if (value != null)
             {
-                case "IfcBoolean":
-                    try
-                    {
-                        bool revidBool = (bool)value;
-                        value = revidBool ? 1 : 0;
-                    }
-                    catch (InvalidCastException)
-                    {
-                        value = 0;
-                        // Handle or ignore the error when value is not a boolean
-                    }
-                    break;
-                case "IfcInteger":
-                    try
-                    {
-                        value = Convert.ToInt32(value);
 
-                    }
-                    catch (Exception)
-                    {
-                        value = 0;
-                    }
-                    break;
-                case "IfcReal":
-                    try
-                    {
+                // Parse value to correct datatype
+                switch (property.NominalValue.Type)
+                {
+                    case "IfcBoolean":
+                        try
+                        {
+                            bool revidBool = (bool)value;
+                            value = revidBool ? 1 : 0;
+                        }
+                        catch (InvalidCastException)
+                        {
+                            value = 0;
+                            // Handle or ignore the error when value is not a boolean
+                        }
+                        break;
+                    case "IfcInteger":
+                        try
+                        {
+                            value = Convert.ToInt32(value);
 
-                        value = Convert.ToDouble(value);
-                    }
-                    catch (Exception)
-                    {
+                        }
+                        catch (Exception)
+                        {
+                            value = 0;
+                        }
+                        break;
+                    case "IfcReal":
+                        try
+                        {
 
-                        value = 0;
-                    }
-                    break;
-                case "IfcDate":
-                    try
-                    {
-                        //TODO: Check what seems to be a valid DateTime to get and convert
-                        value = Convert.ToDateTime(value).ToString();
+                            value = Convert.ToDouble(value);
+                        }
+                        catch (Exception)
+                        {
 
-                    }
-                    catch (Exception)
-                    {
+                            value = 0;
+                        }
+                        break;
+                    case "IfcDate":
+                        try
+                        {
+                            //TODO: Check what seems to be a valid DateTime to get and convert
+                            value = Convert.ToDateTime(value).ToString();
 
-                        value = value.ToString();
-                    }
-                    break;
-                default:
-                    // IfcString or Default
-                    try
-                    {
+                        }
+                        catch (Exception)
+                        {
 
-                        value = value.ToString();
-                    }
-                    catch (Exception)
-                    {
+                            value = value.ToString();
+                        }
+                        break;
+                    default:
+                        // IfcString or Default
+                        try
+                        {
 
-                        value = "";
-                    }
-                    break;
+                            value = value.ToString();
+                        }
+                        catch (Exception)
+                        {
+
+                            value = "";
+                        }
+                        break;
+                }
+            }
+            else
+            {
+
+                // Parse value to correct datatype
+                switch (property.NominalValue.Type)
+                {
+                    case "IfcBoolean":
+                        
+                            value = 0;
+                         
+                        break;
+                    case "IfcInteger":
+                        
+                            value = 0;
+                        break;
+                    case "IfcReal":
+                        
+                            value = 0;
+                        break;
+                    case "IfcDate":
+                        
+                            value = value.ToString();
+                        break;
+                    default:
+                            value = "";
+                        break;
+                }
             }
 
             return value;
