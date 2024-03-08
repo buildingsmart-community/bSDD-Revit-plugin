@@ -71,6 +71,12 @@
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="Revit.IFC.Common">
+      <HintPath>..\..\..\..\..\..\Program Files\Autodesk\Revit 2023\Revit.IFC.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Revit.IFC.Export">
+      <HintPath>..\..\..\..\..\..\Program Files\Autodesk\Revit 2023\Revit.IFC.Export.dll</HintPath>
+    </Reference>
     <Reference Include="RevitAPI, Version=24.0.0.0, Culture=neutral, processorArchitecture=AMD64">
       <HintPath>..\packages\Revit_All_Main_Versions_API_x64.2024.0.0\lib\net48\RevitAPI.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
