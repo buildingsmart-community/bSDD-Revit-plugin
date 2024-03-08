@@ -29,14 +29,14 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         private ExternalEvent _exEventUpdateSettings;
         private SelectElementsWithIfcData selectElementsWithIfcData;
         private ExternalEvent _exEventSelectElement;
-        private UpdateUI _updateUIEvent;
+        private UpdateUIonSave _updateUIEvent;
 
         private IBrowserService _browserService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BsddSelectionBridge"/> class.
         /// </summary>
-        public BsddSelectionBridge(ExternalEvent bsddLastSelectionExEvent, UpdateUI updateUIEvent)
+        public BsddSelectionBridge(ExternalEvent bsddLastSelectionExEvent, UpdateUIonSave updateUIEvent)
         {
             _bsddLastSelectionEvent = bsddLastSelectionExEvent;
             _eventHandlerBsddSearch = new EventHandlerBsddSearch(_bsddLastSelectionEvent);
