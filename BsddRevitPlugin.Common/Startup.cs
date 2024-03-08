@@ -43,7 +43,6 @@ namespace BsddRevitPlugin.Common
 
             _application = application;
             _selectionBrowserService = browserServiceFactory.CreateBrowserService();
-            GlobalBrowserService.publicSelectionBrowserService = _selectionBrowserService;
         }
 
         /// <summary>
