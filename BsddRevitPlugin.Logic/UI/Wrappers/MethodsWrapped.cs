@@ -8,8 +8,10 @@ using BsddRevitPlugin.Logic.UI.Services;
 using BsddRevitPlugin.Logic.UI.View;
 using Newtonsoft.Json;
 using NLog;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
@@ -21,6 +23,51 @@ using Document = Autodesk.Revit.DB.Document;
 /// </summary>
 namespace BsddRevitPlugin.Logic.UI.Wrappers
 {
+    public class UpdateUI : RevitEventWrapper<BsddSettings>
+    {
+        Logger logger = LogManager.GetCurrentClassLogger();
+
+        private IBrowserService browser;
+
+        public override void Execute(UIApplication uiapp, BsddSettings bsddSettings)
+        {
+            UIDocument uidoc = uiapp.ActiveUIDocument;
+            Document doc = uidoc.Document;
+
+            //UpdateSettings(bsddSettings);
+            SettingsManager.SaveSettingsToGlobalParametersAndDataStorage(doc,bsddSettings);
+            UpdateBsddLastSelection();
+
+
+        }
+
+        public void SetBrowser(IBrowserService browserObject)
+        {
+            browser = browserObject;
+        }
+
+        public void UpdateBsddLastSelection()
+        {
+            List<ElementType> lastSelection = new List<ElementType>();
+            try
+            {
+                lastSelection = GlobalSelection.LastSelectedElementsWithDocs[GlobalDocument.currentDocument.PathName];
+
+            }
+            catch (Exception)
+            {
+
+            }
+            var jsonString = JsonConvert.SerializeObject(ElementsManager.SelectionToIfcJson(GlobalDocument.currentDocument, lastSelection));
+            var jsFunctionCall = $"updateSelection({jsonString});";
+
+            if (browser.IsBrowserInitialized)
+            {
+                browser.ExecuteScriptAsync(jsFunctionCall);
+            }
+        }
+
+    }
     public abstract class EventRevitSelection : RevitEventWrapper<string>
     {
         Logger logger = LogManager.GetCurrentClassLogger();
@@ -178,22 +225,17 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
     /// <summary>
     /// Represents a class that triggers the writing of settings into the BsddSettings object and the DataStorage.
     /// </summary>
-    public class UpdateSettings : RevitEventWrapper<string>
+    public class UpdateSettings : RevitEventWrapper<BsddSettings>
     {
         Logger logger = LogManager.GetCurrentClassLogger();
 
-        BsddSettings settings;
 
-        public override void Execute(UIApplication uiapp, string args)
+        public override void Execute(UIApplication uiapp, BsddSettings settingsObject)
         {
             var uidoc = uiapp.ActiveUIDocument;
             var doc = uidoc.Document;
-            SettingsManager.SaveSettingsToGlobalVariable(settings);
-            SettingsManager.SaveSettingsToDataStorage(doc, settings);
-        }
-        public void SetSettings(BsddSettings settingsObject)
-        {
-            settings = settingsObject;
+            SettingsManager.SaveSettingsToGlobalVariable(settingsObject);
+            SettingsManager.SaveSettingsToDataStorage(doc, settingsObject);
         }
 
     }

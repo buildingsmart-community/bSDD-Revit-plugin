@@ -14,7 +14,6 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
     public static class GlobalSelection
     {
         // This list will store the last selected elements
-        public static List<ElementType> LastSelectedElements { get; private set; } = new List<ElementType>();
         public static Dictionary<string, List<ElementType>> LastSelectedElementsWithDocs { get; private set; } = new Dictionary<string, List<ElementType>>();
 
     }

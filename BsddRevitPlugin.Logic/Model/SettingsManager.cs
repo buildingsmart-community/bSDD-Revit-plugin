@@ -13,12 +13,13 @@ using static System.Net.Mime.MediaTypeNames;
 using NLog.Fluent;
 using BsddRevitPlugin.Logic.UI.Wrappers;
 using BsddRevitPlugin.Logic.UI.View;
+using BsddRevitPlugin.Logic.UI.Services;
 
 namespace BsddRevitPlugin.Logic.Model
 {
     public static class SettingsManager
     {
-
+        
         // bSDD plugin settings schema ID
         private static Guid s_schemaId = new Guid("1A53FFA0-B6FD-418B-A6A6-70D8EA8871B3");
         private const string BsddSettingsFieldName = "BsddSettings";
@@ -214,5 +215,16 @@ namespace BsddRevitPlugin.Logic.Model
             return settings;
 
         }
+        public static void SaveSettingsToGlobalParametersAndDataStorage(Document doc, BsddSettings bsddSettings)
+        {
+            if (bsddSettings == null)
+            {
+                bsddSettings = LoadDefaultSettings();
+            }
+            SaveSettingsToGlobalVariable(bsddSettings);
+            SaveSettingsToDataStorage(doc, bsddSettings);
+
+        }
     }
+    
 }

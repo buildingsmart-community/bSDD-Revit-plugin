@@ -29,14 +29,14 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         private ExternalEvent _exEventUpdateSettings;
         private SelectElementsWithIfcData selectElementsWithIfcData;
         private ExternalEvent _exEventSelectElement;
-        private SelectionManager _selectionManager;
+        private UpdateUI _updateUIEvent;
 
         private IBrowserService _browserService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BsddSelectionBridge"/> class.
         /// </summary>
-        public BsddSelectionBridge(ExternalEvent bsddLastSelectionExEvent, SelectionManager selectionManager)
+        public BsddSelectionBridge(ExternalEvent bsddLastSelectionExEvent, UpdateUI updateUIEvent)
         {
             _bsddLastSelectionEvent = bsddLastSelectionExEvent;
             _eventHandlerBsddSearch = new EventHandlerBsddSearch(_bsddLastSelectionEvent);
@@ -48,7 +48,8 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
 
             selectElementsWithIfcData = new SelectElementsWithIfcData();
             _exEventSelectElement = ExternalEvent.Create(selectElementsWithIfcData);
-            _selectionManager = selectionManager;
+
+            _updateUIEvent = updateUIEvent; 
         }
 
         /// <summary>
@@ -108,14 +109,14 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
                 item.IfcClassification.ClassificationFieldName = ElementsManager.CreateParameterNameFromUri(item.IfcClassification.Location);
 
             }
-            _updateSettings.SetSettings(settings);
-            _exEventUpdateSettings.Raise();
+            _updateUIEvent.Raise(settings);
+            //_updateSettings.Raise(settings);
 
             // Update the selection UI with the last selection
             //_bsddLastSelectionEvent.Raise();
 
             //Update the selection manager with the new settings
-            _selectionManager.UpdateBsddLastSelection();
+            //_selectionManager.UpdateUI(settings);
         }
         public string loadSettings()
         {
