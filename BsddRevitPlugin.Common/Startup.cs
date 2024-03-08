@@ -76,7 +76,7 @@ namespace BsddRevitPlugin.Common
             _application.ControlledApplication.DocumentOpened += Application_DocumentOpened;
 
             // Subscribe to the DocumentChanged event
-            _application.ControlledApplication.DocumentChanged += Application_DocumentChanged;
+            //_application.ControlledApplication.DocumentChanged += Application_DocumentChanged;
 
             // Subscribe to the ViewActivated event
             _application.ViewActivated += Application_ViewActivated;

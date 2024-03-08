@@ -29,7 +29,6 @@ namespace BsddRevitPlugin.Logic.Model
             catch (Exception)
             {
 
-                throw;
             }
             var jsonString = JsonConvert.SerializeObject(ElementsManager.SelectionToIfcJson(GlobalDocument.currentDocument, lastSelection));
             var jsFunctionCall = $"updateSelection({jsonString});";
