@@ -138,9 +138,17 @@ namespace BsddRevitPlugin.Common.Commands
                             }
                             else if (p.StorageType.ToString() == "Integer")
                             {
-                                var forgeType = ifcexportManager.GetParameterForgeTypeId(doc,p);
-                                //This isn't always a boolean: need to figure out how to determine if it is a boolean or an actual integer parameter
-                                add_BSDD_UDPS += "Boolean";
+                                var forgeType = p.Definition.GetDataType();
+                                if (forgeType.TypeId == "autodesk.spec:spec.bool-1.0.0")
+                                {
+
+                                    add_BSDD_UDPS += "Boolean";
+                                }
+                                else
+                                {
+                                    add_BSDD_UDPS += "Integer";
+
+                                }
                             }
                             else
                             {
