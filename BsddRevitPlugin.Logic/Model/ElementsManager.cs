@@ -4,6 +4,7 @@ using Autodesk.Revit.DB.ExtensibleStorage;
 using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
+using BsddRevitPlugin.Logic.Utilities;
 using Newtonsoft.Json;
 using NLog;
 using System;
@@ -228,9 +229,30 @@ namespace BsddRevitPlugin.Logic.Model
                             }
                         }
                     }
-
                     //Set Revit parameters for each property
                     var isDefinedBy = ifcEntity.IsDefinedBy;
+
+                    List<ParameterCreation> parametersToCreate = new List<ParameterCreation>();
+                    if (isDefinedBy != null)
+                    {
+                        foreach (var propertySet in isDefinedBy)
+                        {
+                            foreach (var property in propertySet.HasProperties)
+                            {
+                                if (property.NominalValue.Type != null)
+                                {
+                                    //Else default specType string.text is used
+                                    specType = GetParameterTypeFromProperty(property);
+                                }
+                                bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property.Name);
+                                parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType));
+                            }
+                        }
+                    }
+                    //Add a project parameter for the bsdd parameter in all Revit categorices if it does not exist 
+                    //NOTE: THIS IS UP FOR DISCUSSION, AS IT MIGHT NOT BE NECESSARY TO ADD THE PARAMETER TO ALL CATEGORIES
+                    Parameters.CreateProjectParametersForAllCategories(doc, parametersToCreate, "tempGroupName", groupType, false);
+
                     if (isDefinedBy != null)
                     {
                         foreach (var propertySet in isDefinedBy)
@@ -273,7 +295,7 @@ namespace BsddRevitPlugin.Logic.Model
 
                                 //Add a project parameter for the bsdd parameter in all Revit categorices if it does not exist 
                                 //NOTE: THIS IS UP FOR DISCUSSION, AS IT MIGHT NOT BE NECESSARY TO ADD THE PARAMETER TO ALL CATEGORIES
-                                Utilities.Parameters.CreateProjectParameterForAllCategories(doc, bsddParameterName, "tempGroupName", specType, groupType, false);
+                                //Utilities.Parameters.CreateProjectParameterForAllCategories(doc, bsddParameterName, "tempGroupName", specType, groupType, false);
 
                                 if (property.NominalValue.Value != null)
                                 {
