@@ -179,7 +179,7 @@ namespace BsddRevitPlugin.Logic.Utilities
                     ExternalDefinitionCreationOptions externalDefinitionCreationOptions = new ExternalDefinitionCreationOptions(parameterName, specType);
 
                     externalDefinitionCreationOptions.GUID = BsddRevitPlugin.Logic.Utilities.UuidFromUri.CreateUuidFromUri(parameterName);
-                    logger.Info($"GUID = {externalDefinitionCreationOptions.GUID.ToString()}");
+                    logger.Info($"Parameter = {parameterName}, GUID = {externalDefinitionCreationOptions.GUID.ToString()}");
 
                     ExternalDefinition def =
                         groupDef.Definitions.Create

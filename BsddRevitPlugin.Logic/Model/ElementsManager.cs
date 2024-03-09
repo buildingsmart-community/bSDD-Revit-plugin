@@ -275,28 +275,32 @@ namespace BsddRevitPlugin.Logic.Model
                                 //NOTE: THIS IS UP FOR DISCUSSION, AS IT MIGHT NOT BE NECESSARY TO ADD THE PARAMETER TO ALL CATEGORIES
                                 Utilities.Parameters.CreateProjectParameterForAllCategories(doc, bsddParameterName, "tempGroupName", specType, groupType, false);
 
-                                dynamic value = GetParameterValueInCorrectDatatype(property);
-
-                                //Check each type parameter from the object
-                                foreach (Parameter typeparameter in elementType.Parameters)
+                                if (property.NominalValue.Value != null)
                                 {
-                                    string typeParameterName = typeparameter.Definition.Name;
+                                    dynamic value = GetParameterValueInCorrectDatatype(property);
 
-
-                                    //Add the bsdd value to the parameter
-                                    if (typeParameterName == bsddParameterName)
+                                    //Check each type parameter from the object
+                                    foreach (Parameter typeparameter in elementType.Parameters)
                                     {
-                                        try
+                                        string typeParameterName = typeparameter.Definition.Name;
+
+
+                                        //Add the bsdd value to the parameter
+                                        if (typeParameterName == bsddParameterName)
                                         {
-                                            //because the value is dynamic, always try catch
-                                            typeparameter.Set(value);
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            logger.Info($"Property {property.Name} of type {property.Type} could not be set for elementType {elementType.Name},'{elementType.Id}'. Exception: {e.Message}");
+                                            try
+                                            {
+                                                //because the value is dynamic, always try catch
+                                                typeparameter.Set(value);
+                                            }
+                                            catch (Exception e)
+                                            {
+                                                logger.Info($"Property {property.Name} of type {property.Type} could not be set for elementType {elementType.Name},'{elementType.Id}'. Exception: {e.Message}");
+                                            }
                                         }
                                     }
                                 }
+                                
                             }
                         }
                     }
