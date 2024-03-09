@@ -64,8 +64,9 @@ namespace BsddRevitPlugin.Common
             if (_openLogFilePath != null)
             {
                 if (!File.Exists(_openLogFilePath)) File.Create(_openLogFilePath);
-
-                //Process.Start(_openLogFilePath);
+#if DEBUG
+                Process.Start(_openLogFilePath);
+#endif
             }
             else
             {
