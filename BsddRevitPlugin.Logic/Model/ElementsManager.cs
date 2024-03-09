@@ -177,7 +177,16 @@ namespace BsddRevitPlugin.Logic.Model
                                         {
                                             //Add the bsdd value to the parameter
                                             case var name when name == bsddParameterName:
-                                                typeparameter.Set(ifcClassificationReference.Identification + ":" + ifcClassificationReference.Name);
+                                                try
+                                                {
+                                                    logger.Info($"Setting parameter {typeparameter.Definition.Name} with value {ifcClassificationReference.Identification + ":" + ifcClassificationReference.Name}");
+                                                    typeparameter.Set(ifcClassificationReference.Identification + ":" + ifcClassificationReference.Name);
+                                                }
+                                                catch (Exception)
+                                                {
+
+                                                    throw;
+                                                }
                                                 break;
 
                                             //Add the bsdd value to the mapped parameter
@@ -187,13 +196,23 @@ namespace BsddRevitPlugin.Logic.Model
 
                                             //Allways add a type
                                             case "Export Type to IFC As":
-                                                typeparameter.Set(ifcEntity.Type);
+                                                if (ifcEntity.Type != null)
+                                                {
+                                                    typeparameter.Set(ifcEntity.Type);
+                                                }
                                                 break;
 
                                             //Allways add a predifined type
                                             case "Type IFC Predefined Type":
                                                 //add check if Type even exists
-                                                typeparameter.Set(ifcEntity.PredefinedType);
+                                                if (ifcEntity.PredefinedType != null)
+                                                {
+                                                    typeparameter.Set(ifcEntity.PredefinedType);
+                                                }
+                                                else if (ifcEntity.Type != null && ifcEntity.PredefinedType == null)
+                                                {
+                                                    typeparameter.Set("");
+                                                }
                                                 break;
 
                                             default:
@@ -288,7 +307,7 @@ namespace BsddRevitPlugin.Logic.Model
             }
             catch (Exception e)
             {
-                logger.Info(e.Message);
+                logger.Info($"Failed to set elementdata: {e.Message}");
                 throw;
             }
         }
@@ -431,7 +450,7 @@ namespace BsddRevitPlugin.Logic.Model
                         break;
                     case "IfcDate":
                         
-                            value = value.ToString();
+                            value = "";
                         break;
                     default:
                             value = "";

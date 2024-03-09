@@ -7,6 +7,7 @@ using BsddRevitPlugin.Logic.UI.Services;
 using BsddRevitPlugin.Logic.UI.View;
 using BsddRevitPlugin.Logic.UI.Wrappers;
 using Newtonsoft.Json;
+using NLog;
 using System.Collections.Generic;
 using System.Threading;
 using System.Windows;
@@ -50,6 +51,10 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         public string bsddSearch(string ifcJsonData)
         {
 
+            Logger logger = LogManager.GetCurrentClassLogger();
+
+            logger.Info($"BSDDSEARCH: Trying to open bsddSearch for ifcJsonData: {ifcJsonData}");
+
             var converter = new IfcJsonConverter();
             var ifcEntity = JsonConvert.DeserializeObject<IfcEntity>(ifcJsonData, converter);
             var bsddBridgeData = new BsddBridgeData
@@ -71,6 +76,9 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         /// <returns>The serialized IFC data, in JSON format.</returns>
         public void bsddSelect(string ifcJsonData)
         {
+            Logger logger = LogManager.GetCurrentClassLogger();
+
+            logger.Info($"BSDDSELECT: Trying to select ifcJsonData to Element: {ifcJsonData}");
 
             var converter = new IfcJsonConverter();
             var ifcEntity = JsonConvert.DeserializeObject<IfcEntity>(ifcJsonData, converter);
@@ -88,6 +96,10 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         /// <param name="settingsJson">The JSON string of the new settings.</param>
         public void saveSettings(string settingsJson)
         {
+            Logger logger = LogManager.GetCurrentClassLogger();
+
+            logger.Info($"SAVESETTINGS: Trying to save settings: {settingsJson}");
+
             var settings = JsonConvert.DeserializeObject<BsddSettings>(settingsJson);
 
             //set the classificationFieldName for new dictionaries
