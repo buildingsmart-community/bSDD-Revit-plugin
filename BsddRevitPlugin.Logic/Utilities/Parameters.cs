@@ -207,7 +207,7 @@ namespace BsddRevitPlugin.Logic.Utilities
             catch (System.Exception e)
             {
                 //TransactionManager.Instance.ForceCloseTransaction();
-                logger.Info($"Failed to create parameter: {e.Message}");
+                logger.Info($"Failed to create parameter '{parameterName}' groupname: '{groupName}' spectype: '{specType.GetType().ToString()}' grouptype: '{groupType.GetType().ToString()}': {e.Message}");
             }
 
             //TransactionManager.Instance.TransactionTaskDone();
