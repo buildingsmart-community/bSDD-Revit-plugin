@@ -81,53 +81,9 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             _bsddSearchParent.Dispatcher.Invoke(() => _bsddSearchParent.Close());
 
         }
-        public string loadConfig()
+        public string loadSettings ()
         {
-            Search defaultSearch = null;
-            var bsddApiEnvironment = _bsddBridgeData.Settings.BsddApiEnvironment;
-            var mainDictionary = _bsddBridgeData.Settings.MainDictionary;
-
-            var ifcEntity = _bsddBridgeData.IfcData[0];
-            var ifcEntityName = ifcEntity.Name;
-
-            var domain = new Domain
-            {
-                value = mainDictionary.IfcClassification.Location.ToString(),
-                label = mainDictionary.IfcClassification.Name,
-            };
-
-            // iterate over the ifcEntity hasAssociations, for every one with type == IfcClassificationReference, check if its referencedSource is the same as the domainUri then set the defaultSearch to that classificationReference it's location(value) and name(label)
-            ifcEntity.HasAssociations.ForEach(association =>
-            {
-                if (association.Type == "IfcClassificationReference")
-                {
-                    var classificationReference = association as IfcClassificationReference;
-                    if (classificationReference != null && classificationReference.ReferencedSource != null && classificationReference.ReferencedSource.Location != null)
-                    {
-                        if (classificationReference.ReferencedSource.Location == mainDictionary.IfcClassification.Location)
-                        {
-                            defaultSearch = new Search
-                            {
-                                value = classificationReference.Location?.ToString(),
-                                label = classificationReference.Name,
-                            };
-                        }
-                    }
-                }
-            });
-
-            var bsddSearchConfig = new BsddSearchConfig
-            {
-                baseUrl = bsddApiEnvironment,
-                defaultDomains = new List<Domain>
-                    {
-                        domain
-                    },
-                defaultSearch = defaultSearch,
-                ifcEntity = ifcEntity
-            };
-
-            return JsonConvert.SerializeObject(bsddSearchConfig);
+            return JsonConvert.SerializeObject(_bsddBridgeData);
         }
     }
 
