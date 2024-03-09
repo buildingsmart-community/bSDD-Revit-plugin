@@ -239,6 +239,7 @@ namespace BsddRevitPlugin.Logic.UI.View
             if (_browserService.IsBrowserInitialized)
             {
 #if DEBUG
+
                 _browserService.ShowDevTools();
 #endif
                 _browserService.ExecuteScriptAsync("CefSharp.BindObjectAsync('bsddBridge');");
