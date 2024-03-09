@@ -4,6 +4,7 @@ using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.UI.View;
 using BsddRevitPlugin.Logic.UI.Wrappers;
 using Newtonsoft.Json;
+using NLog;
 using System.Collections.Generic;
 using System.Windows;
 using static BsddRevitPlugin.Logic.UI.View.BsddSearch;
@@ -40,6 +41,10 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         /// <returns>The response from the bSDD API.</returns>
         public string save(string ifcJsonData)
         {
+
+            Logger logger = LogManager.GetCurrentClassLogger();
+
+            logger.Info($"SAVE: Trying to save ifcJsonData to Element: {ifcJsonData}");
 
             var converter = new IfcJsonConverter();
 

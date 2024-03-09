@@ -89,10 +89,10 @@ namespace BsddRevitPlugin.Common
 
             // Add ribbon buttons to the UI.
             AddRibbonButtons(application);
-#if DEBUG 
+
             // Open logs.
             Main.Instance.OpenLogs();
-#endif
+
 
             return Result.Succeeded;
         }
