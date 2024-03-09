@@ -15,14 +15,9 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
     {
 
         // Declaration of events and external events
-        EventHandlerBsddSearch eventHandlerBsddSearch;
         UpdateElementtypeWithIfcData updateElementtypeWithIfcData;
-        ExternalEvent ExEventBsddSearch;
-        ExternalEvent ExEventUpdateElement;
         ExternalEvent _bsddLastSelectionEvent;
 
-
-        private static BsddSearch _bsddSearch;
         private static Window _bsddSearchParent;
         private static BsddBridgeData _bsddBridgeData;
 
@@ -31,13 +26,8 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         {
             _bsddBridgeData = bsddBridgeData;
             _bsddLastSelectionEvent = bsddLastSelectionEvent;
-            //SetParentWindow(window);
-            // Initialize the events and external events
-            //EventHandlerBsddSearch = EventHandlerBsddSearchUI;
-            eventHandlerBsddSearch = new EventHandlerBsddSearch(_bsddLastSelectionEvent);
-            ExEventBsddSearch = ExternalEvent.Create(eventHandlerBsddSearch);
+
             updateElementtypeWithIfcData = new UpdateElementtypeWithIfcData();
-            ExEventUpdateElement = ExternalEvent.Create(updateElementtypeWithIfcData);
         }
         public void SetParentWindow(Window bsddSearchParent)
         {
@@ -56,12 +46,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             // Deserialize the JSON data into an IfcData object using the IfcDataConverter
             var ifcEntity = JsonConvert.DeserializeObject<IfcEntity>(ifcJsonData, converter);
 
-            // TODO: Save the IfcData object to your desired location
-
-            //BsddBridgeSave._eventHandlerBsddSearchSave.Close();
-
-            updateElementtypeWithIfcData.SetIfcData(ifcEntity);
-            ExEventUpdateElement.Raise();
+            updateElementtypeWithIfcData.Raise(ifcEntity);
 
             _bsddSearchParent.Dispatcher.Invoke(() => _bsddSearchParent.Close());
 

@@ -23,15 +23,9 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
     {
         private ExternalEvent _bsddLastSelectionEvent;
         private EventHandlerBsddSearch _eventHandlerBsddSearch;
-        private UpdateElementtypeWithIfcData _updateElementtypeWithIfcData;
-        private UpdateSettings _updateSettings;
-        private ExternalEvent _exEventUpdateElement;
-        private ExternalEvent _exEventUpdateSettings;
         private SelectElementsWithIfcData selectElementsWithIfcData;
-        private ExternalEvent _exEventSelectElement;
         private UpdateUIonSave _updateUIEvent;
 
-        private IBrowserService _browserService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BsddSelectionBridge"/> class.
@@ -40,14 +34,9 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         {
             _bsddLastSelectionEvent = bsddLastSelectionExEvent;
             _eventHandlerBsddSearch = new EventHandlerBsddSearch(_bsddLastSelectionEvent);
-            _updateSettings = new UpdateSettings();
 
-            _updateElementtypeWithIfcData = new UpdateElementtypeWithIfcData();
-            _exEventUpdateElement = ExternalEvent.Create(_updateElementtypeWithIfcData);
-            _exEventUpdateSettings = ExternalEvent.Create(_updateSettings);
 
             selectElementsWithIfcData = new SelectElementsWithIfcData();
-            _exEventSelectElement = ExternalEvent.Create(selectElementsWithIfcData);
 
             _updateUIEvent = updateUIEvent; 
         }
@@ -88,7 +77,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             
 
             selectElementsWithIfcData.SetIfcData(ifcEntity);
-            _exEventSelectElement.Raise();
+            selectElementsWithIfcData.Raise("SelectElementsInModel");
 
         }
 
@@ -110,13 +99,6 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
 
             }
             _updateUIEvent.Raise(settings);
-            //_updateSettings.Raise(settings);
-
-            // Update the selection UI with the last selection
-            //_bsddLastSelectionEvent.Raise();
-
-            //Update the selection manager with the new settings
-            //_selectionManager.UpdateUI(settings);
         }
         public string loadSettings()
         {
