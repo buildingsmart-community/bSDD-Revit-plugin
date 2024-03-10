@@ -3,6 +3,7 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExtensibleStorage;
 using Autodesk.Revit.UI;
 using BIM.IFC.Export.UI;
+using BsddRevitPlugin.Logic.IfcExport;
 using BsddRevitPlugin.Logic.Model;
 using NLog;
 using System;
@@ -35,7 +36,7 @@ namespace BsddRevitPlugin.Common.Commands
                 Document doc = uiDoc.Document;
                 ElementId activeViewId = uiDoc.ActiveView.Id;
 
-                IfcExportManager ifcexportManager = new IfcExportManager(); 
+                IfcExportManager ifcexportManager = new IfcExportManager();
 
                 //Create an Instance of the IFC Export Class
                 IFCExportOptions ifcExportOptions = new IFCExportOptions();
@@ -341,20 +342,46 @@ namespace BsddRevitPlugin.Common.Commands
                     if (saveFileDialog.ShowDialog() == DialogResult.OK)
                     {
                         // Get the selected file path
-                        string filePath = saveFileDialog.FileName;
-                        string fileName = Path.GetFileName(filePath); // Get the filename
-                        string directory = Path.GetDirectoryName(filePath); // Get the directory
+                        string ifcFilePath = saveFileDialog.FileName;
+                        string ifcFileName = Path.GetFileName(ifcFilePath);
+                        string directory = Path.GetDirectoryName(ifcFilePath);
 
                         // Check if the file path is not empty
-                        if (!string.IsNullOrEmpty(filePath))
+                        if (!string.IsNullOrEmpty(ifcFilePath))
                         {
-                            // Export the IFC file
-                            //doc.Export(directory, fileName, exportOpt);
-                            doc.Export(directory, fileName, ifcExportOptions);
+                            try
+                            {
+                                string tempDirectoryPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+                                Directory.CreateDirectory(tempDirectoryPath);
+                                if (!Directory.Exists(tempDirectoryPath))
+                                {
+                                    throw new Exception("Failed to create temporary directory.");
+                                }
 
-                            // Commit the transaction
-                            transaction.Commit();
-                            TaskDialog.Show("IFC-Export", "An IFC-export was executed.");
+                                string tempIfcFilePath = Path.Combine(tempDirectoryPath, Path.GetFileName(ifcFilePath));
+
+                                IfcPostprocessor postprocessor = new IfcPostprocessor();
+                                postprocessor.CollectIfcClassifications(doc);
+
+                                doc.Export(tempDirectoryPath, ifcFileName, ifcExportOptions);
+                                if (!File.Exists(tempIfcFilePath))
+                                {
+                                    throw new Exception("Failed to export document.");
+                                }
+                                transaction.Commit();
+
+                                postprocessor.PostProcess(tempIfcFilePath, ifcFilePath);
+
+                                Directory.Delete(tempDirectoryPath, true);
+
+                                TaskDialog.Show("IFC-Export", "An IFC-export was executed.");
+                            }
+                            catch (Exception ex)
+                            {
+                                TaskDialog.Show("Error", "An error occurred: " + ex.Message);
+                                message = ex.Message;
+                                return Result.Failed;
+                            }
                         }
                     }
 
@@ -375,7 +402,7 @@ namespace BsddRevitPlugin.Common.Commands
 
         }
 
-        
+
 
 
     }

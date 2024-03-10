@@ -639,7 +639,7 @@ namespace BsddRevitPlugin.Logic.Model
         /// </summary>
         /// <param name="entity">The entity from which to retrieve the associations.</param>
         /// <returns>A dictionary of associations with the location as the key.</returns>        
-        private static Dictionary<Uri, IfcClassificationReference> GetElementTypeAssociations(ElementType elementType)
+        public static Dictionary<Uri, IfcClassificationReference> GetElementTypeAssociations(ElementType elementType)
         {
             var associations = new Dictionary<Uri, IfcClassificationReference>();
             var activeDictionaryData = GetClassificationDataFromSettings(elementType);
