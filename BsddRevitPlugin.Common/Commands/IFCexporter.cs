@@ -3,6 +3,7 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExtensibleStorage;
 using Autodesk.Revit.UI;
 using BIM.IFC.Export.UI;
+using BsddRevitPlugin.Logic.IfcExport;
 using BsddRevitPlugin.Logic.Model;
 using NLog;
 using System;
@@ -35,16 +36,16 @@ namespace BsddRevitPlugin.Common.Commands
                 Document doc = uiDoc.Document;
                 ElementId activeViewId = uiDoc.ActiveView.Id;
 
-                IfcExportManager ifcexportManager = new IfcExportManager(); 
+                IfcExportManager ifcexportManager = new IfcExportManager();
 
                 //Create an Instance of the IFC Export Class
-                IFCExportOptions IFCExportOptions = new IFCExportOptions();
+                IFCExportOptions ifcExportOptions = new IFCExportOptions();
 
                 //Get the bsdd confguration from document or create a new one
                 IFCExportConfiguration bsddIFCExportConfiguration = ifcexportManager.GetOrSetBsddConfiguration(doc);
 
                 //Somehow UpdateOptions() can't handle the activeViewId, so we set it manually to -1
-                //bsddIFCExportConfiguration.ActivePhaseId = -1;
+                bsddIFCExportConfiguration.ActivePhaseId = -1;
 
                 // Create an instance of the IFCCommandOverrideApplication class
                 IFCCommandOverrideApplication ifcCommandOverrideApplication = new IFCCommandOverrideApplication();
@@ -135,6 +136,20 @@ namespace BsddRevitPlugin.Common.Commands
                             else if (p.StorageType.ToString() == "Double")
                             {
                                 add_BSDD_UDPS += "Real";
+                            }
+                            else if (p.StorageType.ToString() == "Integer")
+                            {
+                                var forgeType = p.Definition.GetDataType();
+                                if (forgeType.TypeId == "autodesk.spec:spec.bool-1.0.0")
+                                {
+
+                                    add_BSDD_UDPS += "Boolean";
+                                }
+                                else
+                                {
+                                    add_BSDD_UDPS += "Integer";
+
+                                }
                             }
                             else
                             {
@@ -287,7 +302,7 @@ namespace BsddRevitPlugin.Common.Commands
                     bsddIFCExportConfiguration.ExportUserDefinedPsetsFileName = tempFilePath;
 
                     //Pass the setting of the myIFCExportConfiguration to the IFCExportOptions
-                    bsddIFCExportConfiguration.UpdateOptions(IFCExportOptions, activeViewId);
+                    bsddIFCExportConfiguration.UpdateOptions(ifcExportOptions, activeViewId);
 
                     //// Add option with a new IFC Class System
                     //using (var form = new System.Windows.Forms.Form())
@@ -327,20 +342,46 @@ namespace BsddRevitPlugin.Common.Commands
                     if (saveFileDialog.ShowDialog() == DialogResult.OK)
                     {
                         // Get the selected file path
-                        string filePath = saveFileDialog.FileName;
-                        string fileName = Path.GetFileName(filePath); // Get the filename
-                        string directory = Path.GetDirectoryName(filePath); // Get the directory
+                        string ifcFilePath = saveFileDialog.FileName;
+                        string ifcFileName = Path.GetFileName(ifcFilePath);
+                        string directory = Path.GetDirectoryName(ifcFilePath);
 
                         // Check if the file path is not empty
-                        if (!string.IsNullOrEmpty(filePath))
+                        if (!string.IsNullOrEmpty(ifcFilePath))
                         {
-                            // Export the IFC file
-                            //doc.Export(directory, fileName, exportOpt);
-                            doc.Export(directory, fileName, IFCExportOptions);
+                            try
+                            {
+                                string tempDirectoryPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+                                Directory.CreateDirectory(tempDirectoryPath);
+                                if (!Directory.Exists(tempDirectoryPath))
+                                {
+                                    throw new Exception("Failed to create temporary directory.");
+                                }
 
-                            // Commit the transaction
-                            transaction.Commit();
-                            TaskDialog.Show("IFC-Export", "An IFC-export was executed.");
+                                string tempIfcFilePath = Path.Combine(tempDirectoryPath, Path.GetFileName(ifcFilePath));
+
+                                IfcPostprocessor postprocessor = new IfcPostprocessor();
+                                postprocessor.CollectIfcClassifications(doc);
+
+                                doc.Export(tempDirectoryPath, ifcFileName, ifcExportOptions);
+                                if (!File.Exists(tempIfcFilePath))
+                                {
+                                    throw new Exception("Failed to export document.");
+                                }
+                                transaction.Commit();
+
+                                postprocessor.PostProcess(tempIfcFilePath, ifcFilePath);
+
+                                Directory.Delete(tempDirectoryPath, true);
+
+                                TaskDialog.Show("IFC-Export", "An IFC-export was executed.");
+                            }
+                            catch (Exception ex)
+                            {
+                                TaskDialog.Show("Error", "An error occurred: " + ex.Message);
+                                message = ex.Message;
+                                return Result.Failed;
+                            }
                         }
                     }
 
@@ -361,7 +402,7 @@ namespace BsddRevitPlugin.Common.Commands
 
         }
 
-        
+
 
 
     }

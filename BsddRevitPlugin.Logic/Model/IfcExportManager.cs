@@ -7,12 +7,14 @@ using System.Text;
 using System.Threading.Tasks;
 using BIM.IFC.Export.UI;
 using System.Web.Script.Serialization;
+using NLog;
+using System.Windows.Controls;
 
 namespace BsddRevitPlugin.Logic.Model
 {
     public class IfcExportManager
     {
-
+       
         public IList<Parameter> GetAllBsddParameters(Autodesk.Revit.DB.Document doc)
         {
             // Apply the filter to the elements in the active document
@@ -169,7 +171,7 @@ namespace BsddRevitPlugin.Logic.Model
             //Apply the IFC Export Setting (Those are equivalent to the Export Setting in the IFC Export User Interface)
             //General
             //configuration.IFCVersion = IFCVersion.IFC2x3CV2;
-            configuration.IFCVersion = IFCVersion.IFC4;
+            configuration.IFCVersion = IFCVersion.IFC4RV;
             configuration.ExchangeRequirement = 0;
             configuration.IFCFileType = 0;
             configuration.SpaceBoundaries = 0;
