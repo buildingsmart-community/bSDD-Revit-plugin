@@ -46,13 +46,14 @@ namespace BsddRevitPlugin.Logic.UI.View
 
 
             // Set the address of the CefSharp browser component to the index.html file of the plugin
-            _browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/bsdd_search/index.html";
+            //_browserService.Address =  "https://buildingsmart-community.github.io/bSDD-filter-UI/bsdd_search/";
+            _browserService.Address =  "https://buildingsmart-community.github.io/bSDD-filter-UI/main/bsdd_search/";
+            // _browserService.Address = addinDirectory + "/html/bsdd_selection/index.html";
+            // _browserService.Address = "http://localhost:3000/";
             var bridgeSearch = new BsddSearchBridge(bsddBridgeData, _bsddLastSelectionEvent);
             bridgeSearch.SetParentWindow(this);
             _browserService.RegisterJsObject("bsddBridge", bridgeSearch, true);
             _browserService.IsBrowserInitializedChanged += OnIsBrowserInitializedChanged;
-
-
         }
 
         private void Window_Closed(object sender, EventArgs e)

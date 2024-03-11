@@ -39,11 +39,11 @@ namespace BsddRevitPlugin.Common
         {
             var logTarget = CreateLogTarget();
             LogHandler.AddLogTarget(logTarget);
+            _openLogFilePath = logTarget.LogFilePath;
 
             if (logTarget.OpenOnStartUp)
             {
                 Process.Start(logTarget.LogFilePath);
-                _openLogFilePath = logTarget.LogFilePath;
             }
         }
 
@@ -54,7 +54,7 @@ namespace BsddRevitPlugin.Common
                 LogFilePath = "C:\\TEMP\\logs\\template\\main.log",
                 LogName = "TemplateMainLog",
                 MinLevel = "Trace",
-                OpenOnStartUp = true,
+                OpenOnStartUp = false,
                 NameFilter = "*"
             };
         }
@@ -64,8 +64,9 @@ namespace BsddRevitPlugin.Common
             if (_openLogFilePath != null)
             {
                 if (!File.Exists(_openLogFilePath)) File.Create(_openLogFilePath);
-
+#if DEBUG
                 Process.Start(_openLogFilePath);
+#endif
             }
             else
             {

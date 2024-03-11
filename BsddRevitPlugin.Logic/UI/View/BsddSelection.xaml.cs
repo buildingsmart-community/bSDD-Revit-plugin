@@ -29,7 +29,7 @@ namespace BsddRevitPlugin.Logic.UI.View
         EventSelectView SelectEHSV;
         EventUseLastSelection eventUseLastSelection;
         ExternalEvent SelectEEMS, SelectEESA, SelectEESV, SelectEULS;
-        SelectionManager selectionManager;
+        UpdateUIonSave updateUIEvent;
         private BsddBridgeData _inputBsddBridgeData;
 
 
@@ -50,9 +50,8 @@ namespace BsddRevitPlugin.Logic.UI.View
             string addinLocation = Assembly.GetExecutingAssembly().Location;
             string addinDirectory = System.IO.Path.GetDirectoryName(addinLocation);
 
-
-            selectionManager = new SelectionManager();
-            selectionManager.SetBrowser(_browserService);
+            updateUIEvent = new UpdateUIonSave();
+            updateUIEvent.SetBrowser(_browserService);
 
             // Initialize the events
             SelectEHMS = new EventMakeSelection();
@@ -73,8 +72,11 @@ namespace BsddRevitPlugin.Logic.UI.View
             SelectEULS = ExternalEvent.Create(eventUseLastSelection);
 
             // Set the address of the CefSharp browser component to the index.html file of the plugin
-            _browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/bsdd_selection/index.html";
-            _browserService.RegisterJsObject("bsddBridge", new BsddSelectionBridge(SelectEULS, selectionManager), true);
+            // _browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/bsdd_search/index.html";
+            _browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/main/bsdd_selection/index.html";
+            // _browserService.Address = addinDirectory + "/html/bsdd_selection/index.html";
+            // _browserService.Address = "http://localhost:3000/";
+            _browserService.RegisterJsObject("bsddBridge", new BsddSelectionBridge(SelectEULS, updateUIEvent), true);
             _browserService.IsBrowserInitializedChanged += OnIsBrowserInitializedChanged;
 
             // Sort the list of elements by category, family, and type
@@ -228,15 +230,16 @@ namespace BsddRevitPlugin.Logic.UI.View
 
         void OnIsBrowserInitializedChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            var settings = GlobalBsddSettings.bsddsettings;
-            if (settings.BsddApiEnvironment == null)
-            {
-                SettingsManager.LoadDefaultSettings();
-                SettingsManager.ApplySettingsToGlobalParametersAndDataStorage(GlobalDocument.currentDocument);
-            }
+            //var settings = GlobalBsddSettings.bsddsettings;
+            //if (settings.BsddApiEnvironment == null)
+            //{
+            //    SettingsManager.LoadDefaultSettings();
+            //    SettingsManager.ApplySettingsToGlobalParametersAndDataStorage(GlobalDocument.currentDocument);
+            //}
             if (_browserService.IsBrowserInitialized)
             {
 #if DEBUG
+
                 _browserService.ShowDevTools();
 #endif
                 _browserService.ExecuteScriptAsync("CefSharp.BindObjectAsync('bsddBridge');");

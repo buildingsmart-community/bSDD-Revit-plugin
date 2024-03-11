@@ -129,11 +129,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\RelayCommand.cs" />
+    <Compile Include="IfcExport\IfcPostprocessor.cs" />
     <Compile Include="IfcJson\IfcJson.cs" />
     <Compile Include="IfcJson\IfcJsonConverter.cs" />
     <Compile Include="Model\ElementsManager.cs" />
     <Compile Include="Model\IfcExportManager.cs" />
-    <Compile Include="Model\SelectionManager.cs" />
     <Compile Include="Model\SettingsManager.cs" />
     <Compile Include="Model\IfcClassificationManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

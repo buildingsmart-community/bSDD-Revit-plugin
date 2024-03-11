@@ -7,6 +7,7 @@ using BsddRevitPlugin.Logic.UI.Services;
 using BsddRevitPlugin.Logic.UI.View;
 using BsddRevitPlugin.Logic.UI.Wrappers;
 using Newtonsoft.Json;
+using NLog;
 using System.Collections.Generic;
 using System.Threading;
 using System.Windows;
@@ -23,32 +24,22 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
     {
         private ExternalEvent _bsddLastSelectionEvent;
         private EventHandlerBsddSearch _eventHandlerBsddSearch;
-        private UpdateElementtypeWithIfcData _updateElementtypeWithIfcData;
-        private UpdateSettings _updateSettings;
-        private ExternalEvent _exEventUpdateElement;
-        private ExternalEvent _exEventUpdateSettings;
         private SelectElementsWithIfcData selectElementsWithIfcData;
-        private ExternalEvent _exEventSelectElement;
-        private SelectionManager _selectionManager;
+        private UpdateUIonSave _updateUIEvent;
 
-        private IBrowserService _browserService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BsddSelectionBridge"/> class.
         /// </summary>
-        public BsddSelectionBridge(ExternalEvent bsddLastSelectionExEvent, SelectionManager selectionManager)
+        public BsddSelectionBridge(ExternalEvent bsddLastSelectionExEvent, UpdateUIonSave updateUIEvent)
         {
             _bsddLastSelectionEvent = bsddLastSelectionExEvent;
             _eventHandlerBsddSearch = new EventHandlerBsddSearch(_bsddLastSelectionEvent);
-            _updateSettings = new UpdateSettings();
 
-            _updateElementtypeWithIfcData = new UpdateElementtypeWithIfcData();
-            _exEventUpdateElement = ExternalEvent.Create(_updateElementtypeWithIfcData);
-            _exEventUpdateSettings = ExternalEvent.Create(_updateSettings);
 
             selectElementsWithIfcData = new SelectElementsWithIfcData();
-            _exEventSelectElement = ExternalEvent.Create(selectElementsWithIfcData);
-            _selectionManager = selectionManager;
+
+            _updateUIEvent = updateUIEvent; 
         }
 
         /// <summary>
@@ -59,6 +50,10 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         /// <returns>The serialized IFC data, in JSON format.</returns>
         public string bsddSearch(string ifcJsonData)
         {
+
+            Logger logger = LogManager.GetCurrentClassLogger();
+
+            logger.Info($"BSDDSEARCH: Trying to open bsddSearch for ifcJsonData: {ifcJsonData}");
 
             var converter = new IfcJsonConverter();
             var ifcEntity = JsonConvert.DeserializeObject<IfcEntity>(ifcJsonData, converter);
@@ -81,13 +76,16 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         /// <returns>The serialized IFC data, in JSON format.</returns>
         public void bsddSelect(string ifcJsonData)
         {
+            Logger logger = LogManager.GetCurrentClassLogger();
+
+            logger.Info($"BSDDSELECT: Trying to select ifcJsonData to Element: {ifcJsonData}");
 
             var converter = new IfcJsonConverter();
             var ifcEntity = JsonConvert.DeserializeObject<IfcEntity>(ifcJsonData, converter);
             
 
             selectElementsWithIfcData.SetIfcData(ifcEntity);
-            _exEventSelectElement.Raise();
+            selectElementsWithIfcData.Raise("SelectElementsInModel");
 
         }
 
@@ -98,6 +96,10 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         /// <param name="settingsJson">The JSON string of the new settings.</param>
         public void saveSettings(string settingsJson)
         {
+            Logger logger = LogManager.GetCurrentClassLogger();
+
+            logger.Info($"SAVESETTINGS: Trying to save settings: {settingsJson}");
+
             var settings = JsonConvert.DeserializeObject<BsddSettings>(settingsJson);
 
             //set the classificationFieldName for new dictionaries
@@ -108,14 +110,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
                 item.IfcClassification.ClassificationFieldName = ElementsManager.CreateParameterNameFromUri(item.IfcClassification.Location);
 
             }
-            _updateSettings.SetSettings(settings);
-            _exEventUpdateSettings.Raise();
-
-            // Update the selection UI with the last selection
-            //_bsddLastSelectionEvent.Raise();
-
-            //Update the selection manager with the new settings
-            _selectionManager.UpdateBsddLastSelection();
+            _updateUIEvent.Raise(settings);
         }
         public string loadSettings()
         {
