@@ -146,9 +146,60 @@ namespace BsddRevitPlugin.Logic.Model
                         Console.WriteLine("error");
                     }
 
+                    //Get all classifications and properties from the ifcEntity
+                    var associations = ifcEntity.HasAssociations;
+                    var isDefinedBy = ifcEntity.IsDefinedBy;
+
+                    //Create a list of parameters to create
+                    List<ParameterCreation> parametersToCreate = new List<ParameterCreation>();
+
+                    //Add classification parameters to the list
+                    //Set Revit parameters for each association
+                    if (associations != null)
+                    {
+                        foreach (var association in associations)
+                        {
+                            switch (association)
+                            {
+                                case IfcClassificationReference ifcClassificationReference:
+                                    // do something with ifcClassificationReference
+
+                                    //Create parameter name for each unique the bsdd classificationReference
+                                    bsddParameterName = CreateParameterNameFromIFCClassificationReferenceSourceLocation(ifcClassificationReference);
+                                    parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType));
+
+                                    break;
+
+                                case IfcMaterial ifcMaterial:
+                                    // do something with ifcMaterial
+                                    break;
+                            }
+                        }
+                    }
+
+                    //Add property parameters to the list
+                    if (isDefinedBy != null)
+                    {
+                        foreach (var propertySet in isDefinedBy)
+                        {
+                            foreach (var property in propertySet.HasProperties)
+                            {
+                                if (property.NominalValue.Type != null)
+                                {
+                                    //Else default specType string.text is used
+                                    specType = GetParameterTypeFromProperty(property);
+                                }
+                                bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property.Name);
+                                parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType));
+                            }
+                        }
+                    }
+                    //First create all parameters at once (in Release creating parameters seperately sometimes fails)
+                    //Add a project parameter for the bsdd parameter in all Revit categorices if it does not exist 
+                    //NOTE: THIS IS UP FOR DISCUSSION, AS IT MIGHT NOT BE NECESSARY TO ADD THE PARAMETER TO ALL CATEGORIES
+                    Parameters.CreateProjectParametersForAllCategories(doc, parametersToCreate, "tempGroupName", groupType, false);
 
                     //Set Revit parameters for each association
-                    var associations = ifcEntity.HasAssociations;
                     if (associations != null)
                     {
                         foreach (var association in associations)
@@ -162,9 +213,6 @@ namespace BsddRevitPlugin.Logic.Model
 
                                     //Create parameter name for each unique the bsdd classificationReference
                                     bsddParameterName = CreateParameterNameFromIFCClassificationReferenceSourceLocation(ifcClassificationReference);
-
-                                    //Add a project parameter for the bsdd classification in all Revit categories if it does not exist
-                                    Utilities.Parameters.CreateProjectParameterForAllCategories(doc, bsddParameterName, "tempGroupName", specType, groupType, false);
 
                                     //Get mapped parametername (stored in the documents DataStorage)
                                     parameterMappedName = GetMappedParameterName(ifcClassificationReference);
@@ -229,30 +277,7 @@ namespace BsddRevitPlugin.Logic.Model
                             }
                         }
                     }
-                    //Set Revit parameters for each property
-                    var isDefinedBy = ifcEntity.IsDefinedBy;
-
-                    List<ParameterCreation> parametersToCreate = new List<ParameterCreation>();
-                    if (isDefinedBy != null)
-                    {
-                        foreach (var propertySet in isDefinedBy)
-                        {
-                            foreach (var property in propertySet.HasProperties)
-                            {
-                                if (property.NominalValue.Type != null)
-                                {
-                                    //Else default specType string.text is used
-                                    specType = GetParameterTypeFromProperty(property);
-                                }
-                                bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property.Name);
-                                parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType));
-                            }
-                        }
-                    }
-                    //Add a project parameter for the bsdd parameter in all Revit categorices if it does not exist 
-                    //NOTE: THIS IS UP FOR DISCUSSION, AS IT MIGHT NOT BE NECESSARY TO ADD THE PARAMETER TO ALL CATEGORIES
-                    Parameters.CreateProjectParametersForAllCategories(doc, parametersToCreate, "tempGroupName", groupType, false);
-
+                   //Set Revit parameters for each property
                     if (isDefinedBy != null)
                     {
                         foreach (var propertySet in isDefinedBy)
