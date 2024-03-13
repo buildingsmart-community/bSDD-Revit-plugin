@@ -3,7 +3,7 @@
 
 #define PluginName "bSDD Revit plugin"
 #define PluginShortName "BsddRevitPlugin"
-#define PluginVersion "1.0.2_beta"
+#define PluginVersion "1.0.3_beta"
 #define PluginPublisher "bSDD Revit plugin contributors"
 #define PluginURL "https://github.com/buildingsmart-community/bSDD-Revit-plugin"
 #define RevitVersions "2023;2024";
