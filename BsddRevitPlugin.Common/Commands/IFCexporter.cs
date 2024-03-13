@@ -281,7 +281,7 @@ namespace BsddRevitPlugin.Common.Commands
 
 
                     // Get the selected file path
-                    string mappingParameterFilePath = bsddIFCExportConfiguration.ExportUserDefinedParameterMappingFileName;
+                    string mappingParameterFilePath = bsddIFCExportConfiguration.ExportUserDefinedPsetsFileName;
 
                     //Copy user defined parameter mapping file to temp file
                     if (File.Exists(mappingParameterFilePath))
