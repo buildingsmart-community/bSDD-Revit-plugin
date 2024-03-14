@@ -625,6 +625,7 @@ namespace BsddRevitPlugin.Logic.Model
                 string bsddParameterValue = "";
                 string mappedParameterValue = "";
                 string bsddParameterName = CreateParameterNameFromUri(dictionary.IfcClassification.Location);
+                // TODO: sometimes values come back as null, how does this look in the IFC?
                 try
                 {
                     bsddParameterValue = GetTypeParameterValueByElementType(elementType, CreateParameterNameFromUri(dictionary.IfcClassification.Location));
