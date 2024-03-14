@@ -329,7 +329,6 @@ namespace BsddRevitPlugin.Common.Commands
                     //}
 
 
-                    TaskDialog.Show("IFC-Export", "Save IFC As");
                     // Create a SaveFile Dialog to enable a location to export the IFC to
                     SaveFileDialog saveFileDialog = new SaveFileDialog();
 
@@ -374,7 +373,6 @@ namespace BsddRevitPlugin.Common.Commands
 
                                 Directory.Delete(tempDirectoryPath, true);
 
-                                TaskDialog.Show("IFC-Export", "An IFC-export was executed.");
                             }
                             catch (Exception ex)
                             {

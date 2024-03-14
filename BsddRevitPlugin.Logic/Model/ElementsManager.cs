@@ -616,14 +616,36 @@ namespace BsddRevitPlugin.Logic.Model
         /// <returns>A dictionary containing the classification data, where the key is the dictionary URI and the value is a tuple of the identification and name.</returns>
         public static Dictionary<Uri, (string Identification, string Name)> GetClassificationDataFromSettings(ElementType elementType)
         {
+            Logger logger = LogManager.GetCurrentClassLogger();
             var classificationData = new Dictionary<Uri, (string Identification, string Name)>();
             var activeDictionaries = GetActiveDictionaries();
 
             foreach (var dictionary in activeDictionaries)
             {
-                string bsddParameterValue = GetTypeParameterValueByElementType(elementType, CreateParameterNameFromUri(dictionary.IfcClassification.Location));
-                string mappedParameterValue = GetTypeParameterValueByElementType(elementType, dictionary.ParameterMapping);
+                string bsddParameterValue = "";
+                string mappedParameterValue = "";
+                string bsddParameterName = CreateParameterNameFromUri(dictionary.IfcClassification.Location);
+                // TODO: sometimes values come back as null, how does this look in the IFC?
+                try
+                {
+                    bsddParameterValue = GetTypeParameterValueByElementType(elementType, CreateParameterNameFromUri(dictionary.IfcClassification.Location));
 
+                }
+                catch (Exception e)
+                {
+                    logger.Error(e);
+                }
+                try
+                {
+
+                    mappedParameterValue = GetTypeParameterValueByElementType(elementType, dictionary.ParameterMapping);
+                }
+                catch (Exception e)
+                {
+
+                    logger.Error(e);
+                }
+                 
                 string identification = null;
                 string name = null;
 
@@ -666,22 +688,17 @@ namespace BsddRevitPlugin.Logic.Model
         /// <returns>A dictionary of associations with the location as the key.</returns>        
         public static Dictionary<Uri, IfcClassificationReference> GetElementTypeAssociations(ElementType elementType)
         {
+
+            Logger logger = LogManager.GetCurrentClassLogger();
             var associations = new Dictionary<Uri, IfcClassificationReference>();
             var activeDictionaryData = GetClassificationDataFromSettings(elementType);
+
 
             foreach (var association in getElementTypeClassificationsReferencesFromExtensibleStorage(elementType))
             {
                 if (association is IfcClassificationReference ifcClassificationReference)
                 {
-                    try
-                    {
-                        associations[ifcClassificationReference.ReferencedSource.Location] = ifcClassificationReference;
-
-                    }
-                    catch (Exception)
-                    {
-
-                    }
+                    associations[ifcClassificationReference.ReferencedSource.Location] = ifcClassificationReference;
                 }
             }
 

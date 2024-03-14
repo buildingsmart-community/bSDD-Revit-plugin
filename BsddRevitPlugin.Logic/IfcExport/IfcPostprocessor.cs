@@ -46,11 +46,13 @@ namespace BsddRevitPlugin.Logic.IfcExport
                     var elementTypeAssociations = ElementsManager.GetElementTypeAssociations(elementType);
                     foreach (var association in elementTypeAssociations)
                     {
+
                         var classificationData = GetClassificationReferencePostprocesData(association.Key, association.Value);
                         if (classificationData != null)
                         {
                             classificationReferencesPostprocesData.Add(classificationData);
                         }
+
                     }
                 }
             }
@@ -168,7 +170,7 @@ namespace BsddRevitPlugin.Logic.IfcExport
             {
                 ClassificationLocation = dictionaryUri.ToString(),
                 ClassificationReferenceLocation = classificationReference.Location.ToString(),
-                ClassificationReferenceIdentifier = classificationReference.Identification
+                ClassificationReferenceIdentifier = classificationReference.Identification.ToString()
             };
         }
     }
