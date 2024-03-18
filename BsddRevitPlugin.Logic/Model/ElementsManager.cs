@@ -277,7 +277,8 @@ namespace BsddRevitPlugin.Logic.Model
                             }
                         }
                     }
-                   //Set Revit parameters for each property
+
+                    //Set Revit parameters for each property
                     if (isDefinedBy != null)
                     {
                         foreach (var propertySet in isDefinedBy)
@@ -347,7 +348,6 @@ namespace BsddRevitPlugin.Logic.Model
                                         }
                                     }
                                 }
-                                
                             }
                         }
                     }
@@ -382,7 +382,7 @@ namespace BsddRevitPlugin.Logic.Model
                     .WhereElementIsNotElementType()
                     .Where(e => e.GetTypeId() == elementType.Id)
                     .ToList();
-              
+
                 //Get element ids
                 List<ElementId> elementIds = elements.Select(e => e.Id).ToList();
 
@@ -487,24 +487,24 @@ namespace BsddRevitPlugin.Logic.Model
                 switch (property.NominalValue.Type)
                 {
                     case "IfcBoolean":
-                        
-                            value = 0;
-                         
+
+                        value = 0;
+
                         break;
                     case "IfcInteger":
-                        
-                            value = 0;
+
+                        value = 0;
                         break;
                     case "IfcReal":
-                        
-                            value = 0;
+
+                        value = 0;
                         break;
                     case "IfcDate":
-                        
-                            value = "";
+
+                        value = "";
                         break;
                     default:
-                            value = "";
+                        value = "";
                         break;
                 }
             }
@@ -512,21 +512,95 @@ namespace BsddRevitPlugin.Logic.Model
             return value;
         }
 
+        // Revit UI Project Parameter Types:
+        //
+        // Text             The parameter data should be interpreted as a string of text.
+        // Integer          The parameter data should be interpreted as a whole number, positive or negative.
+        // Angle            The parameter data represents an angle.
+        // Area	            The parameter data represents an area.
+        // Cost per Area    ???
+        // Distance         ???
+        // Length	        The parameter data represents a length. (in feet)
+        // MassDensity	    The data value will be represented as a MassDensity.
+        // Number	        The parameter data should be interpreted as a real number, possibly including decimal points.
+        // Rotation Angle   The data value will be represented as a Rotation.
+        // Slope	        The data value will be represented as a Slope.
+        // Speed            ???
+        // Time             ???
+        // Volume           The parameter data represents a volume.
+        // Currency         The data value will be represented as a Currency.
+        // URL	            A text string that represents a web address.              
+        // Material	        The value of this property is considered to be a material.
+        // Fill Pattern	    ???
+        // Image	        The value of this parameter is the id of an image.
+        // YesNo	        A boolean value that will be represented as Yes or No.
+        // MultilineText	The value of this parameter will be represented as multiline text.
+
+        // IFC simple value data types:
+        // https://standards.buildingsmart.org/IFC/RELEASE/IFC4_3/HTML/lexical/IfcSimpleValue.htm
+        //
+        // IfcBinary            BINARY IfcBinary is a defined type of simple data type BINARY which may be used to encode binary data such as embedded textures.
+        // IfcBoolean           BOOLEAN (TRUE or FALSE)
+        // IfcDate              STRING (YYYY-MM-DD)
+        // IfcDateTime          STRING (YYYY-MM-DDThh:mm:ss)
+        // IfcDuration          STRING
+        // IfcIdentifier        STRING(255) for identification purposes. An identifier is an alphanumeric string which allows an individual thing to be identified. It may not provide natural-language meaning. it should be restricted to max. 255 characters.
+        // IfcInteger           INTEGER In principle, the domain of IfcInteger (being an Integer) is all integer numbers.
+        // IfcLabel             STRING(255) A label is the term by which something may be referred to. It is a string which represents the human-interpretable name of something and shall have a natural-language meaning. it should be restricted to max. 255 characters.
+        // IfcLogical           LOGICAL (TRUE, FALSE or UNKNOWN)
+        // IfcPositiveInteger   IfcInteger > 0
+        // IfcReal              REAL In principle, the domain of IfcReal (being a Real) is all rational, irrational and scientific real numbers.
+        // IfcText              STRING A text is an alphanumeric string of characters which is intended to be read and understood by a human being. It is for information purposes only.
+        // IfcTime              STRING (hh:mm:ss)
+        // IfcTimeStamp         INTEGER
+        // IfcURIReference      STRING
+
+        // bSDD Property DataTypes:
+        // https://github.com/buildingSMART/bSDD/blob/master/Documentation/bSDD%20JSON%20import%20model.md#property
+        //
+        // Boolean          IfcBoolean
+        // Character        IfcText
+        // Integer          IfcInteger
+        // Real             IfcReal
+        // String           IfcText
+        // Time             IfcDateTime
+
+        /// <summary>
+        /// Determines the Revit parameter type from an IFC property.
+        /// </summary>
+        /// <param name="property">The IFC property.</param>
+        /// <returns>The corresponding Revit parameter type.</returns>
         private static ForgeTypeId GetParameterTypeFromProperty(IfcPropertySingleValue property)
         {
-            switch (property.NominalValue.Type)
+            // The type of the nominal value in the IFC property
+            string nominalValueType = property.NominalValue.Type;
+
+            // Map the IFC type to the corresponding Revit parameter type
+            switch (nominalValueType)
             {
                 case "IfcBoolean":
+                    // Map IfcBoolean to Revit's YesNo type
                     return SpecTypeId.Boolean.YesNo;
+
                 case "IfcInteger":
+                    // Map IfcInteger to Revit's Integer type
                     return SpecTypeId.Int.Integer;
+
                 case "IfcReal":
-                    return SpecTypeId.Length;
+                    // Map IfcReal to Revit's Number type
+                    return SpecTypeId.Number;
+
                 case "IfcDate":
-                    //Revit does not support date, so use string
+                case "IfcDateTime":
+                    // Revit does not support date types, so map IfcDate and IfcDateTime to Revit's Text type
                     return SpecTypeId.String.Text;
+
+                case "IfcText":
+                    // Map IfcText to Revit's Text type
+                    return SpecTypeId.String.Text;
+
                 default:
-                    // IfcString or Default
+                    // If the IFC type is not recognized, default to Revit's Text type
                     return SpecTypeId.String.Text;
             }
         }
@@ -645,7 +719,7 @@ namespace BsddRevitPlugin.Logic.Model
 
                     logger.Error(e);
                 }
-                 
+
                 string identification = null;
                 string name = null;
 
