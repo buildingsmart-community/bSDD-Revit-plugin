@@ -2,7 +2,7 @@
 <RevitAddIns>
 	<AddIn Type="Application">
 		<Name>bSDD-Revit-plugin</Name>
-		<FullClassName>BsddRevitPlugin.Common.Startup</FullClassName>
+		<FullClassName>BsddRevitPlugin.V2024.Startup</FullClassName>
 		<Text>bSDD Revit plugin</Text>
 		<Description>Add data from the buildingSMART Data Dictionary to your Revit models</Description>
 		<VisibilityMode>AlwaysVisible</VisibilityMode>
