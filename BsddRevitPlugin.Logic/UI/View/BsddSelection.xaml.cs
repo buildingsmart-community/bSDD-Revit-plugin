@@ -4,12 +4,12 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using Autodesk.Revit.UI;
 using ComboBox = System.Windows.Controls.ComboBox;
-using CefSharp;
 using BsddRevitPlugin.Logic.UI.Wrappers;
 using System.Reflection;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
 using Newtonsoft.Json;
 using BsddRevitPlugin.Logic.Model;
+using BsddRevitPlugin.Logic.UI.Services;
 
 /// <summary>
 /// Event handler for the selection method combo box. Clears the element manager and raises the appropriate external event based on the selected item in the combo box.
@@ -21,11 +21,15 @@ namespace BsddRevitPlugin.Logic.UI.View
     // This class represents the main panel of the bSDD Revit plugin
     public partial class BsddSelection : Page, IDockablePaneProvider
     {
+        private readonly IBrowserService _browserService;
+
         // Declaration of events and external events
         EventMakeSelection SelectEHMS;
         EventSelectAll SelectEHSA;
         EventSelectView SelectEHSV;
-        ExternalEvent SelectEEMS, SelectEESA, SelectEESV;
+        EventUseLastSelection eventUseLastSelection;
+        ExternalEvent SelectEEMS, SelectEESA, SelectEESV, SelectEULS;
+        UpdateUIonSave updateUIEvent;
         private BsddBridgeData _inputBsddBridgeData;
 
 
@@ -38,35 +42,46 @@ namespace BsddRevitPlugin.Logic.UI.View
         private int m_bottom = 100;
 
         // Constructor
-        public BsddSelection()
+        public BsddSelection(IBrowserService browserService)
         {
+            _browserService = browserService;
             InitializeComponent();
 
             string addinLocation = Assembly.GetExecutingAssembly().Location;
             string addinDirectory = System.IO.Path.GetDirectoryName(addinLocation);
 
-            // Set the address of the CefSharp browser component to the index.html file of the plugin
-            Browser.Address = addinDirectory + "/html/bsdd_selection/index.html";
-            Browser.JavascriptObjectRepository.Register("bsddBridge", new BsddBridge.BsddSelectionBridge(), true);
-            Browser.IsBrowserInitializedChanged += OnIsBrowserInitializedChanged;
-
-            // Sort the list of elements by category, family, and type
-            PropertyGroupDescription groupDescription = new PropertyGroupDescription("Category");
+            updateUIEvent = new UpdateUIonSave();
+            updateUIEvent.SetBrowser(_browserService);
 
             // Initialize the events
             SelectEHMS = new EventMakeSelection();
             SelectEHSA = new EventSelectAll();
             SelectEHSV = new EventSelectView();
+            eventUseLastSelection = new EventUseLastSelection();
 
             // Give current browser to event
-            SelectEHMS.SetBrowser(Browser);
-            SelectEHSA.SetBrowser(Browser);
-            SelectEHSV.SetBrowser(Browser);
+            SelectEHMS.SetBrowser(_browserService);
+            SelectEHSA.SetBrowser(_browserService);
+            SelectEHSV.SetBrowser(_browserService);
+            eventUseLastSelection.SetBrowser(_browserService);
 
             // Initialize external events
             SelectEEMS = ExternalEvent.Create(SelectEHMS);
             SelectEESA = ExternalEvent.Create(SelectEHSA);
             SelectEESV = ExternalEvent.Create(SelectEHSV);
+            SelectEULS = ExternalEvent.Create(eventUseLastSelection);
+
+            // Set the address of the CefSharp browser component to the index.html file of the plugin
+            // _browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/bsdd_search/index.html";
+            //_browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/main/bsdd_selection/index.html";
+            // _browserService.Address = addinDirectory + "/html/bsdd_selection/index.html";
+            // _browserService.Address = "http://localhost:3000/";
+            _browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/v1.0.0/bsdd_selection/";
+            _browserService.RegisterJsObject("bsddBridge", new BsddSelectionBridge(SelectEULS, updateUIEvent), true);
+            _browserService.IsBrowserInitializedChanged += OnIsBrowserInitializedChanged;
+
+            // Sort the list of elements by category, family, and type
+            PropertyGroupDescription groupDescription = new PropertyGroupDescription("Category");
 
             // Add the selection methods to the selection method combo box
             SM.Items.Add(new ComboBoxItem() { Content = "Selection method:", IsSelected = true, IsEnabled = false });
@@ -117,9 +132,9 @@ namespace BsddRevitPlugin.Logic.UI.View
             var jsonString = JsonConvert.SerializeObject(settings);
             var jsFunctionCall = $"updateSettings({jsonString});";
 
-            if (Browser.IsBrowserInitialized)
+            if (_browserService.IsBrowserInitialized)
             {
-                Browser.ExecuteScriptAsync(jsFunctionCall);
+                _browserService.ExecuteScriptAsync(jsFunctionCall);
             }
         }
 
@@ -135,21 +150,21 @@ namespace BsddRevitPlugin.Logic.UI.View
         //    var jsFunctionCall = $"myJavaScriptFunction({jsonString});";
 
         //     Wait for the browser to be initialized
-        //    if (!Browser.IsBrowserInitialized)
+        //    if (!_browserService.IsBrowserInitialized)
         //    {
         //        var tcs = new TaskCompletionSource<bool>();
         //        EventHandler handler = null;
         //        handler = (sender, args) =>
         //        {
-        //            Browser.IsBrowserInitializedChanged -= handler;
+        //            _browserService.IsBrowserInitializedChanged -= handler;
         //            tcs.SetResult(true);
         //        };
-        //        Browser.IsBrowserInitializedChanged += handler;
+        //        _browserService.IsBrowserInitializedChanged += handler;
         //        await tcs.Task;
         //    }
 
         //     Execute the JavaScript function
-        //    await Browser.ExecuteScriptAsync(jsFunctionCall);
+        //    await _browserService.ExecuteScriptAsync(jsFunctionCall);
 
         //}
 
@@ -176,7 +191,10 @@ namespace BsddRevitPlugin.Logic.UI.View
 
         private void DockableDialogs_Loaded(object sender, RoutedEventArgs e)
         {
-            // TODO: Implement this method
+            if (!BrowserContainer.Children.Contains((UIElement)_browserService.BrowserControl))
+            {
+                BrowserContainer.Children.Add((UIElement)_browserService.BrowserControl);
+            }
         }
 
         // Event handler for the selection method combo box
@@ -213,17 +231,19 @@ namespace BsddRevitPlugin.Logic.UI.View
 
         void OnIsBrowserInitializedChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            var settings = GlobalBsddSettings.bsddsettings;
-            if (settings.BsddApiEnvironment == null)
+            //var settings = GlobalBsddSettings.bsddsettings;
+            //if (settings.BsddApiEnvironment == null)
+            //{
+            //    SettingsManager.LoadDefaultSettings();
+            //    SettingsManager.ApplySettingsToGlobalParametersAndDataStorage(GlobalDocument.currentDocument);
+            //}
+            if (_browserService.IsBrowserInitialized)
             {
-                SettingsManager.LoadDefaultSettings();
-            }
-            if (Browser.IsBrowserInitialized)
-            {
-                #if DEBUG
-                Browser.ShowDevTools();
-                #endif
-                Browser.ExecuteScriptAsync("CefSharp.BindObjectAsync('bsddBridge');");
+#if DEBUG
+
+                _browserService.ShowDevTools();
+#endif
+                _browserService.ExecuteScriptAsync("CefSharp.BindObjectAsync('bsddBridge');");
             }
         }
     }

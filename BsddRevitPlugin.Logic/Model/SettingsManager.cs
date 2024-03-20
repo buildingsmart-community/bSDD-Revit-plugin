@@ -11,12 +11,15 @@ using System.IO;
 using Newtonsoft.Json;
 using static System.Net.Mime.MediaTypeNames;
 using NLog.Fluent;
+using BsddRevitPlugin.Logic.UI.Wrappers;
+using BsddRevitPlugin.Logic.UI.View;
+using BsddRevitPlugin.Logic.UI.Services;
 
 namespace BsddRevitPlugin.Logic.Model
 {
     public static class SettingsManager
     {
-
+        
         // bSDD plugin settings schema ID
         private static Guid s_schemaId = new Guid("1A53FFA0-B6FD-418B-A6A6-70D8EA8871B3");
         private const string BsddSettingsFieldName = "BsddSettings";
@@ -116,7 +119,7 @@ namespace BsddRevitPlugin.Logic.Model
                 {
                     using (Transaction tx = new Transaction(doc))
                     {
-                        tx.Start("Delete dataStorage");
+                        tx.Start("Delete settings dataStorage");
                         dataStorage.DeleteEntity(schema);
                         tx.Commit();
                     }
@@ -162,7 +165,7 @@ namespace BsddRevitPlugin.Logic.Model
                 {
                     using (Transaction tx = new Transaction(doc))
                     {
-                        tx.Start("Save dataStorage");
+                        tx.Start("Create new settings in DataStorage");
 
                         dataStorage = DataStorage.Create(doc);
 
@@ -184,7 +187,7 @@ namespace BsddRevitPlugin.Logic.Model
             {
                 using (Transaction tx = new Transaction(doc))
                 {
-                    tx.Start("Update dataStorage");
+                    tx.Start("Update settings in DataStorage");
                     dataStorage.SetEntity(entity);
                     tx.Commit();
                 }
@@ -200,7 +203,7 @@ namespace BsddRevitPlugin.Logic.Model
         /// Applies the settings to global parameters and document's extensible storage.
         /// </summary>
         /// <param name="doc">The Revit document.</param>
-        public static void ApplySettingsToGlobalParametersAndDataStorage(Document doc)
+        public static BsddSettings ApplySettingsToGlobalParametersAndDataStorage(Document doc)
         {
             BsddSettings settings = ReadSettingsFromDataStorage(doc);
             if (settings == null)
@@ -209,6 +212,19 @@ namespace BsddRevitPlugin.Logic.Model
             }
             SaveSettingsToGlobalVariable(settings);
             SaveSettingsToDataStorage(doc, settings);
+            return settings;
+
+        }
+        public static void SaveSettingsToGlobalParametersAndDataStorage(Document doc, BsddSettings bsddSettings)
+        {
+            if (bsddSettings == null)
+            {
+                bsddSettings = LoadDefaultSettings();
+            }
+            SaveSettingsToGlobalVariable(bsddSettings);
+            SaveSettingsToDataStorage(doc, bsddSettings);
+
         }
     }
+    
 }

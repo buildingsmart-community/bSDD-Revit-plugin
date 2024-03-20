@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
-    <ProjectGuid>{8404F487-DC2E-4E21-A29D-A164A94E0920}</ProjectGuid>
+    <ProjectGuid>{DCF53DDF-4D42-4766-84B9-80060EEABF8F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BsddRevitPlugin.V2023</RootNamespace>
+    <RootNamespace>BsddRevitPlugin.V2024</RootNamespace>
     <AssemblyName>BsddRevitPlugin</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -43,29 +43,29 @@
     <Reference Include="ASRR.Core">
       <HintPath>..\BsddRevitPlugin.Logic\bin\Debug\ASRR.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Autodesk.IFC.Export.UI, Version=23.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Revit_All_Main_Versions_IFC_x64.2023.0.0\lib\net48\Autodesk.IFC.Export.UI.dll</HintPath>
+    <Reference Include="Autodesk.IFC.Export.UI, Version=24.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Revit_All_Main_Versions_IFC_x64.2024.0.0\lib\net48\Autodesk.IFC.Export.UI.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
     <Reference Include="CefSharp">
-      <HintPath>C:\Program Files\Autodesk\Revit 2023\CefSharp\CefSharp.dll</HintPath>
+      <HintPath>C:\Program Files\Autodesk\Revit 2024\CefSharp\CefSharp.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
     <Reference Include="CefSharp.BrowserSubprocess.Core">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files\Autodesk\Revit 2023\CefSharp\CefSharp.BrowserSubprocess.Core.dll</HintPath>
+      <HintPath>C:\Program Files\Autodesk\Revit 2024\CefSharp\CefSharp.BrowserSubprocess.Core.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="CefSharp.Core">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files\Autodesk\Revit 2023\CefSharp\CefSharp.Core.dll</HintPath>
+      <HintPath>C:\Program Files\Autodesk\Revit 2024\CefSharp\CefSharp.Core.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="CefSharp.Wpf">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files\Autodesk\Revit 2023\CefSharp\CefSharp.Wpf.dll</HintPath>
+      <HintPath>C:\Program Files\Autodesk\Revit 2024\CefSharp\CefSharp.Wpf.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -76,23 +76,23 @@
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="Revit.IFC.Common, Version=23.0.0.0, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>..\packages\Revit_All_Main_Versions_IFC_x64.2023.0.0\lib\net48\Revit.IFC.Common.dll</HintPath>
+    <Reference Include="Revit.IFC.Common, Version=24.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <HintPath>..\packages\Revit_All_Main_Versions_IFC_x64.2024.0.0\lib\net48\Revit.IFC.Common.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Revit.IFC.Export, Version=23.0.0.0, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>..\packages\Revit_All_Main_Versions_IFC_x64.2023.0.0\lib\net48\Revit.IFC.Export.dll</HintPath>
+    <Reference Include="Revit.IFC.Export, Version=24.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <HintPath>..\packages\Revit_All_Main_Versions_IFC_x64.2024.0.0\lib\net48\Revit.IFC.Export.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Revit.IFC.Import, Version=23.0.0.0, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>..\packages\Revit_All_Main_Versions_IFC_x64.2023.0.0\lib\net48\Revit.IFC.Import.dll</HintPath>
+    <Reference Include="Revit.IFC.Import, Version=24.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <HintPath>..\packages\Revit_All_Main_Versions_IFC_x64.2024.0.0\lib\net48\Revit.IFC.Import.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Revit.IFC.Import.Core, Version=23.0.0.0, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>..\packages\Revit_All_Main_Versions_IFC_x64.2023.0.0\lib\net48\Revit.IFC.Import.Core.dll</HintPath>
+    <Reference Include="Revit.IFC.Import.Core, Version=24.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <HintPath>..\packages\Revit_All_Main_Versions_IFC_x64.2024.0.0\lib\net48\Revit.IFC.Import.Core.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
@@ -101,8 +101,8 @@
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
-    <Reference Include="RevitAPIIFC, Version=23.0.0.0, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>..\packages\Revit_All_Main_Versions_IFC_x64.2023.0.0\lib\net48\RevitAPIIFC.dll</HintPath>
+    <Reference Include="RevitAPIIFC, Version=24.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <HintPath>..\packages\Revit_All_Main_Versions_IFC_x64.2024.0.0\lib\net48\RevitAPIIFC.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
@@ -130,8 +130,8 @@
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
-    <Reference Include="UserInterfaceUtility, Version=23.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Revit_All_Main_Versions_IFC_x64.2023.0.0\lib\net48\UserInterfaceUtility.dll</HintPath>
+    <Reference Include="UserInterfaceUtility, Version=24.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Revit_All_Main_Versions_IFC_x64.2024.0.0\lib\net48\UserInterfaceUtility.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
@@ -139,9 +139,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\BrowserControl2023.cs" />
-    <Compile Include="Services\BrowserService2023.cs" />
-    <Compile Include="Services\BrowserServiceFactory2023.cs" />
+    <Compile Include="Services\BrowserControl2024.cs" />
+    <Compile Include="Services\BrowserService2024.cs" />
+    <Compile Include="Services\BrowserServiceFactory2024.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -157,10 +157,6 @@
       <Project>{12ea4456-8cd5-43ef-80c7-d70338c8b018}</Project>
       <Name>ASRR.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\lib\asrr\lib-asrr-revit-core\ASRR.Revit.Core.csproj">
-      <Project>{60ac09bd-db0e-40a9-b8a7-b0d40e7042e6}</Project>
-      <Name>ASRR.Revit.Core</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -173,8 +169,8 @@
   <Import Project="..\BsddRevitPlugin.Common\BsddRevitPlugin.Common.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>if $(ConfigurationName) == Debug xcopy /Y /E "$(TargetDir)" "$(AppData)\Autodesk\Revit\Addins\2023\BsddRevitPlugin\"
-if $(ConfigurationName) == Debug xcopy /Y /E "$(ProjectDir)\BsddRevitPlugin.addin" "$(AppData)\Autodesk\Revit\Addins\2023\"</PostBuildEvent>
+    <PostBuildEvent>if $(ConfigurationName) == Debug xcopy /Y /E "$(TargetDir)" "$(AppData)\Autodesk\Revit\Addins\2024\BsddRevitPlugin\"
+if $(ConfigurationName) == Debug xcopy /Y /E "$(ProjectDir)\BsddRevitPlugin.addin" "$(AppData)\Autodesk\Revit\Addins\2024\"</PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
