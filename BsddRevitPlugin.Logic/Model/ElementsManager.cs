@@ -10,14 +10,7 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Autodesk.Revit.ApplicationServices;
-using Autodesk.Revit.DB.IFC;
-using System.Windows.Controls;
 using System.IO;
-using System.Windows.Shapes;
-using System.Runtime.Remoting.Contexts;
-using Autodesk.Revit.UI.Selection;
-using Autodesk.Revit.UI;
 
 
 namespace BsddRevitPlugin.Logic.Model
