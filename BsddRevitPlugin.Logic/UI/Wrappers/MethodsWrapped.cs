@@ -4,13 +4,16 @@ using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.Model;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
 using BsddRevitPlugin.Logic.UI.DockablePanel;
+using BsddRevitPlugin.Logic.UI.Services;
 using BsddRevitPlugin.Logic.UI.View;
-using CefSharp;
-using CefSharp.Wpf;
 using Newtonsoft.Json;
 using NLog;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Interop;
 using static BsddRevitPlugin.Logic.Model.ElementsManager;
 using Document = Autodesk.Revit.DB.Document;
@@ -20,27 +23,92 @@ using Document = Autodesk.Revit.DB.Document;
 /// </summary>
 namespace BsddRevitPlugin.Logic.UI.Wrappers
 {
+    public class UpdateUIonSave : RevitEventWrapper<BsddSettings>
+    {
+        Logger logger = LogManager.GetCurrentClassLogger();
 
+        private IBrowserService browser;
+
+        public override void Execute(UIApplication uiapp, BsddSettings bsddSettings)
+        {
+            UIDocument uidoc = uiapp.ActiveUIDocument;
+            Document doc = uidoc.Document;
+
+            //UpdateSettings(bsddSettings);
+            SettingsManager.SaveSettingsToGlobalParametersAndDataStorage(doc,bsddSettings);
+            UpdateBsddLastSelection();
+
+
+        }
+
+        public void SetBrowser(IBrowserService browserObject)
+        {
+            browser = browserObject;
+        }
+
+        public void UpdateBsddLastSelection()
+        {
+            List<ElementType> lastSelection = new List<ElementType>();
+            try
+            {
+                lastSelection = GlobalSelection.LastSelectedElementsWithDocs[GlobalDocument.currentDocument.PathName];
+
+            }
+            catch (Exception)
+            {
+
+            }
+            var jsonString = JsonConvert.SerializeObject(ElementsManager.SelectionToIfcJson(GlobalDocument.currentDocument, lastSelection));
+            var jsFunctionCall = $"updateSelection({jsonString});";
+
+            if (browser.IsBrowserInitialized)
+            {
+                browser.ExecuteScriptAsync(jsFunctionCall);
+            }
+        }
+
+    }
     public abstract class EventRevitSelection : RevitEventWrapper<string>
     {
         Logger logger = LogManager.GetCurrentClassLogger();
 
-        static List<ElementType> elemList = new List<ElementType>();
-
         protected Select Selectorlist = new Select();
-        ChromiumWebBrowser browser;
+        private IBrowserService browser;
 
         public override void Execute(UIApplication uiapp, string args)
         {
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uidoc.Document;
-            elemList = GetSelection(uiapp);
 
-            // Filter elements to remove non-element categories
-            elemList = ListFilter(elemList);
+            if (!(this is EventUseLastSelection))
+            {
+                var elemList = GetSelection(uiapp);
+                elemList = ListFilter(elemList);
+                // Update LastSelectedElements for other events
+                //GlobalSelection.LastSelectedElements.Clear();
+                //GlobalSelection.LastSelectedElements.AddRange(elemList);
+
+                if (GlobalSelection.LastSelectedElementsWithDocs.ContainsKey(doc.PathName))
+                {
+                    //if contains, always make sure the value is the updated list
+                    GlobalSelection.LastSelectedElementsWithDocs[doc.PathName] = new List<ElementType>();
+                    GlobalSelection.LastSelectedElementsWithDocs[doc.PathName].Clear();
+                    GlobalSelection.LastSelectedElementsWithDocs[doc.PathName].AddRange(elemList);
+                }
+                else
+                {
+                    //if first time, add to dictionary
+                    List<ElementType> elemtypes = new List<ElementType>();
+                    elemtypes.AddRange(elemList);
+                    GlobalSelection.LastSelectedElementsWithDocs.Add(doc.PathName, elemtypes);
+
+                }
+
+
+            }
 
             // Pack data into json format
-            List<IfcEntity> selectionData = SelectionToIfcJson(doc, elemList);
+            List<IfcEntity> selectionData = SelectionToIfcJson(doc, GlobalSelection.LastSelectedElementsWithDocs[doc.PathName]);
 
             // Send MainData to BsddSelection html
             UpdateBsddSelection(selectionData);
@@ -48,17 +116,13 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
         protected abstract List<ElementType> GetSelection(UIApplication uiapp);
 
-        public void SetBrowser(ChromiumWebBrowser browserObject)
+        public void SetBrowser(IBrowserService browserObject)
         {
             browser = browserObject;
         }
 
-        private void UpdateBsddSelection(List<IfcEntity> ifcData)
+        public void UpdateBsddSelection(List<IfcEntity> ifcData)
         {
-            var settings = new JsonSerializerSettings
-            {
-                NullValueHandling = NullValueHandling.Ignore
-            };
             var jsonString = JsonConvert.SerializeObject(ifcData);
             var jsFunctionCall = $"updateSelection({jsonString});";
 
@@ -102,11 +166,39 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         }
     }
 
+    public class EventUseLastSelection : EventRevitSelection
+    {
+        protected override List<ElementType> GetSelection(UIApplication uiapp)
+        {
+            // Use the last selected elements
+            return GlobalSelection.LastSelectedElementsWithDocs[GlobalDocument.currentDocument.PathName];
+        }
+    }
+
 
     /// <summary>
     /// Represents a class that triggers the writing of IFC data into a Revit type object.
     /// </summary>
-    public class UpdateElementtypeWithIfcData : RevitEventWrapper<string>
+    public class UpdateElementtypeWithIfcData : RevitEventWrapper<IfcEntity>
+    {
+        Logger logger = LogManager.GetCurrentClassLogger();
+
+        IfcEntity ifcData;
+
+        public override void Execute(UIApplication uiapp, IfcEntity ifcDataObject)
+        {
+            var uidoc = uiapp.ActiveUIDocument;
+            var doc = uidoc.Document;
+
+            SetIfcDataToRevitElement(doc, ifcDataObject);
+        }
+
+    }
+
+    /// <summary>
+    /// Represents a class that triggers the writing of IFC data into a Revit type object.
+    /// </summary>
+    public class SelectElementsWithIfcData : RevitEventWrapper<string>
     {
         Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -117,7 +209,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             var uidoc = uiapp.ActiveUIDocument;
             var doc = uidoc.Document;
 
-            SetIfcDataToRevitElement(doc, ifcData);
+            SelectElementsWithIfcData(uidoc, ifcData);
         }
         public void SetIfcData(IfcEntity ifcDataObject)
         {
@@ -129,22 +221,17 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
     /// <summary>
     /// Represents a class that triggers the writing of settings into the BsddSettings object and the DataStorage.
     /// </summary>
-    public class UpdateSettings : RevitEventWrapper<string>
+    public class UpdateSettings : RevitEventWrapper<BsddSettings>
     {
         Logger logger = LogManager.GetCurrentClassLogger();
 
-        BsddSettings settings;
 
-        public override void Execute(UIApplication uiapp, string args)
+        public override void Execute(UIApplication uiapp, BsddSettings settingsObject)
         {
             var uidoc = uiapp.ActiveUIDocument;
             var doc = uidoc.Document;
-            SettingsManager.SaveSettingsToGlobalVariable(settings);
-            SettingsManager.SaveSettingsToDataStorage(doc, settings);
-        }
-        public void SetSettings(BsddSettings settingsObject)
-        {
-            settings = settingsObject;
+            SettingsManager.SaveSettingsToGlobalVariable(settingsObject);
+            SettingsManager.SaveSettingsToDataStorage(doc, settingsObject);
         }
 
     }
@@ -156,15 +243,20 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
     {
         Logger logger = LogManager.GetCurrentClassLogger();
 
-
         // ModelessForm instance
         private Window wnd;
         private BsddSearch _bsddSearch;
         private BsddBridgeData _bsddBridgeData;
+        private ExternalEvent _bsddLastSelectionEvent;
+
+        public EventHandlerBsddSearch(ExternalEvent bsddLastSelectionEvent)
+        {
+            _bsddLastSelectionEvent = bsddLastSelectionEvent;
+        }
 
         public override void Execute(UIApplication uiapp, string args)
         {
-            _bsddSearch = new BsddSearch(_bsddBridgeData);
+            _bsddSearch = new BsddSearch(_bsddBridgeData, _bsddLastSelectionEvent);
 
             HwndSource hwndSource = HwndSource.FromHwnd(uiapp.MainWindowHandle);
             wnd = hwndSource.RootVisual as Window;
