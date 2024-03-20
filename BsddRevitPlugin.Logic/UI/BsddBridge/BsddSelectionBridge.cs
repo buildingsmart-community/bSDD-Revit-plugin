@@ -1,10 +1,17 @@
-﻿using Autodesk.Revit.UI;
+﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
+using Autodesk.Revit.UI.Events;
 using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.Model;
+using BsddRevitPlugin.Logic.UI.Services;
+using BsddRevitPlugin.Logic.UI.View;
 using BsddRevitPlugin.Logic.UI.Wrappers;
 using Newtonsoft.Json;
+using NLog;
 using System.Collections.Generic;
+using System.Threading;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace BsddRevitPlugin.Logic.UI.BsddBridge
 {
@@ -15,22 +22,24 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
     /// </summary>
     public class BsddSelectionBridge
     {
+        private ExternalEvent _bsddLastSelectionEvent;
         private EventHandlerBsddSearch _eventHandlerBsddSearch;
-        private UpdateElementtypeWithIfcData _updateElementtypeWithIfcData;
-        private UpdateSettings _updateSettings;
-        private ExternalEvent _exEventUpdateElement;
-        private ExternalEvent _exEventUpdateSettings;
+        private SelectElementsWithIfcData selectElementsWithIfcData;
+        private UpdateUIonSave _updateUIEvent;
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BsddSelectionBridge"/> class.
         /// </summary>
-        public BsddSelectionBridge()
+        public BsddSelectionBridge(ExternalEvent bsddLastSelectionExEvent, UpdateUIonSave updateUIEvent)
         {
-            _eventHandlerBsddSearch = new EventHandlerBsddSearch();
-            _updateSettings = new UpdateSettings();
-            _updateElementtypeWithIfcData = new UpdateElementtypeWithIfcData();
-            _exEventUpdateElement = ExternalEvent.Create(_updateElementtypeWithIfcData);
-            _exEventUpdateSettings = ExternalEvent.Create(_updateSettings);
+            _bsddLastSelectionEvent = bsddLastSelectionExEvent;
+            _eventHandlerBsddSearch = new EventHandlerBsddSearch(_bsddLastSelectionEvent);
+
+
+            selectElementsWithIfcData = new SelectElementsWithIfcData();
+
+            _updateUIEvent = updateUIEvent; 
         }
 
         /// <summary>
@@ -42,6 +51,10 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         public string bsddSearch(string ifcJsonData)
         {
 
+            Logger logger = LogManager.GetCurrentClassLogger();
+
+            logger.Info($"BSDDSEARCH: Trying to open bsddSearch for ifcJsonData: {ifcJsonData}");
+
             var converter = new IfcJsonConverter();
             var ifcEntity = JsonConvert.DeserializeObject<IfcEntity>(ifcJsonData, converter);
             var bsddBridgeData = new BsddBridgeData
@@ -51,7 +64,29 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             };
             _eventHandlerBsddSearch.setBsddBridgeData(bsddBridgeData);
             _eventHandlerBsddSearch.Raise("openSearch");
+
             return JsonConvert.SerializeObject(ifcEntity);
+        }
+
+        /// <summary>
+        /// This method is exposed to JavaScript in CefSharp. 
+        /// It opens the bSDD Search panel with the selected object parameters.
+        /// </summary>
+        /// <param name="ifcJsonData">The IFC data to search, in JSON format.</param>
+        /// <returns>The serialized IFC data, in JSON format.</returns>
+        public void bsddSelect(string ifcJsonData)
+        {
+            Logger logger = LogManager.GetCurrentClassLogger();
+
+            logger.Info($"BSDDSELECT: Trying to select ifcJsonData to Element: {ifcJsonData}");
+
+            var converter = new IfcJsonConverter();
+            var ifcEntity = JsonConvert.DeserializeObject<IfcEntity>(ifcJsonData, converter);
+            
+
+            selectElementsWithIfcData.SetIfcData(ifcEntity);
+            selectElementsWithIfcData.Raise("SelectElementsInModel");
+
         }
 
         /// <summary>
@@ -61,6 +96,10 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         /// <param name="settingsJson">The JSON string of the new settings.</param>
         public void saveSettings(string settingsJson)
         {
+            Logger logger = LogManager.GetCurrentClassLogger();
+
+            logger.Info($"SAVESETTINGS: Trying to save settings: {settingsJson}");
+
             var settings = JsonConvert.DeserializeObject<BsddSettings>(settingsJson);
 
             //set the classificationFieldName for new dictionaries
@@ -71,8 +110,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
                 item.IfcClassification.ClassificationFieldName = ElementsManager.CreateParameterNameFromUri(item.IfcClassification.Location);
 
             }
-            _updateSettings.SetSettings(settings);
-            _exEventUpdateSettings.Raise();
+            _updateUIEvent.Raise(settings);
         }
         public string loadSettings()
         {

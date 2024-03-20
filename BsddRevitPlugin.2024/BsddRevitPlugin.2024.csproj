@@ -1,37 +1,38 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
-    <ProjectGuid>{4ADB19D3-24D7-4410-BDCB-19DBFE6908EB}</ProjectGuid>
+    <ProjectGuid>{DCF53DDF-4D42-4766-84B9-80060EEABF8F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BsddRevitPlugin.Logic</RootNamespace>
-    <AssemblyName>BsddRevitPlugin.Logic</AssemblyName>
+    <RootNamespace>BsddRevitPlugin.V2024</RootNamespace>
+    <AssemblyName>BsddRevitPlugin</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <PlatformTarget>x64</PlatformTarget>
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64'">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AdWindows, Version=5.0.3.1, Culture=neutral, processorArchitecture=MSIL">
@@ -39,17 +40,32 @@
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
-    <Reference Include="ASRR.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\Debug\ASRR.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="ASRR.Revit.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\Debug\ASRR.Revit.Core.dll</HintPath>
+    <Reference Include="ASRR.Core">
+      <HintPath>..\BsddRevitPlugin.Logic\bin\Debug\ASRR.Core.dll</HintPath>
     </Reference>
     <Reference Include="Autodesk.IFC.Export.UI, Version=24.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Revit_All_Main_Versions_IFC_x64.2024.0.0\lib\net48\Autodesk.IFC.Export.UI.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="CefSharp">
+      <HintPath>C:\Program Files\Autodesk\Revit 2024\CefSharp\CefSharp.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="CefSharp.BrowserSubprocess.Core">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files\Autodesk\Revit 2024\CefSharp\CefSharp.BrowserSubprocess.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="CefSharp.Core">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files\Autodesk\Revit 2024\CefSharp\CefSharp.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="CefSharp.Wpf">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files\Autodesk\Revit 2024\CefSharp\CefSharp.Wpf.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -98,11 +114,8 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Drawing.Common, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Drawing.Common.8.0.0\lib\net462\System.Drawing.Common.dll</HintPath>
-    </Reference>
+    <Reference Include="System.Drawing" />
     <Reference Include="System.IO.Compression" />
-    <Reference Include="System.Reflection.Context" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
@@ -123,74 +136,42 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="WindowsBase" />
-    <Reference Include="Wpf.Ui, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\WPF-UI.2.1.0\lib\net472\Wpf.Ui.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Commands\RelayCommand.cs" />
-    <Compile Include="IfcExport\IfcPostprocessor.cs" />
-    <Compile Include="IfcJson\IfcJson.cs" />
-    <Compile Include="IfcJson\IfcJsonConverter.cs" />
-    <Compile Include="Model\ElementsManager.cs" />
-    <Compile Include="Model\IfcExportManager.cs" />
-    <Compile Include="Model\SettingsManager.cs" />
-    <Compile Include="Model\IfcClassificationManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Resources\IfcDataExample.cs" />
-    <Compile Include="UI\BsddBridge\BsddBridgeData.cs" />
-    <Compile Include="UI\BsddBridge\BsddSearchBridge.cs" />
-    <Compile Include="UI\BsddBridge\BsddSelectionBridge.cs" />
-    <Compile Include="UI\DockablePanel\Selectors.cs" />
-    <Compile Include="UI\Services\GlobalBrowserServiceFactory.cs" />
-    <Compile Include="UI\Services\IBrowserService.cs" />
-    <Compile Include="UI\Services\IBrowserServiceFactory.cs" />
-    <Compile Include="UI\Services\ICustomBrowserControl.cs" />
-    <Compile Include="UI\View\BsddSelection.xaml.cs">
-      <DependentUpon>BsddSelection.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="UI\View\BsddSearch.xaml.cs">
-      <DependentUpon>BsddSearch.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="UI\Wrappers\MethodsWrapped.cs" />
-    <Compile Include="UI\Wrappers\RevitEventWrapper.cs" />
-    <Compile Include="Utilities\FileHandling.cs" />
-    <Compile Include="Utilities\Parameters.cs" />
-    <Compile Include="Utilities\UuidFromUri.cs" />
+    <Compile Include="Services\BrowserControl2024.cs" />
+    <Compile Include="Services\BrowserService2024.cs" />
+    <Compile Include="Services\BrowserServiceFactory2024.cs" />
+    <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
-    <None Include="Resources\ifcDataFromBsddExample.json" />
-    <None Include="Resources\ifcDataFromRevitExample.json" />
-    <None Include="UI\Settings\BsddSettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Include="UI\View\BsddSelection.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="UI\View\BsddSearch.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="UI\ViewModel\" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\BsddRevitPlugin.Logic\BsddRevitPlugin.Logic.csproj">
+      <Project>{4adb19d3-24d7-4410-bdcb-19dbfe6908eb}</Project>
+      <Name>BsddRevitPlugin.Logic</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BsddRevitPlugin.Resources\BsddRevitPlugin.Resources.csproj">
+      <Project>{4c519d66-46f3-43df-bcf5-cc1847654828}</Project>
+      <Name>BsddRevitPlugin.Resources</Name>
+    </ProjectReference>
     <ProjectReference Include="..\lib\asrr\lib-asrr-core\ASRR.Core.csproj">
       <Project>{12ea4456-8cd5-43ef-80c7-d70338c8b018}</Project>
       <Name>ASRR.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\lib\asrr\lib-asrr-revit-core\ASRR.Revit.Core.csproj">
-      <Project>{60ac09bd-db0e-40a9-b8a7-b0d40e7042e6}</Project>
-      <Name>ASRR.Revit.Core</Name>
-    </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="BsddRevitPlugin.addin" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <Import Project="..\BsddRevitPlugin.Common\BsddRevitPlugin.Common.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>if $(ConfigurationName) == Debug xcopy /Y /E "$(TargetDir)" "$(AppData)\Autodesk\Revit\Addins\2024\BsddRevitPlugin\"
+if $(ConfigurationName) == Debug xcopy /Y /E "$(ProjectDir)\BsddRevitPlugin.addin" "$(AppData)\Autodesk\Revit\Addins\2024\"</PostBuildEvent>
+  </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>

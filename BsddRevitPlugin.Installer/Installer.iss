@@ -3,11 +3,10 @@
 
 #define PluginName "bSDD Revit plugin"
 #define PluginShortName "BsddRevitPlugin"
-#define PluginVersion "0.8.0"
+#define PluginVersion "1.0.4_beta"
 #define PluginPublisher "bSDD Revit plugin contributors"
 #define PluginURL "https://github.com/buildingsmart-community/bSDD-Revit-plugin"
-#define RevitVersions "2023";
-;#define RevitVersions "2023;2024";
+#define RevitVersions "2023;2024";
 
 #define revitVersion "{code:GetRevitVersion}"
 ;#define buildPath "..\BsddRevitPlugin.{{#revitVersion}\bin\Release\*"
@@ -49,17 +48,17 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "dutch"; MessagesFile: "compiler:Languages\Dutch.isl"
 
 [Files]
-Source: "..\{#PluginShortName}.2023\bin\Release\Images\Icons\BsddLabel.ico"; DestDir: {userappdata}\{#PluginShortName}; Flags: ignoreversion recursesubdirs createallsubdirs; Check: IsAppInstalled('2023')
+Source: "..\{#PluginShortName}.2023\bin\Release\Images\Icons\BsddLabel.ico"; DestDir: {userappdata}\{#PluginShortName}; Flags: ignoreversion recursesubdirs createallsubdirs; Check: IsVersionSelected('2023')
 
 ; Files for Revit 2023
-Source: "..\{#PluginShortName}.2023\bin\Release\*"; DestDir: {code:GetDestDir|2023}; Flags: ignoreversion recursesubdirs createallsubdirs; Check: IsAppInstalled('2023')
-Source: "..\{#PluginShortName}.Common\{#PluginShortName}.addin"; DestDir: "{code:GetAddinsDir|2023}\"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: IsAppInstalled('2023')
-Source: "..\{#PluginShortName}.Common\PackageContents.xml"; DestDir: "{code:GetDestDir|2023}"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: IsAppInstalled('2023')
+Source: "..\{#PluginShortName}.2023\bin\Release\*"; DestDir: {code:GetDestDir|2023}; Flags: ignoreversion recursesubdirs createallsubdirs; Check: IsVersionSelected('2023')
+Source: "..\{#PluginShortName}.2023\{#PluginShortName}.addin"; DestDir: "{code:GetAddinsDir|2023}\"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: IsVersionSelected('2023')
+Source: "..\{#PluginShortName}.Common\PackageContents.xml"; DestDir: "{code:GetDestDir|2023}"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: IsVersionSelected('2023')
 
 ; Files for Revit 2024
-; Source: "..\{#PluginShortName}.2024\bin\Release\*"; DestDir: {code:GetDestDir|2024}; Flags: ignoreversion recursesubdirs createallsubdirs; Check: IsAppInstalled('2024')
-; Source: "..\{#PluginShortName}.Common\{#PluginShortName}.addin"; DestDir: "{code:GetAddinsDir|2024}\"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: IsAppInstalled('2024')
-; Source: "..\{#PluginShortName}.Common\PackageContents.xml"; DestDir: "{code:GetDestDir|2024}"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: IsAppInstalled('2024')
+Source: "..\{#PluginShortName}.2024\bin\Release\*"; DestDir: {code:GetDestDir|2024}; Flags: ignoreversion recursesubdirs createallsubdirs; Check: IsVersionSelected('2024')
+Source: "..\{#PluginShortName}.2024\{#PluginShortName}.addin"; DestDir: "{code:GetAddinsDir|2024}\"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: IsVersionSelected('2024')
+Source: "..\{#PluginShortName}.Common\PackageContents.xml"; DestDir: "{code:GetDestDir|2024}"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: IsVersionSelected('2024')
 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
@@ -150,4 +149,62 @@ begin
   end
   else
     Result := True;
+end;
+
+[Code]
+var
+  RevitVersionsPage: TInputOptionWizardPage;
+
+procedure InitializeWizard;
+var
+  i: Integer;
+begin
+  RevitVersionsArray := Split(';', ExpandConstant('{#RevitVersions}'));
+  RevitVersionsPage := CreateInputOptionPage(wpWelcome, 'Select Revit versions', 'Which versions of Revit do you want to install the plugin for?', 'Select the versions of Revit that you want to install the plugin for, and then click Next.', False, False);
+
+  for i := 0 to GetArrayLength(RevitVersionsArray)-1 do
+  begin
+    RevitVersionsPage.Add(RevitVersionsArray[i]);
+    RevitVersionsPage.Values[i] := IsAppInstalled(RevitVersionsArray[i]);
+  end;
+end;
+
+function IsAnyVersionInstalled: Boolean;
+var
+  i: Integer;
+begin
+  Result := False;
+  for i := 0 to GetArrayLength(RevitVersionsArray)-1 do
+  begin
+    if IsAppInstalled(RevitVersionsArray[i]) then
+    begin
+      Result := True;
+      Break;
+    end;
+  end;
+end;
+
+function ShouldSkipPage(PageID: Integer): Boolean;
+begin
+  Result := False;
+  if (PageID = RevitVersionsPage.ID) and not IsAnyVersionInstalled then
+  begin
+    Result := True;
+  end;
+end;
+
+[Code]
+function IsVersionSelected(RevitVersion: String): Boolean;
+var
+  i: Integer;
+begin
+  Result := False;
+  for i := 0 to GetArrayLength(RevitVersionsArray)-1 do
+  begin
+    if (RevitVersionsArray[i] = RevitVersion) and RevitVersionsPage.Values[i] then
+    begin
+      Result := True;
+      Break;
+    end;
+  end;
 end;

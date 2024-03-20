@@ -1,8 +1,10 @@
 ﻿using ASRR.Core.Persistence;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExtensibleStorage;
+using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
+using BsddRevitPlugin.Logic.Utilities;
 using Newtonsoft.Json;
 using NLog;
 using System;
@@ -16,6 +18,7 @@ namespace BsddRevitPlugin.Logic.Model
 {
     public static class ElementsManager
     {
+
         // Element IFCClassification schema
         private static Guid s_schemaId = new Guid("79717CB2-D47B-4EC0-8E74-83A43E7D9F0A");
         private const string s_IfcClassificationData = "IfcClassificationData";
@@ -113,7 +116,7 @@ namespace BsddRevitPlugin.Logic.Model
             {
                 using (Transaction tx = new Transaction(doc))
                 {
-                    tx.Start("Update Parameters");
+                    tx.Start("Save bsdd data to element");
 
                     // Create a classification set in which every dictionary will be collected
                     HashSet<IfcClassification> dictionaryCollection = new HashSet<IfcClassification>();
@@ -145,9 +148,60 @@ namespace BsddRevitPlugin.Logic.Model
                         Console.WriteLine("error");
                     }
 
+                    //Get all classifications and properties from the ifcEntity
+                    var associations = ifcEntity.HasAssociations;
+                    var isDefinedBy = ifcEntity.IsDefinedBy;
+
+                    //Create a list of parameters to create
+                    List<ParameterCreation> parametersToCreate = new List<ParameterCreation>();
+
+                    //Add classification parameters to the list
+                    //Set Revit parameters for each association
+                    if (associations != null)
+                    {
+                        foreach (var association in associations)
+                        {
+                            switch (association)
+                            {
+                                case IfcClassificationReference ifcClassificationReference:
+                                    // do something with ifcClassificationReference
+
+                                    //Create parameter name for each unique the bsdd classificationReference
+                                    bsddParameterName = CreateParameterNameFromIFCClassificationReferenceSourceLocation(ifcClassificationReference);
+                                    parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType));
+
+                                    break;
+
+                                case IfcMaterial ifcMaterial:
+                                    // do something with ifcMaterial
+                                    break;
+                            }
+                        }
+                    }
+
+                    //Add property parameters to the list
+                    if (isDefinedBy != null)
+                    {
+                        foreach (var propertySet in isDefinedBy)
+                        {
+                            foreach (var property in propertySet.HasProperties)
+                            {
+                                if (property.NominalValue.Type != null)
+                                {
+                                    //Else default specType string.text is used
+                                    specType = GetParameterTypeFromProperty(property);
+                                }
+                                bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property.Name);
+                                parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType));
+                            }
+                        }
+                    }
+                    //First create all parameters at once (in Release creating parameters seperately sometimes fails)
+                    //Add a project parameter for the bsdd parameter in all Revit categorices if it does not exist 
+                    //NOTE: THIS IS UP FOR DISCUSSION, AS IT MIGHT NOT BE NECESSARY TO ADD THE PARAMETER TO ALL CATEGORIES
+                    Parameters.CreateProjectParametersForAllCategories(doc, parametersToCreate, "tempGroupName", groupType, false);
 
                     //Set Revit parameters for each association
-                    var associations = ifcEntity.HasAssociations;
                     if (associations != null)
                     {
                         foreach (var association in associations)
@@ -162,9 +216,6 @@ namespace BsddRevitPlugin.Logic.Model
                                     //Create parameter name for each unique the bsdd classificationReference
                                     bsddParameterName = CreateParameterNameFromIFCClassificationReferenceSourceLocation(ifcClassificationReference);
 
-                                    //Add a project parameter for the bsdd classification in all Revit categories if it does not exist
-                                    Utilities.Parameters.CreateProjectParameterForAllCategories(doc, bsddParameterName, "tempGroupName", specType, groupType, false);
-
                                     //Get mapped parametername (stored in the documents DataStorage)
                                     parameterMappedName = GetMappedParameterName(ifcClassificationReference);
 
@@ -173,17 +224,53 @@ namespace BsddRevitPlugin.Logic.Model
                                     {
                                         string typeParameterName = typeparameter.Definition.Name;
 
-                                        //Add the bsdd value to the parameter
-                                        if (typeParameterName == bsddParameterName)
+                                        switch (typeParameterName)
                                         {
-                                            typeparameter.Set(ifcClassificationReference.Identification + ":" + ifcClassificationReference.Name);
-                                        }
-                                        //Add the bsdd value to the mapped parameter
-                                        if (typeParameterName == parameterMappedName)
-                                        {
-                                            typeparameter.Set(ifcClassificationReference.Identification);
+                                            //Add the bsdd value to the parameter
+                                            case var name when name == bsddParameterName:
+                                                try
+                                                {
+                                                    logger.Info($"Setting parameter {typeparameter.Definition.Name} with value {ifcClassificationReference.Identification + ":" + ifcClassificationReference.Name}");
+                                                    typeparameter.Set(ifcClassificationReference.Identification + ":" + ifcClassificationReference.Name);
+                                                }
+                                                catch (Exception)
+                                                {
+
+                                                    throw;
+                                                }
+                                                break;
+
+                                            //Add the bsdd value to the mapped parameter
+                                            case var name when name == parameterMappedName:
+                                                typeparameter.Set(ifcClassificationReference.Identification);
+                                                break;
+
+                                            //Allways add a type
+                                            case "Export Type to IFC As":
+                                                if (ifcEntity.Type != null)
+                                                {
+                                                    typeparameter.Set(ifcEntity.Type);
+                                                }
+                                                break;
+
+                                            //Allways add a predifined type
+                                            case "Type IFC Predefined Type":
+                                                //add check if Type even exists
+                                                if (ifcEntity.PredefinedType != null)
+                                                {
+                                                    typeparameter.Set(ifcEntity.PredefinedType);
+                                                }
+                                                else if (ifcEntity.Type != null && ifcEntity.PredefinedType == null)
+                                                {
+                                                    typeparameter.Set("");
+                                                }
+                                                break;
+
+                                            default:
+                                                break;
                                         }
                                     }
+
                                     break;
 
                                 case IfcMaterial ifcMaterial:
@@ -194,7 +281,6 @@ namespace BsddRevitPlugin.Logic.Model
                     }
 
                     //Set Revit parameters for each property
-                    var isDefinedBy = ifcEntity.IsDefinedBy;
                     if (isDefinedBy != null)
                     {
                         foreach (var propertySet in isDefinedBy)
@@ -210,29 +296,57 @@ namespace BsddRevitPlugin.Logic.Model
 
                                 //Create parameter name for each unique the bsdd property
                                 bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property.Name);
+                                ////Commenting this switch: Issue with LoadBearing etc being allready added as a param without all categories
+                                //switch (property.Name)
+                                //{
+                                //    //Allways add a type
+                                //    case "Load Bearing":
+                                //        bsddParameterName = "LoadBearing";
+                                //        break;
+
+                                //    //Allways add a predifined type
+                                //    case "Is External":
+                                //        //add check if Type even exists
+                                //        bsddParameterName = "IsExternal";
+                                //        break;
+
+                                //    //Allways add a predifined type
+                                //    case "Fire Rating":
+                                //        //add check if Type even exists
+                                //        bsddParameterName = "FireRating";
+                                //        break;
+
+                                //    default:
+                                //        bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property.Name);
+                                //        break;
+                                //}
 
                                 //Add a project parameter for the bsdd parameter in all Revit categorices if it does not exist 
                                 //NOTE: THIS IS UP FOR DISCUSSION, AS IT MIGHT NOT BE NECESSARY TO ADD THE PARAMETER TO ALL CATEGORIES
-                                Utilities.Parameters.CreateProjectParameterForAllCategories(doc, bsddParameterName, "tempGroupName", specType, groupType, false);
+                                //Utilities.Parameters.CreateProjectParameterForAllCategories(doc, bsddParameterName, "tempGroupName", specType, groupType, false);
 
-                                dynamic value = GetParameterValueInCorrectDatatype(property);
-
-                                //Check each type parameter from the object
-                                foreach (Parameter typeparameter in elementType.Parameters)
+                                if (property.NominalValue.Value != null)
                                 {
-                                    string typeParameterName = typeparameter.Definition.Name;
+                                    dynamic value = GetParameterValueInCorrectDatatype(property);
 
-                                    //Add the bsdd value to the parameter
-                                    if (typeParameterName == bsddParameterName)
+                                    //Check each type parameter from the object
+                                    foreach (Parameter typeparameter in elementType.Parameters)
                                     {
-                                        try
+                                        string typeParameterName = typeparameter.Definition.Name;
+
+
+                                        //Add the bsdd value to the parameter
+                                        if (typeParameterName == bsddParameterName)
                                         {
-                                            //because the value is dynamic, always try catch
-                                            typeparameter.Set(value);
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            logger.Info($"Property {property.Name} of type {property.Type} could not be set for elementType {elementType.Name},'{elementType.Id}'. Exception: {e.Message}");
+                                            try
+                                            {
+                                                //because the value is dynamic, always try catch
+                                                typeparameter.Set(value);
+                                            }
+                                            catch (Exception e)
+                                            {
+                                                logger.Info($"Property {property.Name} of type {property.Type} could not be set for elementType {elementType.Name},'{elementType.Id}'. Exception: {e.Message}");
+                                            }
                                         }
                                     }
                                 }
@@ -246,6 +360,50 @@ namespace BsddRevitPlugin.Logic.Model
             }
             catch (Exception e)
             {
+                logger.Info($"Failed to set elementdata: {e.Message}");
+                throw;
+            }
+        }
+        public static void SelectElementsWithIfcData(UIDocument uidoc, IfcEntity ifcEntity)
+        {
+            Logger logger = LogManager.GetCurrentClassLogger();
+
+            logger.Info($"Element json {JsonConvert.SerializeObject(ifcEntity)}");
+            Document doc = uidoc.Document;
+
+            try
+            {
+                //Get the elementType
+                int idInt = Convert.ToInt32(ifcEntity.Tag);
+                ElementId typeId = new ElementId(idInt);
+                ElementType elementType = doc.GetElement(typeId) as ElementType;
+
+                //Get all instances of the elementtype
+                FilteredElementCollector collector = new FilteredElementCollector(doc);
+                var elements = collector
+                    .WhereElementIsNotElementType()
+                    .Where(e => e.GetTypeId() == elementType.Id)
+                    .ToList();
+
+                //Get element ids
+                List<ElementId> elementIds = elements.Select(e => e.Id).ToList();
+
+
+                try
+                {
+
+                    // Select the elements in the UI
+                    uidoc.Selection.SetElementIds(elementIds);
+                }
+                catch
+                {
+                    Console.WriteLine("Could not select any elements");
+                }
+
+
+            }
+            catch (Exception e)
+            {
                 logger.Info(e.Message);
                 throw;
             }
@@ -254,44 +412,197 @@ namespace BsddRevitPlugin.Logic.Model
         private static dynamic GetParameterValueInCorrectDatatype(IfcPropertySingleValue property)
         {
             dynamic value = property.NominalValue.Value;
-            // Parse value to correct datatype
-            switch (property.NominalValue.Type)
+
+            if (value != null)
             {
-                case "IfcBoolean":
-                    value = Convert.ToBoolean(value);
-                    break;
-                case "IfcInteger":
-                    value = Convert.ToInt32(value);
-                    break;
-                case "IfcReal":
-                    value = Convert.ToDouble(value);
-                    break;
-                case "IfcDate":
-                    value = Convert.ToDateTime(value);
-                    break;
-                default:
-                    // IfcString or Default
-                    value = value.ToString();
-                    break;
+
+                // Parse value to correct datatype
+                switch (property.NominalValue.Type)
+                {
+                    case "IfcBoolean":
+                        try
+                        {
+                            bool revidBool = (bool)value;
+                            value = revidBool ? 1 : 0;
+                        }
+                        catch (InvalidCastException)
+                        {
+                            value = 0;
+                            // Handle or ignore the error when value is not a boolean
+                        }
+                        break;
+                    case "IfcInteger":
+                        try
+                        {
+                            value = Convert.ToInt32(value);
+
+                        }
+                        catch (Exception)
+                        {
+                            value = 0;
+                        }
+                        break;
+                    case "IfcReal":
+                        try
+                        {
+
+                            value = Convert.ToDouble(value);
+                        }
+                        catch (Exception)
+                        {
+
+                            value = 0;
+                        }
+                        break;
+                    case "IfcDate":
+                        try
+                        {
+                            //TODO: Check what seems to be a valid DateTime to get and convert
+                            value = Convert.ToDateTime(value).ToString();
+
+                        }
+                        catch (Exception)
+                        {
+
+                            value = value.ToString();
+                        }
+                        break;
+                    default:
+                        // IfcString or Default
+                        try
+                        {
+
+                            value = value.ToString();
+                        }
+                        catch (Exception)
+                        {
+
+                            value = "";
+                        }
+                        break;
+                }
+            }
+            else
+            {
+
+                // Parse value to correct datatype
+                switch (property.NominalValue.Type)
+                {
+                    case "IfcBoolean":
+
+                        value = 0;
+
+                        break;
+                    case "IfcInteger":
+
+                        value = 0;
+                        break;
+                    case "IfcReal":
+
+                        value = 0;
+                        break;
+                    case "IfcDate":
+
+                        value = "";
+                        break;
+                    default:
+                        value = "";
+                        break;
+                }
             }
 
             return value;
         }
 
+        // Revit UI Project Parameter Types:
+        //
+        // Text             The parameter data should be interpreted as a string of text.
+        // Integer          The parameter data should be interpreted as a whole number, positive or negative.
+        // Angle            The parameter data represents an angle.
+        // Area	            The parameter data represents an area.
+        // Cost per Area    ???
+        // Distance         ???
+        // Length	        The parameter data represents a length. (in feet)
+        // MassDensity	    The data value will be represented as a MassDensity.
+        // Number	        The parameter data should be interpreted as a real number, possibly including decimal points.
+        // Rotation Angle   The data value will be represented as a Rotation.
+        // Slope	        The data value will be represented as a Slope.
+        // Speed            ???
+        // Time             ???
+        // Volume           The parameter data represents a volume.
+        // Currency         The data value will be represented as a Currency.
+        // URL	            A text string that represents a web address.              
+        // Material	        The value of this property is considered to be a material.
+        // Fill Pattern	    ???
+        // Image	        The value of this parameter is the id of an image.
+        // YesNo	        A boolean value that will be represented as Yes or No.
+        // MultilineText	The value of this parameter will be represented as multiline text.
+
+        // IFC simple value data types:
+        // https://standards.buildingsmart.org/IFC/RELEASE/IFC4_3/HTML/lexical/IfcSimpleValue.htm
+        //
+        // IfcBinary            BINARY IfcBinary is a defined type of simple data type BINARY which may be used to encode binary data such as embedded textures.
+        // IfcBoolean           BOOLEAN (TRUE or FALSE)
+        // IfcDate              STRING (YYYY-MM-DD)
+        // IfcDateTime          STRING (YYYY-MM-DDThh:mm:ss)
+        // IfcDuration          STRING
+        // IfcIdentifier        STRING(255) for identification purposes. An identifier is an alphanumeric string which allows an individual thing to be identified. It may not provide natural-language meaning. it should be restricted to max. 255 characters.
+        // IfcInteger           INTEGER In principle, the domain of IfcInteger (being an Integer) is all integer numbers.
+        // IfcLabel             STRING(255) A label is the term by which something may be referred to. It is a string which represents the human-interpretable name of something and shall have a natural-language meaning. it should be restricted to max. 255 characters.
+        // IfcLogical           LOGICAL (TRUE, FALSE or UNKNOWN)
+        // IfcPositiveInteger   IfcInteger > 0
+        // IfcReal              REAL In principle, the domain of IfcReal (being a Real) is all rational, irrational and scientific real numbers.
+        // IfcText              STRING A text is an alphanumeric string of characters which is intended to be read and understood by a human being. It is for information purposes only.
+        // IfcTime              STRING (hh:mm:ss)
+        // IfcTimeStamp         INTEGER
+        // IfcURIReference      STRING
+
+        // bSDD Property DataTypes:
+        // https://github.com/buildingSMART/bSDD/blob/master/Documentation/bSDD%20JSON%20import%20model.md#property
+        //
+        // Boolean          IfcBoolean
+        // Character        IfcText
+        // Integer          IfcInteger
+        // Real             IfcReal
+        // String           IfcText
+        // Time             IfcDateTime
+
+        /// <summary>
+        /// Determines the Revit parameter type from an IFC property.
+        /// </summary>
+        /// <param name="property">The IFC property.</param>
+        /// <returns>The corresponding Revit parameter type.</returns>
         private static ForgeTypeId GetParameterTypeFromProperty(IfcPropertySingleValue property)
         {
-            switch (property.NominalValue.Type)
+            // The type of the nominal value in the IFC property
+            string nominalValueType = property.NominalValue.Type;
+
+            // Map the IFC type to the corresponding Revit parameter type
+            switch (nominalValueType)
             {
                 case "IfcBoolean":
+                    // Map IfcBoolean to Revit's YesNo type
                     return SpecTypeId.Boolean.YesNo;
+
                 case "IfcInteger":
+                    // Map IfcInteger to Revit's Integer type
                     return SpecTypeId.Int.Integer;
+
                 case "IfcReal":
-                    return SpecTypeId.Length;
+                    // Map IfcReal to Revit's Number type
+                    return SpecTypeId.Number;
+
                 case "IfcDate":
-                    return SpecTypeId.Time;
+                case "IfcDateTime":
+                    // Revit does not support date types, so map IfcDate and IfcDateTime to Revit's Text type
+                    return SpecTypeId.String.Text;
+
+                case "IfcText":
+                    // Map IfcText to Revit's Text type
+                    return SpecTypeId.String.Text;
+
                 default:
-                    // IfcString or Default
+                    // If the IFC type is not recognized, default to Revit's Text type
                     return SpecTypeId.String.Text;
             }
         }
@@ -381,13 +692,35 @@ namespace BsddRevitPlugin.Logic.Model
         /// <returns>A dictionary containing the classification data, where the key is the dictionary URI and the value is a tuple of the identification and name.</returns>
         public static Dictionary<Uri, (string Identification, string Name)> GetClassificationDataFromSettings(ElementType elementType)
         {
+            Logger logger = LogManager.GetCurrentClassLogger();
             var classificationData = new Dictionary<Uri, (string Identification, string Name)>();
             var activeDictionaries = GetActiveDictionaries();
 
             foreach (var dictionary in activeDictionaries)
             {
-                string bsddParameterValue = GetTypeParameterValueByElementType(elementType, CreateParameterNameFromUri(dictionary.IfcClassification.Location));
-                string mappedParameterValue = GetTypeParameterValueByElementType(elementType, dictionary.ParameterMapping);
+                string bsddParameterValue = "";
+                string mappedParameterValue = "";
+                string bsddParameterName = CreateParameterNameFromUri(dictionary.IfcClassification.Location);
+                // TODO: sometimes values come back as null, how does this look in the IFC?
+                try
+                {
+                    bsddParameterValue = GetTypeParameterValueByElementType(elementType, CreateParameterNameFromUri(dictionary.IfcClassification.Location));
+
+                }
+                catch (Exception e)
+                {
+                    logger.Error(e);
+                }
+                try
+                {
+
+                    mappedParameterValue = GetTypeParameterValueByElementType(elementType, dictionary.ParameterMapping);
+                }
+                catch (Exception e)
+                {
+
+                    logger.Error(e);
+                }
 
                 string identification = null;
                 string name = null;
@@ -429,24 +762,19 @@ namespace BsddRevitPlugin.Logic.Model
         /// </summary>
         /// <param name="entity">The entity from which to retrieve the associations.</param>
         /// <returns>A dictionary of associations with the location as the key.</returns>        
-        private static Dictionary<Uri, IfcClassificationReference> GetElementTypeAssociations(ElementType elementType)
+        public static Dictionary<Uri, IfcClassificationReference> GetElementTypeAssociations(ElementType elementType)
         {
+
+            Logger logger = LogManager.GetCurrentClassLogger();
             var associations = new Dictionary<Uri, IfcClassificationReference>();
             var activeDictionaryData = GetClassificationDataFromSettings(elementType);
+
 
             foreach (var association in getElementTypeClassificationsReferencesFromExtensibleStorage(elementType))
             {
                 if (association is IfcClassificationReference ifcClassificationReference)
                 {
-                    try
-                    {
-                        associations[ifcClassificationReference.ReferencedSource.Location] = ifcClassificationReference;
-
-                    }
-                    catch (Exception)
-                    {
-
-                    }
+                    associations[ifcClassificationReference.ReferencedSource.Location] = ifcClassificationReference;
                 }
             }
 
