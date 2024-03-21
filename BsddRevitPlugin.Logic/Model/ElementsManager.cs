@@ -419,110 +419,61 @@ namespace BsddRevitPlugin.Logic.Model
             }
         }
 
+        /// <summary>
+        /// Converts the value of the given IFC property to the correct datatype.
+        /// </summary>
+        /// <param name="property">The IFC property to convert.</param>
+        /// <returns>The converted value, or a default value if the conversion fails.</returns>
         private static dynamic GetParameterValueInCorrectDatatype(IfcPropertySingleValue property)
         {
             dynamic value = property.NominalValue.Value;
 
-            if (value != null)
+            // Parse value to correct datatype
+            switch (property.NominalValue.Type)
             {
-
-                // Parse value to correct datatype
-                switch (property.NominalValue.Type)
-                {
-                    case "IfcBoolean":
-                        try
-                        {
-                            bool revidBool = (bool)value;
-                            value = revidBool ? 1 : 0;
-                        }
-                        catch (InvalidCastException)
-                        {
-                            value = 0;
-                            // Handle or ignore the error when value is not a boolean
-                        }
-                        break;
-                    case "IfcInteger":
-                        try
-                        {
-                            value = Convert.ToInt32(value);
-
-                        }
-                        catch (Exception)
-                        {
-                            value = 0;
-                        }
-                        break;
-                    case "IfcReal":
-                        try
-                        {
-
-                            value = Convert.ToDouble(value);
-                        }
-                        catch (Exception)
-                        {
-
-                            value = 0;
-                        }
-                        break;
-                    case "IfcDate":
-                        try
-                        {
-                            //TODO: Check what seems to be a valid DateTime to get and convert
-                            value = Convert.ToDateTime(value).ToString();
-
-                        }
-                        catch (Exception)
-                        {
-
-                            value = value.ToString();
-                        }
-                        break;
-                    default:
-                        // IfcString or Default
-                        try
-                        {
-
-                            value = value.ToString();
-                        }
-                        catch (Exception)
-                        {
-
-                            value = "";
-                        }
-                        break;
-                }
-            }
-            else
-            {
-
-                // Parse value to correct datatype
-                switch (property.NominalValue.Type)
-                {
-                    case "IfcBoolean":
-
-                        value = 0;
-
-                        break;
-                    case "IfcInteger":
-
-                        value = 0;
-                        break;
-                    case "IfcReal":
-
-                        value = 0;
-                        break;
-                    case "IfcDate":
-
-                        value = "";
-                        break;
-                    default:
-                        value = "";
-                        break;
-                }
+                case "IfcBoolean":
+                    value = TryConvertValue(value, new Func<dynamic, dynamic>(v => (bool)v ? 1 : 0), 0);
+                    break;
+                case "IfcInteger":
+                    value = TryConvertValue(value, new Func<dynamic, dynamic>(v => Convert.ToInt32(v)), 0);
+                    break;
+                case "IfcReal":
+                    value = TryConvertValue(value, new Func<dynamic, dynamic>(v => Convert.ToDouble(v)), 0);
+                    break;
+                case "IfcDate":
+                case "IfcDateTime":
+                    //TODO: Check what seems to be a valid DateTime to get and convert
+                    value = TryConvertValue(value, new Func<dynamic, dynamic>(v => Convert.ToDateTime(v).ToString()), "");
+                    break;
+                default:
+                    // IfcString or Default
+                    value = TryConvertValue(value, new Func<dynamic, dynamic>(v => v.ToString()), "");
+                    break;
             }
 
             return value;
         }
+
+
+        /// <summary>
+        /// Tries to convert a value using the given conversion function.
+        /// </summary>
+        /// <param name="value">The value to convert.</param>
+        /// <param name="convert">The conversion function to use.</param>
+        /// <param name="defaultValue">The default value to return if the conversion fails.</param>
+        /// <returns>The converted value, or the default value if the conversion fails.</returns>
+        private static dynamic TryConvertValue(dynamic value, Func<dynamic, object> convert, dynamic defaultValue)
+        {
+            try
+            {
+                return value != null ? convert(value) : defaultValue;
+            }
+            catch (Exception)
+            {
+                return defaultValue;
+            }
+        }
+
 
         // Revit UI Project Parameter Types:
         //
@@ -1044,33 +995,74 @@ namespace BsddRevitPlugin.Logic.Model
             return paramValue;
         }
 
-        public static void AccessIFCMappingTable(Document doc, ExporterIFC exporter)
+        public static String IFCMappingValue(Document doc, Element elem)
         {
-            // Get all categories in the document
-            Categories categories = doc.Settings.Categories;
 
-            // Dictionary to store the mapping between Revit categories and IFC class names
-            Dictionary<Category, string> mappingTable = new Dictionary<Category, string>();
-
-            // Iterate through each category
-            foreach (ElementId categoryId in categories)
+            if (elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS)?.AsString() != null &&
+                elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS)?.AsString() != "")
             {
-                // Get the IFC entity type (class name) for the current category
-                string ifcClassName = ExporterIFCUtils.GetIFCClassNameByCategory(categoryId, exporter);
-
-                Category category = Category.GetCategory(doc, categoryId);
-
-                // Add the mapping to the dictionary
-                if (!string.IsNullOrEmpty(ifcClassName))
-                {
-                    mappingTable.Add(category, ifcClassName);
-                }
+                return elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS)?.AsString();
             }
 
-            // Now you have a mapping table between Revit categories and their corresponding IFC class names
-            // You can access this mapping as needed
-        }
+            //krijg category van element
+            Category elemCategory = elem.Category;
+            String cat = elemCategory.Name.ToString();
 
+            /* Vind alle subcategories van de categorie
+            if (elemCategory != null)
+            {
+                // Retrieve the subcategories of the element's category
+                foreach (Category subcategory in elemCategory.SubCategories)
+                {
+                    string subcategoryName = subcategory.Name;
+                    // Now you have the subcategory name!
+                    // You can use it as needed in your code.
+                    // For example, print it to the console:
+                }
+            }
+            //Vind alle subcategories van de categorie */
+
+
+            //txt opbouw per regel: Category<tab> Subcategory<tab> Layer name < tab > Color number<tab>
+            String exportCategoryTableFilePath = doc.Application.ExportIFCCategoryTable;
+
+            // Dictionary to store the mapping between Revit categories and IFC class names
+            Dictionary<string, string> mappingTable = new Dictionary<string, string>();
+
+            String line;
+            try
+            {
+                //Pass the file path and file name to the StreamReader constructor
+                StreamReader sr = new StreamReader(exportCategoryTableFilePath);
+                line = sr.ReadLine();
+                String sep = "\t";
+                while (line != null)
+                {
+                    if (line.StartsWith("#") || line == null)
+                    {
+
+                    }
+                    else
+                    {
+                        string[] splitContent = line.Split(sep.ToCharArray());
+                        // Dictionary to store the mapping between Revit categories and IFC class names
+                        mappingTable.Add(splitContent[0] + "\t" + splitContent[1], splitContent[2]);
+                    }
+
+                    //Read the next line
+                    line = sr.ReadLine();
+                }
+                //close the file
+                sr.Close();
+                Console.ReadLine();
+            }
+            catch
+            {
+
+            };
+
+            return mappingTable[cat + "\t"];
+        }
     }
 }
 
