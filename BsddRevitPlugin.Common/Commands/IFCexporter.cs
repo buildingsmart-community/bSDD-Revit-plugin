@@ -1,16 +1,15 @@
 ﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.ExtensibleStorage;
 using Autodesk.Revit.UI;
 using BIM.IFC.Export.UI;
 using BsddRevitPlugin.Logic.IfcExport;
 using BsddRevitPlugin.Logic.Model;
+using BsddRevitPlugin.Logic.UI.BsddBridge;
+using BsddRevitPlugin.Logic.UI.Translations;
 using NLog;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Web.Script.Serialization;
 using System.Windows.Forms;
 using Document = Autodesk.Revit.DB.Document;
 using SaveFileDialog = System.Windows.Forms.SaveFileDialog;
@@ -300,6 +299,30 @@ namespace BsddRevitPlugin.Common.Commands
 
                     bsddIFCExportConfiguration.ExportUserDefinedPsets = true;
                     bsddIFCExportConfiguration.ExportUserDefinedPsetsFileName = tempFilePath;
+
+                    //Set the ExportIFCCommonPropertySets to false, so it doesn't interfere with the user defined IFC property sets added by the BSDD plugin
+
+                    LanguageConverter languageConverter = new LanguageConverter();
+                    string currentLanguage = GlobalBsddSettings.bsddsettings.Language;
+
+                    if (bsddIFCExportConfiguration.ExportIFCCommonPropertySets == true)
+                    {
+                        TaskDialog dialog = new TaskDialog(languageConverter.Translate("IFCExport_TaskDialogName", currentLanguage));
+                        dialog.MainInstruction = languageConverter.Translate("IFCExport_TaskDialogMessage", currentLanguage);
+
+                        dialog.CommonButtons = TaskDialogCommonButtons.Yes | TaskDialogCommonButtons.No;
+
+                        TaskDialogResult result = dialog.Show();
+
+                        if (result == TaskDialogResult.Yes)
+                        {
+                            bsddIFCExportConfiguration.ExportIFCCommonPropertySets = false;
+                        }
+                        else if (result == TaskDialogResult.No)
+                        {
+                            // User pressed 'No'
+                        }
+                    }
 
                     //Pass the setting of the myIFCExportConfiguration to the IFCExportOptions
                     bsddIFCExportConfiguration.UpdateOptions(ifcExportOptions, activeViewId);
