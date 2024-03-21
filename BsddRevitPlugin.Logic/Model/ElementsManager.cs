@@ -418,110 +418,61 @@ namespace BsddRevitPlugin.Logic.Model
             }
         }
 
+        /// <summary>
+        /// Converts the value of the given IFC property to the correct datatype.
+        /// </summary>
+        /// <param name="property">The IFC property to convert.</param>
+        /// <returns>The converted value, or a default value if the conversion fails.</returns>
         private static dynamic GetParameterValueInCorrectDatatype(IfcPropertySingleValue property)
         {
             dynamic value = property.NominalValue.Value;
 
-            if (value != null)
+            // Parse value to correct datatype
+            switch (property.NominalValue.Type)
             {
-
-                // Parse value to correct datatype
-                switch (property.NominalValue.Type)
-                {
-                    case "IfcBoolean":
-                        try
-                        {
-                            bool revidBool = (bool)value;
-                            value = revidBool ? 1 : 0;
-                        }
-                        catch (InvalidCastException)
-                        {
-                            value = 0;
-                            // Handle or ignore the error when value is not a boolean
-                        }
-                        break;
-                    case "IfcInteger":
-                        try
-                        {
-                            value = Convert.ToInt32(value);
-
-                        }
-                        catch (Exception)
-                        {
-                            value = 0;
-                        }
-                        break;
-                    case "IfcReal":
-                        try
-                        {
-
-                            value = Convert.ToDouble(value);
-                        }
-                        catch (Exception)
-                        {
-
-                            value = 0;
-                        }
-                        break;
-                    case "IfcDate":
-                        try
-                        {
-                            //TODO: Check what seems to be a valid DateTime to get and convert
-                            value = Convert.ToDateTime(value).ToString();
-
-                        }
-                        catch (Exception)
-                        {
-
-                            value = value.ToString();
-                        }
-                        break;
-                    default:
-                        // IfcString or Default
-                        try
-                        {
-
-                            value = value.ToString();
-                        }
-                        catch (Exception)
-                        {
-
-                            value = "";
-                        }
-                        break;
-                }
-            }
-            else
-            {
-
-                // Parse value to correct datatype
-                switch (property.NominalValue.Type)
-                {
-                    case "IfcBoolean":
-
-                        value = 0;
-
-                        break;
-                    case "IfcInteger":
-
-                        value = 0;
-                        break;
-                    case "IfcReal":
-
-                        value = 0;
-                        break;
-                    case "IfcDate":
-
-                        value = "";
-                        break;
-                    default:
-                        value = "";
-                        break;
-                }
+                case "IfcBoolean":
+                    value = TryConvertValue(value, new Func<dynamic, dynamic>(v => (bool)v ? 1 : 0), 0);
+                    break;
+                case "IfcInteger":
+                    value = TryConvertValue(value, new Func<dynamic, dynamic>(v => Convert.ToInt32(v)), 0);
+                    break;
+                case "IfcReal":
+                    value = TryConvertValue(value, new Func<dynamic, dynamic>(v => Convert.ToDouble(v)), 0);
+                    break;
+                case "IfcDate":
+                case "IfcDateTime":
+                    //TODO: Check what seems to be a valid DateTime to get and convert
+                    value = TryConvertValue(value, new Func<dynamic, dynamic>(v => Convert.ToDateTime(v).ToString()), "");
+                    break;
+                default:
+                    // IfcString or Default
+                    value = TryConvertValue(value, new Func<dynamic, dynamic>(v => v.ToString()), "");
+                    break;
             }
 
             return value;
         }
+
+
+        /// <summary>
+        /// Tries to convert a value using the given conversion function.
+        /// </summary>
+        /// <param name="value">The value to convert.</param>
+        /// <param name="convert">The conversion function to use.</param>
+        /// <param name="defaultValue">The default value to return if the conversion fails.</param>
+        /// <returns>The converted value, or the default value if the conversion fails.</returns>
+        private static dynamic TryConvertValue(dynamic value, Func<dynamic, object> convert, dynamic defaultValue)
+        {
+            try
+            {
+                return value != null ? convert(value) : defaultValue;
+            }
+            catch (Exception)
+            {
+                return defaultValue;
+            }
+        }
+
 
         // Revit UI Project Parameter Types:
         //
