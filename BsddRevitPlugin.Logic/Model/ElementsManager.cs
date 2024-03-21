@@ -186,10 +186,21 @@ namespace BsddRevitPlugin.Logic.Model
                         {
                             foreach (var property in propertySet.HasProperties)
                             {
-                                if (property.NominalValue.Type != null)
+                                if (property.NominalValue != null)
                                 {
-                                    //Else default specType string.text is used
-                                    specType = GetParameterTypeFromProperty(property);
+                                    if (property.NominalValue.Type != null)
+                                    {
+                                        //Else default specType string.text is used
+                                        specType = GetParameterTypeFromProperty(property);
+                                    }
+                                    else
+                                    {
+                                        specType = SpecTypeId.String.Text;
+                                    }
+                                }
+                                else
+                                {
+                                    specType = SpecTypeId.String.Text;
                                 }
                                 bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property.Name);
                                 parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType));
@@ -287,69 +298,68 @@ namespace BsddRevitPlugin.Logic.Model
                         {
                             foreach (var property in propertySet.HasProperties)
                             {
-                                //Set parameter type and group for the bsdd classification parameters
-                                if (property.NominalValue.Type != null)
+                                if (property.NominalValue != null)
                                 {
-                                    //Else default specType string.text is used
-                                    specType = GetParameterTypeFromProperty(property);
-                                }
 
-                                //Create parameter name for each unique the bsdd property
-                                bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property.Name);
-                                ////Commenting this switch: Issue with LoadBearing etc being allready added as a param without all categories
-                                //switch (property.Name)
-                                //{
-                                //    //Allways add a type
-                                //    case "Load Bearing":
-                                //        bsddParameterName = "LoadBearing";
-                                //        break;
+                                    //Create parameter name for each unique the bsdd property
+                                    bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property.Name);
 
-                                //    //Allways add a predifined type
-                                //    case "Is External":
-                                //        //add check if Type even exists
-                                //        bsddParameterName = "IsExternal";
-                                //        break;
+                                    ////Commenting this switch: Issue with LoadBearing etc being allready added as a param without all categories
+                                    //switch (property.Name)
+                                    //{
+                                    //    //Allways add a type
+                                    //    case "Load Bearing":
+                                    //        bsddParameterName = "LoadBearing";
+                                    //        break;
 
-                                //    //Allways add a predifined type
-                                //    case "Fire Rating":
-                                //        //add check if Type even exists
-                                //        bsddParameterName = "FireRating";
-                                //        break;
+                                    //    //Allways add a predifined type
+                                    //    case "Is External":
+                                    //        //add check if Type even exists
+                                    //        bsddParameterName = "IsExternal";
+                                    //        break;
 
-                                //    default:
-                                //        bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property.Name);
-                                //        break;
-                                //}
+                                    //    //Allways add a predifined type
+                                    //    case "Fire Rating":
+                                    //        //add check if Type even exists
+                                    //        bsddParameterName = "FireRating";
+                                    //        break;
 
-                                //Add a project parameter for the bsdd parameter in all Revit categorices if it does not exist 
-                                //NOTE: THIS IS UP FOR DISCUSSION, AS IT MIGHT NOT BE NECESSARY TO ADD THE PARAMETER TO ALL CATEGORIES
-                                //Utilities.Parameters.CreateProjectParameterForAllCategories(doc, bsddParameterName, "tempGroupName", specType, groupType, false);
+                                    //    default:
+                                    //        bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property.Name);
+                                    //        break;
+                                    //}
 
-                                if (property.NominalValue.Value != null)
-                                {
-                                    dynamic value = GetParameterValueInCorrectDatatype(property);
+                                    //Add a project parameter for the bsdd parameter in all Revit categorices if it does not exist 
+                                    //NOTE: THIS IS UP FOR DISCUSSION, AS IT MIGHT NOT BE NECESSARY TO ADD THE PARAMETER TO ALL CATEGORIES
+                                    //Utilities.Parameters.CreateProjectParameterForAllCategories(doc, bsddParameterName, "tempGroupName", specType, groupType, false);
 
-                                    //Check each type parameter from the object
-                                    foreach (Parameter typeparameter in elementType.Parameters)
+                                    if (property.NominalValue.Value != null)
                                     {
-                                        string typeParameterName = typeparameter.Definition.Name;
+                                        dynamic value = GetParameterValueInCorrectDatatype(property);
 
-
-                                        //Add the bsdd value to the parameter
-                                        if (typeParameterName == bsddParameterName)
+                                        //Check each type parameter from the object
+                                        foreach (Parameter typeparameter in elementType.Parameters)
                                         {
-                                            try
+                                            string typeParameterName = typeparameter.Definition.Name;
+
+
+                                            //Add the bsdd value to the parameter
+                                            if (typeParameterName == bsddParameterName)
                                             {
-                                                //because the value is dynamic, always try catch
-                                                typeparameter.Set(value);
-                                            }
-                                            catch (Exception e)
-                                            {
-                                                logger.Info($"Property {property.Name} of type {property.Type} could not be set for elementType {elementType.Name},'{elementType.Id}'. Exception: {e.Message}");
+                                                try
+                                                {
+                                                    //because the value is dynamic, always try catch
+                                                    typeparameter.Set(value);
+                                                }
+                                                catch (Exception e)
+                                                {
+                                                    logger.Info($"Property {property.Name} of type {property.Type} could not be set for elementType {elementType.Name},'{elementType.Id}'. Exception: {e.Message}");
+                                                }
                                             }
                                         }
                                     }
                                 }
+
                             }
                         }
                     }
