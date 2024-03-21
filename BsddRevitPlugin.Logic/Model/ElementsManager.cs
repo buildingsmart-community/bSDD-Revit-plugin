@@ -10,6 +10,8 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Autodesk.Revit.ApplicationServices;
+using Autodesk.Revit.DB.IFC;
 
 
 namespace BsddRevitPlugin.Logic.Model
@@ -1031,5 +1033,39 @@ namespace BsddRevitPlugin.Logic.Model
 
             return paramValue;
         }
+
+        public static void AccessIFCMappingTable(Document doc, ExporterIFC exporter)
+        {
+            // Get all categories in the document
+            Categories categories = doc.Settings.Categories;
+
+            // Dictionary to store the mapping between Revit categories and IFC class names
+            Dictionary<Category, string> mappingTable = new Dictionary<Category, string>();
+
+            // Iterate through each category
+            foreach (ElementId categoryId in categories)
+            {
+                // Get the IFC entity type (class name) for the current category
+                string ifcClassName = ExporterIFCUtils.GetIFCClassNameByCategory(categoryId, exporter);
+
+                Category category = Category.GetCategory(doc, categoryId);
+
+                // Add the mapping to the dictionary
+                if (!string.IsNullOrEmpty(ifcClassName))
+                {
+                    mappingTable.Add(category, ifcClassName);
+                }
+            }
+
+            // Now you have a mapping table between Revit categories and their corresponding IFC class names
+            // You can access this mapping as needed
+        }
+
     }
 }
+
+
+
+
+
+
