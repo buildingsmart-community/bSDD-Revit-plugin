@@ -146,6 +146,7 @@
     <Compile Include="UI\Services\IBrowserService.cs" />
     <Compile Include="UI\Services\IBrowserServiceFactory.cs" />
     <Compile Include="UI\Services\ICustomBrowserControl.cs" />
+    <Compile Include="UI\Translations\LanguageConverter.cs" />
     <Compile Include="UI\View\BsddSelection.xaml.cs">
       <DependentUpon>BsddSelection.xaml</DependentUpon>
     </Compile>
