@@ -10,8 +10,7 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Autodesk.Revit.ApplicationServices;
-using Autodesk.Revit.DB.IFC;
+using System.IO;
 
 
 namespace BsddRevitPlugin.Logic.Model
@@ -786,6 +785,7 @@ namespace BsddRevitPlugin.Logic.Model
         /// <returns>A IfcData object representing the ifcJSON structure.</returns>
         public static List<IfcEntity> SelectionToIfcJson(Document doc, List<ElementType> elemList)
         {
+            
             if (doc == null || elemList == null)
             {
                 throw new ArgumentNullException(doc == null ? nameof(doc) : nameof(elemList));
@@ -800,7 +800,7 @@ namespace BsddRevitPlugin.Logic.Model
                     continue;
                 }
 
-                var ifcData = CreateIfcEntity(elem);
+                var ifcData = CreateIfcEntity(elem, doc);
                 ifcEntities.Add(ifcData);
             }
 
@@ -815,13 +815,13 @@ namespace BsddRevitPlugin.Logic.Model
         /// <summary>
         /// Transforms a Revit element type into an IFC entity.
         /// </summary>
-        private static IfcEntity CreateIfcEntity(ElementType elem)
+        private static IfcEntity CreateIfcEntity(ElementType elem, Document doc)
         {
             string familyName = GetElementTypeFamilyName(elem, GetTypeParameterValueByElementType(elem, "IfcName"));
             string typeName = GetElementTypeName(elem, GetTypeParameterValueByElementType(elem, "IfcType"));
             string ifcTag = elem.Id.ToString();
             string typeDescription = GetTypeParameterValueByElementType(elem, "Description");
-            string ifcType = elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS)?.AsString();
+            string ifcType = IFCMappingValue(doc, elem);
             string ifcPredefinedType = elem.get_Parameter(BuiltInParameter.IFC_EXPORT_PREDEFINEDTYPE_TYPE)?.AsString();
 
             var associations = GetElementTypeAssociations(elem);
@@ -994,11 +994,11 @@ namespace BsddRevitPlugin.Logic.Model
 
             return paramValue;
         }
-
+        
         public static String IFCMappingValue(Document doc, Element elem)
         {
-
-            if (elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS)?.AsString() != null &&
+                 
+            if(elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS)?.AsString() != null &&
                 elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS)?.AsString() != "")
             {
                 return elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS)?.AsString();
