@@ -5,7 +5,7 @@
     {
       "type": "IfcClassificationReference",
       "name": "breedplaatvloer",
-      "location": "https://identifier.buildingsmart.org/uri/digibase/basisbouwproducten/0.1/class/breedplaatvloer",
+      "location": "https://identifier.buildingsmart.org/uri/volkerwesselsbvgo/basisbouwproducten/0.1/class/breedplaatvloer",
       "identification": "breedplaatvloer",
       "referencedSource": {
         "type": "IfcClassification",
@@ -30,13 +30,13 @@
       "referencedSource": {
         "type": "IfcClassification",
         "name": "",
-        "location": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021"
+        "location": "https://identifier.buildingsmart.org/uri/volkerwesselsbvgo/nlsfb/12.2021"
       }
     },
     {
       "type": "IfcClassificationReference",
       "name": "23.21 vloeren; constructief, vrijdragende vloeren",
-      "location": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021/class/23.21",
+      "location": "https://identifier.buildingsmart.org/uri/volkerwesselsbvgo/nlsfb/12.2021/class/23.21",
       "identification": "23.21",
       "referencedSource": {
         "type": "IfcClassification",
@@ -46,7 +46,7 @@
     {
       "type": "IfcClassificationReference",
       "name": "Vloer, vloer",
-      "location": "https://identifier.buildingsmart.org/uri/digibase/digibasedemoifctranslation/0.1/class/IfcSlab.FLOOR",
+      "location": "https://identifier.buildingsmart.org/uri/volkerwesselsbvgo/digibasedemoifctranslation/0.1/class/IfcSlab.FLOOR",
       "identification": "IfcSlab.FLOOR",
       "referencedSource": {
         "type": "IfcClassification",
@@ -56,7 +56,7 @@
     {
       "type": "IfcClassificationReference",
       "name": "F Vloerafbouw/vloerafwerking",
-      "location": "https://identifier.buildingsmart.org/uri/digibase/nen2699/0.1/class/B.1.F",
+      "location": "https://identifier.buildingsmart.org/uri/volkerwesselsbvgo/nen2699/0.1/class/B.1.F",
       "identification": "B.1.F",
       "referencedSource": {
         "type": "IfcClassification",

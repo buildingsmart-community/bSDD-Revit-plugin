@@ -1,7 +1,7 @@
 {
   "bsddApiEnvironment": "test",
   "mainDictionary": {
-    "dictionaryUri": "https://identifier.buildingsmart.org/uri/digibase/basisbouwproducten/0.8.0",
+    "dictionaryUri": "https://identifier.buildingsmart.org/uri/volkerwesselsbvgo/basisbouwproducten/0.8.0",
     "dictionaryName": "Basis bouwproducten",
     "parameterMapping": "Description"
   },
@@ -12,7 +12,7 @@
       "parameterMapping": "IfcExportAs"
     },
     {
-      "dictionaryUri": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021",
+      "dictionaryUri": "https://identifier.buildingsmart.org/uri/volkerwesselsbvgo/nlsfb/12.2021",
       "dictionaryName": "DigiBase Demo NL-SfB tabel 1",
       "parameterMapping": "assemblycode"
     }
@@ -27,12 +27,12 @@
         {
           "type": "IfcClassificationReference",
           "name": "23.21 vloeren; constructief, vrijdragende vloeren",
-          "location": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021/class/23.21",
+          "location": "https://identifier.buildingsmart.org/uri/volkerwesselsbvgo/nlsfb/12.2021/class/23.21",
           "identification": "23.21",
           "referencedSource": {
             "type": "IfcClassification",
             "name": "DigiBase Demo NL-SfB tabel 1",
-            "location": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021"
+            "location": "https://identifier.buildingsmart.org/uri/volkerwesselsbvgo/nlsfb/12.2021"
           }
         },
         {
@@ -63,12 +63,12 @@
         {
           "type": "IfcClassificationReference",
           "name": "23.21 vloeren; constructief, vrijdragende vloeren",
-          "location": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021/class/23.21",
+          "location": "https://identifier.buildingsmart.org/uri/volkerwesselsbvgo/nlsfb/12.2021/class/23.21",
           "identification": "23.21",
           "referencedSource": {
             "type": "IfcClassification",
             "name": "DigiBase Demo NL-SfB tabel 1",
-            "location": "https://identifier.buildingsmart.org/uri/digibase/nlsfb/12.2021"
+            "location": "https://identifier.buildingsmart.org/uri/volkerwesselsbvgo/nlsfb/12.2021"
           }
         },
         {

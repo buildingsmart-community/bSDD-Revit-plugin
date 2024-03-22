@@ -33,7 +33,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
     public class BsddSettings
     {
         [JsonProperty("bsddApiEnvironment")]
-        public string BsddApiEnvironment { get; set; } = "test";
+        public string BsddApiEnvironment { get; set; } = "production";
 
         [JsonProperty("mainDictionary")]
         public BsddDictionary MainDictionary { get; set; }
@@ -43,6 +43,9 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
 
         [JsonProperty("language")]
         public string Language { get; set; }
+
+        [JsonProperty("includeTestDictionaries")]
+        public bool IncludeTestDictionaries { get; set; }
     }
 
     public class BsddBridgeData
