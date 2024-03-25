@@ -1,50 +1,56 @@
-# Introduction
-This project is part of an opensource development of a series of consistent bSDD plugins and bSDD web UI.
+# bSDD Revit plugin
 
-Subprojects:
--	Web UI https://github.com/buildingsmart-community/bSDD-filter-UI
--	Revit Plugin https://github.com/buildingsmart-community/bSDD-Revit-plugin
--	Sketchup bSDD plugin https://github.com/DigiBase-VolkerWessels/SketchUp-bsDD-plugin
--	Trimble Connect bSDD plugin (Not available yet)
+> **This is a community build tool. It is not an official buildingSMART International initiative.**
+
+## Introduction
+This project is part of the Open bSDD toolkit, an opensource development of a series of consistent bSDD plugins sharing a common bSDD web UI.
 
 This project is initiated by Dutch contractors VolkerWessels and Heijmans. By starting this opensource development we believe we can help the industry structuring data. Proper usage of the buildingSMART Data Dictionary helps in getting consistent information in objects. Good information is the basis for further automation. 
 The idea of our development is that we inspire our industry to include bSDD in their processes and softwareproducts natively.
-
-# BsddRevitPlugin
-
-This is a community build tool. 
-It is not an official buildingSMART International initiative.
 
 <!-- TOC -->
 * [Internal NuGet Packages](#internal-nuget-packages)
 * [TODO](#todo)
 <!-- TOC -->
 
-## Internal NuGet Packages
-We're currently experimenting with using internal NuGet packages instead of submodules to make the C# project workflow smoother. However, to gain access to the internal packages you must follow a few steps:
+## Open bSDD toolkit projects
+-	Web UI https://github.com/buildingsmart-community/bSDD-filter-UI
+-	Revit Plugin https://github.com/buildingsmart-community/bSDD-Revit-plugin
+-	Sketchup bSDD plugin https://github.com/DigiBase-VolkerWessels/SketchUp-bsDD-plugin
+-	Trimble Connect bSDD plugin (Not available yet)
 
-1) Generate a Personal Access Token (classic) in GitHub:
-    - a) On your GitHub account, go to your settings, and then go to `Developer settings`
-    - b) Under `Personal access tokens`, click Tokens (classic)
-    - c) Click on `Generate new token (classic)` -- make sure to store this token securely, it will only be shown once!
-    - d) Make sure to set the scope of the token to at _least_ reading repositories (add write if you are going to be publishing internal NuGet packages)
+## Features
+### Validate model against bSDD
+- [x] **Revit types**
+- [ ] (Revit instances) **TODO**
+- [ ] (Revit families) **TODO**
+- [x] **validate against multiple dictionaries**
+- [ ] (validate against class restrictions) **TODO**
+- [ ] (validate against nested class restrictions) **TODO**
+- [ ] (validate against property restrictions) **TODO**
+### Apply bSDD classes on Revit elements
+- [x] **search in main dictionary**
+- [x] **select possible related classifications**
+- [x] **automatic generation of persistent shared parameter GUIDs**
+- [ ] (select unrelated classes from filter dictionaries)
+- [ ] (add bSDD materials) **TODO**
+### Export IFC, according to [bSDD documentation](https://github.com/buildingSMART/bSDD/blob/master/Documentation/bSDD-IFC%20documentation.md)
+- [x] **consistent mapping of bSDD properties**
+- [x] **consistent application of an unlimited number of IfcClassifications**
+- [x] **leverages the built-in Revit IFC exporter, with a postprocessing step for improving Ifcclassificationreference location URL**
+- [ ] (add property URL) **TODO**
 
-2) Add ASRR's internal NuGet package repository as a source:
-- a) In Visual Studio, right-click on your solution and go to `Manage NuGet Packages for Solution`.
-- b) Click on the settings icon (:gear:) top-right. This should open a window showing Package sources. Click on the plus (:heavy_plus_sign:) button to add a new source and add the following source: `https://nuget.pkg.github.com/ASRRtechnologies/index.json`. The name can be anything, but prefer the convention `GitHub ASRR`.
-- c) Back in the NuGet manager window, change the Package source to `All` (or `GitHub ASRR` if you only want to see the internal packages). This should prompt you to enter your GitHub username and password (:warning: Here you have to fill in the Personal access token you generated earlier, NOT your GitHub password).
+## Installation
+1. Go to the [Releases](https://github.com/buildingsmart-community/bSDD-Revit-plugin/releases) page
+2. Find the release you want to install, the latest is at the top (**Mind the "Pre-release" tags, those versions are not meant for production use!**)
+3. Expand the **Assets** section, and download the installer (.exe) file.
+4. When running the installer it first asks you if you want to install for:
+   - just you (plugin is installed in "C:\Users\%USERNAME%\AppData\Roaming\Autodesk\Revit\Addins\")
+   - all users, **needing admin privilages to install** (plugin is installed in (C:\ProgramData\Autodesk\Revit\Addins\)
+6. Select installation language
+7. Select Revit versions to install for (2023 and 2024 currently)
+8. Accept [MIT license](https://github.com/buildingsmart-community/bSDD-Revit-plugin/blob/main/LICENSE)
+9. Select start menu folder to get a shortcut to the uninstaller.
 
-If everything went right, you should see our internal packages such as ASRR.Core now, and can install it as you would any other NuGet package!
-
-
-## TODO
-- [x] Create shared project for common Revit Addin code (so just the startup and log setups etc)
-- [x] Create an installer executable using InnoSetup
-- [ ] Auto deploy to GH repo releases
-- [ ] Automatic signing
-- [ ] Automatic versioning
-- [ ] Dependency Injection
-- [x] Debugger auto placer of files
-- [ ] Auto updater
-- [ ] Check different types of ribbon panel icons and add some sample buttons with uniform styling
-- [ ] Standard gaia setup in template (uptime tool)
+## Usage
+[Go to the wiki page](https://github.com/buildingsmart-community/bSDD-Revit-plugin/wiki/)
