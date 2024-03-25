@@ -1,17 +1,20 @@
 # bSDD Revit plugin
 
 > **This is a community build tool. It is not an official buildingSMART International initiative.**
+> 
+<!-- TOC -->
+* [Introduction](#introduction)
+* [Open bSDD toolkit projects](#open-bsdd-toolkit-projects)
+* [Features](#features)
+* [Installation](#installation)
+* [Usage](#usage)
+<!-- TOC -->
 
 ## Introduction
 This project is part of the Open bSDD toolkit, an opensource development of a series of consistent bSDD plugins sharing a common bSDD web UI.
 
 This project is initiated by Dutch contractors VolkerWessels and Heijmans. By starting this opensource development we believe we can help the industry structuring data. Proper usage of the buildingSMART Data Dictionary helps in getting consistent information in objects. Good information is the basis for further automation. 
 The idea of our development is that we inspire our industry to include bSDD in their processes and softwareproducts natively.
-
-<!-- TOC -->
-* [Internal NuGet Packages](#internal-nuget-packages)
-* [TODO](#todo)
-<!-- TOC -->
 
 ## Open bSDD toolkit projects
 -	Web UI https://github.com/buildingsmart-community/bSDD-filter-UI
