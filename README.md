@@ -28,6 +28,7 @@ The idea of our development is that we inspire our industry to include bSDD in t
 - [ ] (validate against class restrictions) **TODO**
 - [ ] (validate against nested class restrictions) **TODO**
 - [ ] (validate against property restrictions) **TODO**
+- [ ] (apply IDS filter before linking to the model) **TODO**
 ### Apply bSDD classes on Revit elements
 - [x] **search in main dictionary**
 - [x] **select possible related classifications**
