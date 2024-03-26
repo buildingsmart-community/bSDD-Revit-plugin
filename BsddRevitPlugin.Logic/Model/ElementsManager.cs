@@ -11,6 +11,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System.Xaml;
+using Revit.IFC.Import.Data;
 
 
 namespace BsddRevitPlugin.Logic.Model
@@ -598,6 +600,7 @@ namespace BsddRevitPlugin.Logic.Model
             string parameterName = $"bsdd/prop/{propertySet}/{property}";
             return parameterName;
         }
+
         /// <summary>
         /// Creates a Revit bSDD parameter name for the from the given URI.
         /// </summary>
@@ -823,6 +826,43 @@ namespace BsddRevitPlugin.Logic.Model
             string typeDescription = GetTypeParameterValueByElementType(elem, "Description");
             string ifcType = IFCMappingValue(doc, elem);
             string ifcPredefinedType = elem.get_Parameter(BuiltInParameter.IFC_EXPORT_PREDEFINEDTYPE_TYPE)?.AsString();
+            
+            //List
+            List<IfcPropertySet> isDefinedBy = new List<IfcPropertySet>();
+            IfcPropertySet ifcPropSet = new IfcPropertySet();
+            IfcPropertySingleValue ifcPropValue = new IfcPropertySingleValue();
+            NominalValue nominalValue = new NominalValue();
+            string prompt = "";
+            string[] promptArr = null;
+
+            foreach (Parameter parameter in elem.Parameters)
+            {
+                if(parameter.Definition.Name.StartsWith("bsdd/prop/", false, null) == true)
+                {
+                    if (parameter.HasValue == true)
+                    {
+                        //Remove bsdd/prop/ from property name
+                        prompt = parameter.Definition.Name.Remove(0, 10);
+                        //Split property name in property [1] value and propertyset [0]
+                        promptArr = prompt.Split('/');
+
+                        //Define property name and value
+                        ifcPropValue.NominalValue.Type = "IfcReal";
+                        ifcPropValue.NominalValue.Value = parameter.AsValueString();
+                        ifcPropValue.Type = "IfcPropertySingleValue";
+                        ifcPropValue.Name = promptArr[1];
+
+                        //Embed name en value in propertyset with name Arr[0] 
+                        ifcPropSet.Type = "IfcPropertySet";
+                        ifcPropSet.Name = promptArr[0];
+                        ifcPropSet.HasProperties.Add(ifcPropValue);
+
+                        //embed propertyset in Ifc Defenition
+                        //als propertyset nog niet bestaat!
+                        isDefinedBy.Add(ifcPropSet);
+                    }   
+                }
+            }
 
             var associations = GetElementTypeAssociations(elem);
 
@@ -839,6 +879,9 @@ namespace BsddRevitPlugin.Logic.Model
             {
                 ifcEntity.HasAssociations = associations.Values.ToList<Association>();
             }
+
+            //Embed Ifc Definition Ifc Entity
+            ifcEntity.IsDefinedBy = isDefinedBy;
 
             return ifcEntity;
         }
