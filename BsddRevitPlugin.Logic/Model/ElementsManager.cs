@@ -846,11 +846,6 @@ namespace BsddRevitPlugin.Logic.Model
                         //Split property name in property [1] value and propertyset [0]
                         promptArr = prompt.Split('/');
 
-                        //Define property name and value
-                        ifcPropValue.NominalValue.Type = "IfcReal";
-                        ifcPropValue.NominalValue.Value = parameter.AsValueString();
-                        ifcPropValue.Type = "IfcPropertySingleValue";
-                        ifcPropValue.Name = promptArr[1];
 
                         //Embed name en value in propertyset with name Arr[0] 
                         ifcPropSet.Type = "IfcPropertySet";
@@ -858,22 +853,10 @@ namespace BsddRevitPlugin.Logic.Model
                         ifcPropSet.HasProperties.Add(ifcPropValue);
 
                         //embed propertyset in Ifc Defenition
-                        //als propertyset nog niet bestaat!
                         isDefinedBy.Add(ifcPropSet);
                     }   
                 }
             }
-
-            var associations = GetElementTypeAssociations(elem);
-
-            var ifcEntity = new IfcEntity
-            {
-                Type = ifcType,
-                Name = $"{familyName} - {typeName}",
-                Tag = ifcTag,
-                Description = string.IsNullOrWhiteSpace(typeDescription) ? null : typeDescription,
-                PredefinedType = ifcPredefinedType,
-            };
 
             if (associations != null && associations.Count > 0)
             {
