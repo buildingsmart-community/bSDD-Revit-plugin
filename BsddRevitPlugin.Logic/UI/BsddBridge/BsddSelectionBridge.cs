@@ -101,15 +101,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             logger.Info($"SAVESETTINGS: Trying to save settings: {settingsJson}");
 
             var settings = JsonConvert.DeserializeObject<BsddSettings>(settingsJson);
-
-            //set the classificationFieldName for new dictionaries
-            settings.MainDictionary.IfcClassification.ClassificationFieldName = ElementsManager.CreateParameterNameFromUri(settings.MainDictionary.IfcClassification.Location);
-
-            foreach (var item in settings.FilterDictionaries)
-            {
-                item.IfcClassification.ClassificationFieldName = ElementsManager.CreateParameterNameFromUri(item.IfcClassification.Location);
-
-            }
+            
             _updateUIEvent.Raise(settings);
         }
         public string loadSettings()

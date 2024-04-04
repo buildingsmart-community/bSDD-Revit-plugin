@@ -12,7 +12,7 @@ namespace BsddRevitPlugin.Logic.Model
     {
 
         // Classification schema ID used by Revit to store IFC classification information
-        private static Guid classificationSchemaId = new Guid("9A5A28C2-DDAC-4828-8B8A-3EE97118017A");
+        private static Guid classificationSchemaId = new Guid("ca32408a-9370-4ea2-82f7-95a7d66e7198");
 
         private const string classificationName = "ClassificationName";
         private const string classificationSource = "ClassificationSource";
@@ -21,7 +21,6 @@ namespace BsddRevitPlugin.Logic.Model
         private const string classificationEditionDate_Month = "ClassificationEditionDate_Month";
         private const string classificationEditionDate_Year = "ClassificationEditionDate_Year";
         private const string classificationLocation = "ClassificationLocation";
-        private const string classificationFieldName = "ClassificationFieldName";
 
         /// <summary>
         /// Represents a schema for IFC classification data in Revit.
@@ -42,7 +41,6 @@ namespace BsddRevitPlugin.Logic.Model
                 schemaBuilder.AddSimpleField(classificationEditionDate_Month, typeof(Int32));
                 schemaBuilder.AddSimpleField(classificationEditionDate_Year, typeof(Int32));
                 schemaBuilder.AddSimpleField(classificationLocation, typeof(string));
-                schemaBuilder.AddSimpleField(classificationFieldName, typeof(string));
 
                 existingSchema = schemaBuilder.Finish();
             }
@@ -92,7 +90,6 @@ namespace BsddRevitPlugin.Logic.Model
                         classificationEntity.Set<Int32>(classificationEditionDate_Year, classification.EditionDate.Year);
                     }
                     classificationEntity.Set<string>(classificationLocation, location);
-                    classificationEntity.Set<string>(classificationFieldName, classification.ClassificationFieldName);
 
                     DataStorage existingClassification = existingClassifications.FirstOrDefault(c => GetLocationFromEntity(c, schema) == location);
 

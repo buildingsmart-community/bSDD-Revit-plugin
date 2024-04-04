@@ -9,7 +9,6 @@
       "name": "Basis bouwproducten",
       "description": "",
       "location": "https://identifier.buildingsmart.org/uri/volkerwesselsbvgo/basisbouwproducten/0.8.0",
-      "ClassificationFieldName": "bsdd/class/identifier.buildingsmart.org/uri/volkerwesselsbvgo/basisbouwproducten"
     },
     "parameterMapping": "Description"
   },
@@ -23,7 +22,6 @@
         "name": "IFC",
         "description": "",
         "location": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3",
-        "ClassificationFieldName": "bsdd/class/identifier.buildingsmart.org/uri/buildingsmart/ifc"
       },
       "parameterMapping": "Export Type to IFC As"
     },
@@ -36,7 +34,6 @@
         "name": "NL-SfB 2005",
         "description": "",
         "location": "https://identifier.buildingsmart.org/uri/nlsfb/nlsfb2005/2.2",
-        "ClassificationFieldName": "bsdd/identifier.buildingsmart.org/uri/nlsfb/nlsfb2005"
       },
       "parameterMapping": "Assembly Code"
     }
