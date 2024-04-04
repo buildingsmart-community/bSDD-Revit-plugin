@@ -11,6 +11,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System.Xaml;
+using Revit.IFC.Import.Data;
+using System.Windows.Input;
+using Revit.IFC.Export.Exporter.PropertySet;
+using System.Security.Principal;
 
 
 namespace BsddRevitPlugin.Logic.Model
@@ -598,6 +603,7 @@ namespace BsddRevitPlugin.Logic.Model
             string parameterName = $"bsdd/prop/{propertySet}/{property}";
             return parameterName;
         }
+
         /// <summary>
         /// Creates a Revit bSDD parameter name for the from the given URI.
         /// </summary>
@@ -835,14 +841,88 @@ namespace BsddRevitPlugin.Logic.Model
                 PredefinedType = ifcPredefinedType,
             };
 
+            //embed propertysets bsdd/prop/ in Ifc Defenition
+            ifcEntity.IsDefinedBy = IfcDefinition(elem);
+            
             if (associations != null && associations.Count > 0)
             {
                 ifcEntity.HasAssociations = associations.Values.ToList<Association>();
             }
 
+            //Embed Ifc Definition Ifc Entity
+            //ifcEntity.IsDefinedBy = isDefinedBy;
+
             return ifcEntity;
         }
 
+        /// <summary>
+        /// Retrieves the IfcDefinition filled with the parameters who starts with bsdd/prop/ of the given element type.
+        /// </summary>
+        /// <param name="elementType">The element type.</param>
+        /// <returns>The IfcDefinition with the bsdd parameters</returns>
+        public static List<IfcPropertySet> IfcDefinition(ElementType elem)
+        {
+            Dictionary<IfcPropertySet, Dictionary<IfcPropertySingleValue, NominalValue>> ifcProps = new Dictionary<IfcPropertySet, Dictionary<IfcPropertySingleValue, NominalValue>>();
+            List<IfcPropertySet> isDefinedBy = new List<IfcPropertySet>();
+            IfcPropertySet ifcPropSet = new IfcPropertySet();
+            List<IfcPropertySingleValue> hasProperties = new List<IfcPropertySingleValue>();
+            IfcPropertySingleValue ifcPropValue = new IfcPropertySingleValue();
+            NominalValue nominalValue = new NominalValue();
+            string[] promptArr = null;
+            List<string> pSetDone = new List<string>();
+
+            foreach (Parameter parameter in elem.Parameters)
+            {
+                if (parameter.Definition.Name.StartsWith("bsdd/prop/", false, null) == true)
+                {
+                    if (parameter.HasValue == true)
+                    {
+                        //Remove bsdd/prop/ from property name and split property name in property [1] value and propertyset [0]
+                        promptArr = parameter.Definition.Name.Remove(0, 10).Split('/');
+
+                        if (!pSetDone.Contains(promptArr[0]))
+                        {
+                            hasProperties = new List<IfcPropertySingleValue>();
+                            foreach (Parameter paramPSet in elem.Parameters)
+                            {
+                                if (paramPSet.Definition.Name.StartsWith("bsdd/prop/" + promptArr[0], false, null) == true)
+                                {
+                                    if (paramPSet.HasValue == true)
+                                    {
+                                        //Define nominalvalue Type and Value
+                                        nominalValue = new NominalValue();
+                                        nominalValue.Type = "IfcLabel";
+                                        nominalValue.Value = paramPSet.AsValueString();
+
+                                        //Define property NominalValue, name and value
+                                        //hasProperties = new List<IfcPropertySingleValue> { ifcPropValue };
+                                        ifcPropValue = new IfcPropertySingleValue();
+                                        ifcPropValue.NominalValue = nominalValue;
+                                        ifcPropValue.Type = "IfcPropertySingleValue";
+                                        ifcPropValue.Name = paramPSet.Definition.Name.Remove(0, 10).Split('/')[1];
+
+                                        hasProperties.Add(ifcPropValue);
+                                    }
+                                }
+                            }
+                            //Embed name en value in propertyset with name Arr[0] 
+                            ifcPropSet = new IfcPropertySet();
+                            ifcPropSet.Type = "IfcPropertySet";
+                            ifcPropSet.Name = promptArr[0];
+                            ifcPropSet.HasProperties = hasProperties;
+
+                            isDefinedBy.Add(ifcPropSet);
+
+                            pSetDone.Add(promptArr[0]);
+                        }
+                    }
+                }
+            }
+            //embed propertyset in Ifc Defenition
+            return isDefinedBy;
+        }
+            
+        
         /// <summary>
         /// Retrieves the family name of the given element type.
         /// </summary>
