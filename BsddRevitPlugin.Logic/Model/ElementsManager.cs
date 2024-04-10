@@ -666,7 +666,6 @@ namespace BsddRevitPlugin.Logic.Model
             {
                 string bsddParameterValue = "";
                 string mappedParameterValue = "";
-                string bsddParameterName = CreateParameterNameFromUri(dictionary.IfcClassification.Location);
                 // TODO: sometimes values come back as null, how does this look in the IFC?
                 try
                 {
@@ -777,11 +776,25 @@ namespace BsddRevitPlugin.Logic.Model
         }
 
 
-        // also create a function that retrieves the combined list of main and filter dictionaries from the global settings
+        /// <summary>
+        /// Retrieves the combined list of main and filter dictionaries from the global settings.
+        /// If the MainDictionary is null, it is left out.
+        /// </summary>
         public static IEnumerable<BsddDictionary> GetActiveDictionaries()
         {
-            return new[] { GlobalBsddSettings.bsddsettings.MainDictionary }
-                .Concat(GlobalBsddSettings.bsddsettings.FilterDictionaries);
+            var activeDictionaries = new List<BsddDictionary>();
+
+            if (GlobalBsddSettings.bsddsettings.MainDictionary != null)
+            {
+                activeDictionaries.Add(GlobalBsddSettings.bsddsettings.MainDictionary);
+            }
+
+            if (GlobalBsddSettings.bsddsettings.FilterDictionaries != null)
+            {
+                activeDictionaries = activeDictionaries.Concat(GlobalBsddSettings.bsddsettings.FilterDictionaries).ToList();
+            }
+
+            return activeDictionaries;
         }
 
         /// Transforms selected Revit types into a bSDD-compatible ifcJSON structure.

@@ -9,11 +9,6 @@ using System.Reflection;
 using ASRR.Core.Persistence;
 using System.IO;
 using Newtonsoft.Json;
-using static System.Net.Mime.MediaTypeNames;
-using NLog.Fluent;
-using BsddRevitPlugin.Logic.UI.Wrappers;
-using BsddRevitPlugin.Logic.UI.View;
-using BsddRevitPlugin.Logic.UI.Services;
 
 namespace BsddRevitPlugin.Logic.Model
 {
@@ -21,7 +16,7 @@ namespace BsddRevitPlugin.Logic.Model
     {
         
         // bSDD plugin settings schema ID
-        private static Guid s_schemaId = new Guid("9D243294-59BD-4F7F-B304-6FD6307E7A40");
+        private static Guid s_schemaId = new Guid("9596f5bc-8845-428d-b61d-02c81a160bec");
     private const string BsddSettingsFieldName = "BsddSettings";
 
         /// <summary>
@@ -88,7 +83,7 @@ namespace BsddRevitPlugin.Logic.Model
                 var jsonString = entity.Get<string>(schema.GetField(BsddSettingsFieldName));
                 try
                 {
-                    return Newtonsoft.Json.JsonConvert.DeserializeObject<BsddSettings>(jsonString);
+                    return JsonConvert.DeserializeObject<BsddSettings>(jsonString);
                 }
                 catch (Exception ex)
                 {
