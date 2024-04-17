@@ -1,4 +1,5 @@
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.IFC;
 using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.Model;
@@ -48,17 +49,19 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
         public void UpdateBsddLastSelection()
         {
-            List<ElementType> lastSelection = new List<ElementType>();
+            List<ElementType> lastSelectionT = new List<ElementType>();
+            List<Element> lastSelectionI = new List<Element>();
             try
             {
-                lastSelection = GlobalSelection.LastSelectedElementsWithDocs[GlobalDocument.currentDocument.PathName];
+                lastSelectionT = GlobalSelection.LastSelectedElementsWithDocs[GlobalDocument.currentDocument.PathName];
+                lastSelectionI = GlobalSelectionI.LastSelectedElementsWithDocs[GlobalDocument.currentDocument.PathName];
 
             }
             catch (Exception)
             {
 
             }
-            var jsonString = JsonConvert.SerializeObject(ElementsManager.SelectionToIfcJson(GlobalDocument.currentDocument, lastSelection));
+            var jsonString = JsonConvert.SerializeObject(ElementsManager.SelectionToIfcJson(GlobalDocument.currentDocument, lastSelectionT, lastSelectionI));
             var jsFunctionCall = $"updateSelection({jsonString});";
 
             if (browser.IsBrowserInitialized)
@@ -83,7 +86,9 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             if (!(this is EventUseLastSelection))
             {
                 var elemList = GetSelection(uiapp);
+                var elemListI = GetSelectionI(uiapp);
                 elemList = ListFilter(elemList);
+                elemListI = ListFilter(elemListI);
                 // Update LastSelectedElements for other events
                 //GlobalSelection.LastSelectedElements.Clear();
                 //GlobalSelection.LastSelectedElements.AddRange(elemList);
@@ -104,17 +109,35 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
                 }
 
+                if (GlobalSelectionI.LastSelectedElementsWithDocs.ContainsKey(doc.PathName))
+                {
+                    //if contains, always make sure the value is the updated list
+                    GlobalSelectionI.LastSelectedElementsWithDocs[doc.PathName] = new List<Element>();
+                    GlobalSelectionI.LastSelectedElementsWithDocs[doc.PathName].Clear();
+                    GlobalSelectionI.LastSelectedElementsWithDocs[doc.PathName].AddRange(elemListI);
+                }
+                else
+                {
+                    //if first time, add to dictionary
+                    List<Element> eleminstance = new List<Element>();
+                    eleminstance.AddRange(elemListI);
+                    GlobalSelectionI.LastSelectedElementsWithDocs.Add(doc.PathName, eleminstance);
+
+                }
+
 
             }
 
             // Pack data into json format
-            List<IfcEntity> selectionData = SelectionToIfcJson(doc, GlobalSelection.LastSelectedElementsWithDocs[doc.PathName]);
-
+            List<IfcEntity> selectionData = SelectionToIfcJson(doc, GlobalSelection.LastSelectedElementsWithDocs[doc.PathName], GlobalSelectionI.LastSelectedElementsWithDocs[doc.PathName]);
+            
             // Send MainData to BsddSelection html
             UpdateBsddSelection(selectionData);
         }
 
         protected abstract List<ElementType> GetSelection(UIApplication uiapp);
+
+        protected abstract List<Element> GetSelectionI(UIApplication uiapp);
 
         public void SetBrowser(IBrowserService browserObject)
         {
@@ -123,6 +146,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
         public void UpdateBsddSelection(List<IfcEntity> ifcData)
         {
+            
             var jsonString = JsonConvert.SerializeObject(ifcData);
             var jsFunctionCall = $"updateSelection({jsonString});";
 
@@ -142,6 +166,11 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         {
             return Selectorlist.SelectElements(uiapp);
         }
+
+        protected override List<Element> GetSelectionI(UIApplication uiapp)
+        {
+            return Selectorlist.SelectElementsI(uiapp);
+        }
     }
 
     /// <summary>
@@ -152,6 +181,11 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         protected override List<ElementType> GetSelection(UIApplication uiapp)
         {
             return Selectorlist.AllElements(uiapp);
+        }
+
+        protected override List<Element> GetSelectionI(UIApplication uiapp)
+        {
+            return Selectorlist.AllElementsI(uiapp);
         }
     }
 
@@ -164,6 +198,11 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         {
             return Selectorlist.AllElementsView(uiapp);
         }
+
+        protected override List<Element> GetSelectionI(UIApplication uiapp)
+        {
+            return Selectorlist.AllElementsViewI(uiapp);
+        }
     }
 
     public class EventUseLastSelection : EventRevitSelection
@@ -172,6 +211,12 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         {
             // Use the last selected elements
             return GlobalSelection.LastSelectedElementsWithDocs[GlobalDocument.currentDocument.PathName];
+        }
+
+        protected override List<Element> GetSelectionI(UIApplication uiapp)
+        {
+            // Use the last selected elements
+            return GlobalSelectionI.LastSelectedElementsWithDocs[GlobalDocument.currentDocument.PathName];
         }
     }
 
