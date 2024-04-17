@@ -16,6 +16,7 @@ using Revit.IFC.Import.Data;
 using System.Windows.Input;
 using Revit.IFC.Export.Exporter.PropertySet;
 using System.Security.Principal;
+using System.Windows.Controls;
 
 
 namespace BsddRevitPlugin.Logic.Model
@@ -110,6 +111,40 @@ namespace BsddRevitPlugin.Logic.Model
             elemListFiltered = elemListFiltered.Distinct().ToList();
             return elemListFiltered;
         }
+
+        public static List<Element> ListFilter(List<Element> elemList)
+        {
+            Logger logger = LogManager.GetCurrentClassLogger();
+
+            List<Element> elemListFiltered = new List<Element>();
+
+            foreach (Element item in elemList)
+            {
+                try
+                {
+                    if (item != null && item.Category != null)
+                    {
+                        if (
+                        item.Category.Name != "Levels" &&
+                        item.Category.Name != "Grids" &&
+                        item.Category.Name != "Location Data" &&
+                        item.Category.Name != "Model Groups" &&
+                        item.Category.Name != "RVT Links" &&
+                        item.Category.Name.Substring(System.Math.Max(0, item.Category.Name.Length - 4)) != ".dwg" &&
+                        item.Category.Name.Substring(System.Math.Max(0, item.Category.Name.Length - 4)) != ".pdf"
+                        )
+                        {
+                            elemListFiltered.Add(item);
+                        }
+                    }
+                }
+                catch { }
+            }
+
+            elemListFiltered = elemListFiltered.Distinct().ToList();
+            return elemListFiltered;
+        }
+
         public static void SetIfcDataToRevitElement(Document doc, IfcEntity ifcEntity)
         {
             Logger logger = LogManager.GetCurrentClassLogger();
@@ -651,6 +686,27 @@ namespace BsddRevitPlugin.Logic.Model
             return Enumerable.Empty<IfcClassificationReference>();
         }
 
+        private static IEnumerable<IfcClassificationReference> getElementClassificationsReferencesFromExtensibleStorage(Element element)
+        {
+            // TODO: Implement Ienumerable<Associations> so materials are also added correctly or add a separate function for materials
+            Schema schema = GetBsddDataSchema();
+            var storageEntity = element.GetEntity(schema);
+
+
+            if (storageEntity.Schema != null)
+            {
+                var field = schema.GetField(s_IfcClassificationData);
+                var jsonString = storageEntity.Get<string>(field);
+
+                if (!string.IsNullOrEmpty(jsonString))
+                {
+                    return JsonConvert.DeserializeObject<List<IfcClassificationReference>>(jsonString);
+                }
+            }
+
+            return Enumerable.Empty<IfcClassificationReference>();
+        }
+
         /// <summary>
         /// Retrieves the classification data mapped to the current settings for a given element type.
         /// </summary>
@@ -681,6 +737,73 @@ namespace BsddRevitPlugin.Logic.Model
                 {
 
                     mappedParameterValue = GetTypeParameterValueByElementType(elementType, dictionary.ParameterMapping);
+                }
+                catch (Exception e)
+                {
+
+                    logger.Error(e);
+                }
+
+                string identification = null;
+                string name = null;
+
+                if (!string.IsNullOrEmpty(bsddParameterValue))
+                {
+                    var splitValue = bsddParameterValue.Split(':');
+                    identification = splitValue[0];
+                    name = splitValue.Length > 1 ? splitValue[1] : splitValue[0];
+                }
+                if (!string.IsNullOrEmpty(mappedParameterValue))
+                {
+                    var splitValue = mappedParameterValue.Split(':');
+                    identification = splitValue[0];
+                    if (string.IsNullOrEmpty(name))
+                    {
+                        name = splitValue.Length > 1 ? splitValue[1] : splitValue[0];
+                    }
+                    else
+                    {
+                        if (splitValue.Length > 1)
+                        {
+                            name = splitValue[1];
+                        }
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(identification) || !string.IsNullOrEmpty(name))
+                {
+                    classificationData[dictionary.IfcClassification.Location] = (identification, name);
+                }
+            }
+
+            return classificationData;
+        }
+
+        public static Dictionary<Uri, (string Identification, string Name)> GetClassificationDataFromSettings(Element element)
+        {
+            Logger logger = LogManager.GetCurrentClassLogger();
+            var classificationData = new Dictionary<Uri, (string Identification, string Name)>();
+            var activeDictionaries = GetActiveDictionaries();
+
+            foreach (var dictionary in activeDictionaries)
+            {
+                string bsddParameterValue = "";
+                string mappedParameterValue = "";
+                string bsddParameterName = CreateParameterNameFromUri(dictionary.IfcClassification.Location);
+                // TODO: sometimes values come back as null, how does this look in the IFC?
+                try
+                {
+                    bsddParameterValue = GetParameterValueByElement(element, CreateParameterNameFromUri(dictionary.IfcClassification.Location));
+
+                }
+                catch (Exception e)
+                {
+                    logger.Error(e);
+                }
+                try
+                {
+
+                    mappedParameterValue = GetParameterValueByElement(element, dictionary.ParameterMapping);
                 }
                 catch (Exception e)
                 {
@@ -776,6 +899,54 @@ namespace BsddRevitPlugin.Logic.Model
             return associations;
         }
 
+        public static Dictionary<Uri, IfcClassificationReference> GetElementAssociations(Element element)
+        {
+
+            Logger logger = LogManager.GetCurrentClassLogger();
+            var associations = new Dictionary<Uri, IfcClassificationReference>();
+            var activeDictionaryData = GetClassificationDataFromSettings(element);
+
+
+            foreach (var association in getElementClassificationsReferencesFromExtensibleStorage(element))
+            {
+                if (association is IfcClassificationReference ifcClassificationReference)
+                {
+                    associations[ifcClassificationReference.ReferencedSource.Location] = ifcClassificationReference;
+                }
+            }
+
+            foreach (var entry in activeDictionaryData)
+            {
+                Uri dictionaryUri = entry.Key;
+                (string Identification, string Name) value = entry.Value;
+
+                if (!associations.TryGetValue(dictionaryUri, out var association))
+                {
+                    // add new IfcClassificationReference to the dictionary based on dictionaryUri, Identification and Name
+                    associations[dictionaryUri] = new IfcClassificationReference
+                    {
+                        Type = "IfcClassificationReference",
+                        Identification = value.Identification,
+                        Name = value.Name,
+                        ReferencedSource = new IfcClassification
+                        {
+                            Type = "IfcClassification",
+                            Location = dictionaryUri,
+                        }
+                    };
+                }
+                else
+                {
+                    //update the existing IfcClassificationReference with the new values from the revit typeEntity
+                    var ifcClassificationReference = (IfcClassificationReference)association;
+                    ifcClassificationReference.Identification = value.Identification;
+                    ifcClassificationReference.Name = value.Name;
+                }
+            }
+
+            return associations;
+        }
+
 
         // also create a function that retrieves the combined list of main and filter dictionaries from the global settings
         public static IEnumerable<BsddDictionary> GetActiveDictionaries()
@@ -789,32 +960,52 @@ namespace BsddRevitPlugin.Logic.Model
         /// <param name="doc">The active Revit document.</param>
         /// <param name="elemList">The list of selected Revit element types.</param>
         /// <returns>A IfcData object representing the ifcJSON structure.</returns>
-        public static List<IfcEntity> SelectionToIfcJson(Document doc, List<ElementType> elemList)
+        ///
+        public static List<IfcEntity> SelectionToIfcJson(Document doc, List<ElementType> elemListT, List<Element> elemListI)
         {
             
-            if (doc == null || elemList == null)
+            if (doc == null && elemListT == null || elemListI == null)
             {
-                throw new ArgumentNullException(doc == null ? nameof(doc) : nameof(elemList));
+                throw new ArgumentNullException(doc == null ? nameof(doc) : nameof(elemListT));
             }
 
             var ifcEntities = new List<IfcEntity>();
 
-            foreach (ElementType elem in elemList)
+            if (elemListT != null)
             {
-                if (elem == null)
+                foreach (ElementType elem in elemListT)
                 {
-                    continue;
-                }
+                    if (elem == null)
+                    {
+                        continue;
+                    }
 
-                var ifcData = CreateIfcEntity(elem, doc);
-                ifcEntities.Add(ifcData);
+                    var ifcData = CreateIfcEntity(elem, doc);
+                    ifcEntities.Add(ifcData);
+                }
             }
+
+            if (elemListI != null)
+            {
+                foreach (Element elem in elemListI)
+                {
+                    if (elem == null)
+                    {
+                        continue;
+                    }
+
+                    var ifcData = CreateIfcEntity(elem, doc);
+                    ifcEntities.Add(ifcData);
+                }
+            }
+
 
             var provider = new JsonBasedPersistenceProvider("C://temp");
             provider.Persist(ifcEntities);
 
             return ifcEntities;
         }
+
 
         // TODO: IFC type should also be read from the mapping files when not present in the revit typeEntity
 
@@ -842,8 +1033,46 @@ namespace BsddRevitPlugin.Logic.Model
             };
 
             //embed propertysets bsdd/prop/ in Ifc Defenition
-            ifcEntity.IsDefinedBy = IfcDefinition(elem);
+            ifcEntity.IsDefinedBy = IfcDefinition(doc, elem.Id);
             
+            if (associations != null && associations.Count > 0)
+            {
+                ifcEntity.HasAssociations = associations.Values.ToList<Association>();
+            }
+
+            //Embed Ifc Definition Ifc Entity
+            //ifcEntity.IsDefinedBy = isDefinedBy;
+
+            return ifcEntity;
+        }
+
+        private static IfcEntity CreateIfcEntity(Element elem, Document doc)
+        {
+            ElementId elemTypeId = elem.GetTypeId();
+            ElementType elemType = doc.GetElement(elemTypeId) as ElementType;
+
+            string Name = GetElementName(elem, GetParameterValueByElement(elem, "IfcName"));
+            string familyName = GetElementTypeFamilyName(elemType, GetTypeParameterValueByElementType(elemType, "IfcName"));
+            string typeName = GetElementTypeName(elemType, GetTypeParameterValueByElementType(elemType, "IfcType"));
+            string ifcTag = elem.Id.ToString();
+            string typeDescription = GetTypeParameterValueByElementType(elemType, "Description");
+            string ifcType = IFCMappingValue(doc, elem);
+            string ifcPredefinedType = elem.get_Parameter(BuiltInParameter.IFC_EXPORT_PREDEFINEDTYPE_TYPE)?.AsString();
+
+            var associations = GetElementAssociations(elem);
+
+            var ifcEntity = new IfcEntity
+            { 
+                Type = ifcType,
+                Name = $"{Name} - {typeName}",
+                Tag = ifcTag,
+                Description = string.IsNullOrWhiteSpace(typeDescription) ? null : typeDescription,
+                PredefinedType = ifcPredefinedType,
+            };
+
+            //embed propertysets bsdd/prop/ in Ifc Defenition
+            ifcEntity.IsDefinedBy = IfcDefinition(doc, elem.Id);
+
             if (associations != null && associations.Count > 0)
             {
                 ifcEntity.HasAssociations = associations.Values.ToList<Association>();
@@ -860,8 +1089,11 @@ namespace BsddRevitPlugin.Logic.Model
         /// </summary>
         /// <param name="elementType">The element type.</param>
         /// <returns>The IfcDefinition with the bsdd parameters</returns>
-        public static List<IfcPropertySet> IfcDefinition(ElementType elem)
+        public static List<IfcPropertySet> IfcDefinition(Document doc, ElementId elemId)
         {
+            //Make element from Element or ElementType
+            Element elem = doc.GetElement(elemId) as ElementType;
+
             Dictionary<IfcPropertySet, Dictionary<IfcPropertySingleValue, NominalValue>> ifcProps = new Dictionary<IfcPropertySet, Dictionary<IfcPropertySingleValue, NominalValue>>();
             List<IfcPropertySet> isDefinedBy = new List<IfcPropertySet>();
             IfcPropertySet ifcPropSet = new IfcPropertySet();
@@ -921,8 +1153,8 @@ namespace BsddRevitPlugin.Logic.Model
             //embed propertyset in Ifc Defenition
             return isDefinedBy;
         }
-            
-        
+
+
         /// <summary>
         /// Retrieves the family name of the given element type.
         /// </summary>
@@ -939,6 +1171,23 @@ namespace BsddRevitPlugin.Logic.Model
             try
             {
                 return elementType.FamilyName;
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+
+        public static string GetElementName(Element element, string ifcName)
+        {
+            if (!string.IsNullOrEmpty(ifcName))
+            {
+                return ifcName;
+            }
+
+            try
+            {
+                return element.Name;
             }
             catch
             {
@@ -996,6 +1245,26 @@ namespace BsddRevitPlugin.Logic.Model
                 if (elementType?.LookupParameter(parameterName) != null)
                 {
                     return _getParameterValueByCorrectStorageType2(elementType.LookupParameter(parameterName));
+                }
+
+                return null;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public static dynamic GetParameterValueByElement(Element element, string parameterName)
+        {
+            try
+            {
+                //ElementType elementType = doc.GetElement(element.GetTypeId()) as ElementType;
+                //ElementType elementType = doc.GetElement(element.Id) as ElementType;
+
+                if (element?.LookupParameter(parameterName) != null)
+                {
+                    return _getParameterValueByCorrectStorageType2(element.LookupParameter(parameterName));
                 }
 
                 return null;

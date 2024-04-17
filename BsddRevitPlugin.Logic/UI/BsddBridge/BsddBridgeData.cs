@@ -13,6 +13,14 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         public static Dictionary<string, List<ElementType>> LastSelectedElementsWithDocs { get; private set; } = new Dictionary<string, List<ElementType>>();
 
     }
+
+    public static class GlobalSelectionI
+    {
+        // This list will store the last selected elements
+        public static Dictionary<string, List<Element>> LastSelectedElementsWithDocs { get; private set; } = new Dictionary<string, List<Element>>();
+
+    }
+
     public static class GlobalDocument
     {
         public static Document currentDocument;
