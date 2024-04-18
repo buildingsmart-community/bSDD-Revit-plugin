@@ -5,6 +5,7 @@ using BIM.IFC.Export.UI;
 using BsddRevitPlugin.Logic.IfcExport;
 using BsddRevitPlugin.Logic.Model;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
+using BsddRevitPlugin.Logic.UI.Services;
 using BsddRevitPlugin.Logic.UI.Translations;
 using NLog;
 using System;
@@ -32,16 +33,16 @@ namespace BsddRevitPlugin.Common.Commands
 
                 UIApplication uiApp = commandData.Application;
                 UIDocument uiDoc = uiApp.ActiveUIDocument;
-                Document doc = uiDoc.Document;
+                Document document = uiDoc.Document;
                 ElementId activeViewId = uiDoc.ActiveView.Id;
 
-                IfcExportManager ifcexportManager = new IfcExportManager();
+                IIfcExportService ifcExportService = GlobalServiceFactory.Factory.CreateIfcExportService();
 
                 //Create an Instance of the IFC Export Class
                 IFCExportOptions ifcExportOptions = new IFCExportOptions();
 
                 //Get the bsdd confguration from document or create a new one
-                IFCExportConfiguration bsddIFCExportConfiguration = ifcexportManager.GetOrSetBsddConfiguration(doc);
+                IFCExportConfiguration bsddIFCExportConfiguration = ifcExportService.GetOrSetBsddConfiguration(document);
 
                 //Somehow UpdateOptions() can't handle the activeViewId, so we set it manually to -1
                 bsddIFCExportConfiguration.ActivePhaseId = -1;
@@ -58,10 +59,10 @@ namespace BsddRevitPlugin.Common.Commands
 
 
 
-                using (Transaction transaction = new Transaction(doc, "Export IFC"))
+                using (Transaction transaction = new Transaction(document, "Export IFC"))
                 {
 
-                    IfcClassificationManager.UpdateClassifications(new Transaction(doc, "Update Classifications"), doc, IfcClassificationManager.GetAllIfcClassificationsInProject());
+                    IfcClassificationManager.UpdateClassifications(new Transaction(document, "Update Classifications"), document, IfcClassificationManager.GetAllIfcClassificationsInProject());
 
                     //Set IFC version
                     string IFCversion = "IFC 2x3";
@@ -74,10 +75,10 @@ namespace BsddRevitPlugin.Common.Commands
                     IList<Parameter> param = new List<Parameter>();
 
                     // Get all BSDD parameters from the document
-                    param = ifcexportManager.GetAllBsddParameters(doc);
+                    param = ifcExportService.GetAllBsddParameters(document);
 
                     // Organize the BSDD parameters by property set name
-                    var organizedParameters = ifcexportManager.RearrageParamatersForEachPropertySet(param);
+                    var organizedParameters = ifcExportService.RearrageParamatersForEachPropertySet(param);
 
                     // Loop through all property sets
                     foreach (var parameters in organizedParameters)
@@ -383,9 +384,9 @@ namespace BsddRevitPlugin.Common.Commands
                                 string tempIfcFilePath = Path.Combine(tempDirectoryPath, Path.GetFileName(ifcFilePath));
 
                                 IfcPostprocessor postprocessor = new IfcPostprocessor();
-                                postprocessor.CollectIfcClassifications(doc);
+                                postprocessor.CollectIfcClassifications(document);
 
-                                doc.Export(tempDirectoryPath, ifcFileName, ifcExportOptions);
+                                document.Export(tempDirectoryPath, ifcFileName, ifcExportOptions);
                                 if (!File.Exists(tempIfcFilePath))
                                 {
                                     throw new Exception("Failed to export document.");

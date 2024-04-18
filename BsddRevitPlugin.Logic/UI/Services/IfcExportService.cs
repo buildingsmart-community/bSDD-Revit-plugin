@@ -1,24 +1,27 @@
-﻿using Autodesk.Revit.DB.ExtensibleStorage;
-using Autodesk.Revit.DB;
-using System;
+﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.ExtensibleStorage;
+using BIM.IFC.Export.UI;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BIM.IFC.Export.UI;
+using System;
 using System.Web.Script.Serialization;
-using NLog;
-using System.Windows.Controls;
 
-namespace BsddRevitPlugin.Logic.Model
+namespace BsddRevitPlugin.Logic.UI.Services
 {
-    public class IfcExportManager
+    public abstract class IfcExportService : IIfcExportService
     {
-       
-        public IList<Parameter> GetAllBsddParameters(Autodesk.Revit.DB.Document doc)
+
+        // bSDD plugin settings schema ID
+        private Schema m_jsonSchema = GetExportSchema();
+        private static Guid s_jsonSchemaId = new Guid("c2a3e6fe-ce51-4f35-8ff1-20c34567b687");
+        private const string ifcExportFieldName = "IFCExportConfigurationMap";
+        private const string s_configMapField = "MapField";
+        private const string bsddExportConfigurationName = "Bsdd export settings";
+
+        public IList<Parameter> GetAllBsddParameters(Autodesk.Revit.DB.Document document)
         {
             // Apply the filter to the elements in the active document
-            FilteredElementCollector collector = new FilteredElementCollector(doc);
+            FilteredElementCollector collector = new FilteredElementCollector(document);
             collector.WhereElementIsElementType();
             ICollection<Element> allElements = collector.ToElements();
 
@@ -86,13 +89,6 @@ namespace BsddRevitPlugin.Logic.Model
             return propertySetGroups;
         }
 
-        // bSDD plugin settings schema ID
-        private Schema m_jsonSchema = GetExportSchema();
-        private static Guid s_jsonSchemaId = new Guid("c2a3e6fe-ce51-4f35-8ff1-20c34567b687");
-        private const string ifcExportFieldName = "IFCExportConfigurationMap";
-        private const string s_configMapField = "MapField";
-        private const string bsddExportConfigurationName = "Bsdd export settings";
-
         /// <summary>
         /// Retrieves or creates the schema for the BSDD plugin settings.
         /// </summary>
@@ -111,9 +107,9 @@ namespace BsddRevitPlugin.Logic.Model
             }
             return schema;
         }
-        public IFCExportConfiguration GetOrSetBsddConfiguration(Document doc)
+        public IFCExportConfiguration GetOrSetBsddConfiguration(Document document)
         {
-            IList<DataStorage> savedConfigurations = GetSavedConfigurations(doc, m_jsonSchema);
+            IList<DataStorage> savedConfigurations = GetSavedConfigurations(document, m_jsonSchema);
 
             if (savedConfigurations.Count > 0)
             {
@@ -133,10 +129,8 @@ namespace BsddRevitPlugin.Logic.Model
                     }
                 }
 
-                return CreateNewBsddConfigurationInDataStorage(doc);
-
             }
-            return CreateNewBsddConfigurationInDataStorage(doc);
+            return CreateNewBsddConfigurationInDataStorage(document);
 
         }
         public IFCExportConfiguration CreateNewBsddConfigurationInDataStorage(Autodesk.Revit.DB.Document document)
@@ -160,9 +154,11 @@ namespace BsddRevitPlugin.Logic.Model
             }
             return configuration;
         }
-        public static IFCExportConfiguration GetDefaultExportConfiguration(Autodesk.Revit.DB.Document document)
-        {
 
+
+
+        public IFCExportConfiguration GetDefaultExportConfiguration(Autodesk.Revit.DB.Document document)
+        {
             //Create an instance of the IFC Export Configuration Class
             IFCExportConfiguration configuration = IFCExportConfiguration.CreateDefaultConfiguration();
 
@@ -177,19 +173,14 @@ namespace BsddRevitPlugin.Logic.Model
             configuration.SpaceBoundaries = 0;
             configuration.SplitWallsAndColumns = false;
 
-            //Additional Content
-            //Should check if this works
-#if REVIT_2023
-            configuration.ExportLinkedFiles = false;
-            configuration.ActiveViewId = document.ActiveView.Id.IntegerValue;
-            configuration.ActivePhaseId = -1; //This errors (not found)
-#elif REVIT_2024
-            configuration.ExportLinkedFiles = LinkedFileExportAs.DontExport;
-            configuration.ActiveViewId = document.ActiveView.Id;
-            configuration.ActivePhaseId = -1; //This errors (not found)
-#else
-            // Default option
-#endif
+            ////Additional Content
+            SetExportLinkedFiles(configuration);
+            SetActiveViewId(configuration, document);
+            SetActivePhaseId(configuration);
+
+            //configuration.ActivePhaseId = (int)ElementId.InvalidElementId.Value;
+            ////configuration.ActivePhaseId = document.ActiveView.get_Parameter(BuiltInParameter.VIEW_PHASE).AsElementId()?.Value ?? ElementId.InvalidElementId.Value;
+
             configuration.VisibleElementsOfCurrentView = true;
             configuration.ExportRoomsInView = false;
             configuration.IncludeSteelElements = true;
@@ -226,7 +217,6 @@ namespace BsddRevitPlugin.Logic.Model
             //Geographic Reference
 
             return configuration;
-
         }
         public static IList<DataStorage> GetSavedConfigurations(Autodesk.Revit.DB.Document document, Schema schema)
         {
@@ -236,5 +226,9 @@ namespace BsddRevitPlugin.Logic.Model
 
             return collector.Cast<DataStorage>().Where<DataStorage>(hasTargetData).ToList<DataStorage>();
         }
+
+        protected abstract void SetExportLinkedFiles(IFCExportConfiguration configuration);
+        protected abstract void SetActiveViewId(IFCExportConfiguration configuration, Autodesk.Revit.DB.Document document);
+        protected abstract void SetActivePhaseId(IFCExportConfiguration configuration);
     }
 }

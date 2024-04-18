@@ -141,7 +141,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\BrowserControl2023.cs" />
     <Compile Include="Services\BrowserService2023.cs" />
-    <Compile Include="Services\BrowserServiceFactory2023.cs" />
+    <Compile Include="Services\IfcExportService2023.cs" />
+    <Compile Include="Services\ServiceFactory2023.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
