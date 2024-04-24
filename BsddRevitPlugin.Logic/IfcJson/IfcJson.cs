@@ -120,7 +120,7 @@ namespace BsddRevitPlugin.Logic.IfcJson
         public string Description { get; set; }
 
         [JsonProperty("location")]
-        public Uri Location { get; set; }
+        public Uri Location { get; set; } // Renamed to Specification in IFC4
 
         //[JsonProperty("referenceTokens")]
         //public List<string> ReferenceTokens { get; set; }
