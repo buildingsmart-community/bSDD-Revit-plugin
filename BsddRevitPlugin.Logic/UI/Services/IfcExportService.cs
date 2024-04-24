@@ -5,83 +5,167 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using System.Web.Script.Serialization;
+using System.IO;
 
 namespace BsddRevitPlugin.Logic.UI.Services
 {
     public abstract class IfcExportService : IIfcExportService
     {
-
-        // bSDD plugin settings schema ID
-        private Schema m_jsonSchema = GetExportSchema();
-        private static Guid s_jsonSchemaId = new Guid("c2a3e6fe-ce51-4f35-8ff1-20c34567b687");
         private const string ifcExportFieldName = "IFCExportConfigurationMap";
         private const string s_configMapField = "MapField";
         private const string bsddExportConfigurationName = "Bsdd export settings";
 
-        public IList<Parameter> GetAllBsddParameters(Autodesk.Revit.DB.Document document)
+        // bSDD plugin settings schema ID
+        private Schema m_jsonSchema = GetExportSchema();
+        private static Guid s_jsonSchemaId = new Guid("c2a3e6fe-ce51-4f35-8ff1-20c34567b687");
+
+        protected abstract void SetExportLinkedFiles(IFCExportConfiguration configuration);
+        protected abstract void SetActiveViewId(IFCExportConfiguration configuration, Document document);
+        protected abstract void SetActivePhaseId(IFCExportConfiguration configuration);
+
+        /// <summary>
+        /// Retrieves all BSDD parameters from the specified document.
+        /// </summary>
+        /// <param name="document">The document to retrieve the parameters from.</param>
+        /// <returns>A list of BSDD parameters.</returns>
+        public IList<Parameter> GetAllBsddParameters(Document document)
         {
-            // Apply the filter to the elements in the active document
-            FilteredElementCollector collector = new FilteredElementCollector(document);
-            collector.WhereElementIsElementType();
-            ICollection<Element> allElements = collector.ToElements();
+            FilteredElementCollector collector = new FilteredElementCollector(document).WhereElementIsElementType();
+            IList<Parameter> parameters = new List<Parameter>();
 
-            IList<Parameter> param = new List<Parameter>();
-
-            foreach (Element e in allElements)
+            foreach (Element element in collector)
             {
-                ParameterSet pSet = e.Parameters;
-                bool exist;
-
-                foreach (Parameter p in pSet)
+                foreach (Parameter parameter in element.Parameters)
                 {
-                    if (p.Definition.Name.StartsWith("bsdd/prop/"))
+                    if (parameter.Definition.Name.StartsWith("bsdd/prop/") && !parameters.Any(p => p.Definition.Name == parameter.Definition.Name && p.StorageType == parameter.StorageType))
                     {
-                        exist = false;
-                        foreach (Parameter pm in param)
-                        {
-                            if (pm.Definition.Name == p.Definition.Name && pm.StorageType == p.StorageType)
-                            {
-                                exist = true;
-                            }
-                        }
-
-                        if (exist == false)
-                        {
-                            param.Add(p);
-                        }
+                        parameters.Add(parameter);
                     }
                 }
             }
 
-            //param = param.Distinct().ToList();
-
-            return param;
+            return parameters;
         }
+
+        /// <summary>
+        /// Retrieves the BSDD properties as a parameter file.
+        /// </summary>
+        /// <param name="document">The Revit document.</param>
+        /// <param name="mappingParameterFilePath">The file path of the active mapping parameter file.</param>
+        /// <returns>The file path of the combined parameter file.</returns>
+        public string GetBsddPropertiesAsParameterfile(Document document, string mappingParameterFilePath)
+        {
+            // Initialize a string to hold all parameters starting with bsdd for the Export User Defined Propertysets
+            string add_BSDD_UDPS = null;
+
+
+            IList<Parameter> bsddParameters = GetAllBsddParameters(document);
+
+            // Organize the BSDD parameters by property set name
+            var parametersMappedByPropertySet = RearrageParamatersForEachPropertySet(bsddParameters);
+
+            // Loop through all property sets
+            foreach (var parameters in parametersMappedByPropertySet)
+            {
+
+
+                // Format:
+                // #
+                // #
+                // PropertySet:	<Pset Name>	I[nstance]/T[ype]	<element list separated by ','>
+                // #
+                // <Property Name 1>	<Data type>	<[opt] Revit parameter name, if different from IFC>
+                // <Property Name 2>	<Data type>	<[opt] Revit parameter name, if different from IFC>
+                // ...
+                // Add the initial format for the property set to the string
+                add_BSDD_UDPS += Environment.NewLine + $"#\n#\nPropertySet:\t{parameters.Key}\tT\tIfcElementType\n#\n#\tThis propertyset has been generated by the BSDD Revit plugin\n#";
+
+                // Loop through all parameters
+                foreach (Parameter p in parameters.Value)
+                {
+                    string parameterName = p.Definition.Name.ToString();
+                    string[] parts = parameterName.Split('/');
+
+                    // Get the property set name
+                    string propertySetName = parts.Length >= 4 ? parts[3] : parameterName;
+                    add_BSDD_UDPS += $"\n\t{propertySetName}\t";
+
+                    //datatypes convert 
+                    //C# byte, sbyte, short, ushort, int, uint, long, ulong, float, double, decimal, char, bool, object, string, DataTime
+                    //Ifc Area, Boolean, ClassificationReference, ColorTemperature, Count, Currency, 
+                    //ElectricalCurrent, ElectricalEfficacy, ElectricalVoltage, Force, Frequency, Identifier, 
+                    //Illuminance, Integer, Label, Length, Logical, LuminousFlux, LuminousIntensity, 
+                    //NormalisedRatio, PlaneAngle, PositiveLength, PositivePlaneAngle, PositiveRatio, Power, 
+                    //Pressure, Ratio, Real, Text, ThermalTransmittance, ThermodynamicTemperature, Volume, 
+                    //VolumetricFlowRate
+
+                    // Convert the parameter data type to the corresponding IFC data type and add it to the string
+                    string dataType = GetDataType(p);
+                    add_BSDD_UDPS += $"{dataType}\t{parameterName}";
+                }
+            }
+
+            // Create a new temp file for the user defined parameter mapping file
+            string randomFileName = Path.GetRandomFileName();
+            string combinedParameterFilePath = Path.Combine(Path.GetTempPath(), randomFileName.Remove(randomFileName.Length - 4) + ".txt");
+
+            // Copy user defined parameter mapping file to temp file
+            if (File.Exists(mappingParameterFilePath))
+            {
+                File.Copy(mappingParameterFilePath, combinedParameterFilePath, true);
+            }
+
+            // Write the BSDD properties to the temp file
+            using (StreamWriter writer = new StreamWriter(combinedParameterFilePath, true))
+            {
+                writer.WriteLine(add_BSDD_UDPS);
+            }
+
+            return combinedParameterFilePath;
+        }
+
+        /// <summary>
+        /// Gets the data type of a parameter.
+        /// </summary>
+        /// <param name="parameter">The parameter.</param>
+        /// <returns>The data type of the parameter.</returns>
+        private string GetDataType(Parameter parameter)
+        {
+            switch (parameter.StorageType.ToString())
+            {
+                case "String":
+                    return "Text";
+                case "Double":
+                    return "Real";
+                case "Integer":
+                    return parameter.Definition.GetDataType().TypeId == "autodesk.spec:spec.bool-1.0.0" ? "Boolean" : "Integer";
+                default:
+                    return parameter.StorageType.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Rearranges the given list of parameters into a dictionary, grouping them by property set name.
+        /// </summary>
+        /// <param name="parameters">The list of parameters to be rearranged.</param>
+        /// <returns>A dictionary where the keys are property set names and the values are lists of parameters belonging to each property set.</returns>
         public Dictionary<string, IList<Parameter>> RearrageParamatersForEachPropertySet(IList<Parameter> parameters)
         {
-            // Create a dictionary to hold the parameters grouped by property set name
             Dictionary<string, IList<Parameter>> propertySetGroups = new Dictionary<string, IList<Parameter>>();
 
-            // Loop through all parameters
             foreach (Parameter p in parameters)
             {
-                // Split the definition name by '/'
                 string[] parts = p.Definition.Name.Split('/');
 
-                // Check if there are at least 3 parts
                 if (parts.Length >= 3)
                 {
-                    // Get the property set name
                     string propertySetName = parts[2];
 
-                    // Check if the property set name is already in the dictionary
                     if (!propertySetGroups.ContainsKey(propertySetName))
                     {
-                        // If not, add it with a new list
                         propertySetGroups[propertySetName] = new List<Parameter>();
                     }
 
-                    // Add the parameter to the list for this property set name
                     propertySetGroups[propertySetName].Add(p);
                 }
             }
@@ -107,6 +191,10 @@ namespace BsddRevitPlugin.Logic.UI.Services
             }
             return schema;
         }
+
+        /// <summary>
+        /// Set and retrieve the bSDD IFC export configuration.
+        /// </summary>
         public IFCExportConfiguration GetOrSetBsddConfiguration(Document document)
         {
             IList<DataStorage> savedConfigurations = GetSavedConfigurations(document, m_jsonSchema);
@@ -130,14 +218,16 @@ namespace BsddRevitPlugin.Logic.UI.Services
                 }
 
             }
-            return CreateNewBsddConfigurationInDataStorage(document);
 
+            return CreateNewBsddConfigurationInDataStorage(document);
         }
+
+        /// <summary>
+        /// Set default bSDD export configuration in Revit DataStorage.
+        /// </summary>
         public IFCExportConfiguration CreateNewBsddConfigurationInDataStorage(Autodesk.Revit.DB.Document document)
         {
             IFCExportConfiguration configuration = GetDefaultExportConfiguration(document);
-
-            //Add to DataStorage
 
             using (Transaction transaction = new Transaction(document, "Create DataStorage"))
             {
@@ -152,11 +242,15 @@ namespace BsddRevitPlugin.Logic.UI.Services
 
                 transaction.Commit();
             }
+
             return configuration;
         }
 
 
 
+        /// <summary>
+        /// Create a new Revit bSDD IFC export configuration.
+        /// </summary>
         public IFCExportConfiguration GetDefaultExportConfiguration(Autodesk.Revit.DB.Document document)
         {
             //Create an instance of the IFC Export Configuration Class
@@ -218,7 +312,14 @@ namespace BsddRevitPlugin.Logic.UI.Services
 
             return configuration;
         }
-        public static IList<DataStorage> GetSavedConfigurations(Autodesk.Revit.DB.Document document, Schema schema)
+
+        /// <summary>
+        /// Retrieves the list of saved configurations from the document that match the given schema.
+        /// </summary>
+        /// <param name="document">The Revit document.</param>
+        /// <param name="schema">The schema to match.</param>
+        /// <returns>A list of DataStorage objects that contain valid entities matching the specified schema.</returns>
+        public static IList<DataStorage> GetSavedConfigurations(Document document, Schema schema)
         {
             FilteredElementCollector collector = new FilteredElementCollector(document);
             collector.OfClass(typeof(DataStorage));
@@ -226,9 +327,5 @@ namespace BsddRevitPlugin.Logic.UI.Services
 
             return collector.Cast<DataStorage>().Where<DataStorage>(hasTargetData).ToList<DataStorage>();
         }
-
-        protected abstract void SetExportLinkedFiles(IFCExportConfiguration configuration);
-        protected abstract void SetActiveViewId(IFCExportConfiguration configuration, Autodesk.Revit.DB.Document document);
-        protected abstract void SetActivePhaseId(IFCExportConfiguration configuration);
     }
 }
