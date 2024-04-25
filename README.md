@@ -58,3 +58,24 @@ The idea of our development is that we inspire our industry to include bSDD in t
 
 ## Usage
 [Go to the wiki page](https://github.com/buildingsmart-community/bSDD-Revit-plugin/wiki/)
+
+## Development setup
+### Prerequisites
+- Make sure you are on MS Windows
+- Github Desktop installed (or just git)
+- Visual Studio installed (or VS code or another editor/IDE)
+
+### Clone repo from Github desktop
+- File → Clone repository... → URL → https://github.com/buildingsmart-community/bSDD-Revit-plugin.git
+- Repository → Open in PowerShell
+
+### Update submodules from PowerShell
+- ```git submodule init```
+- ```git submodule foreach --recursive git checkout dev```
+
+### Setup the project in Visual Studio
+- File → Open → Project/Solution... → BsddRevitPlugin.sln
+- Switch platform from "Any CPU" to x64 (because we use CefSharp)
+- Choose a preferred Revit project as startup project (right-click BsddRevitPlugin.2023/2024 in solution explorer → Set as Startup Project)
+- Make Revit start om debug (right-click BsddRevitPlugin.2023/2024 in solution explorer → Properties → Debug → Start external program: ```C:\Program Files\Autodesk\Revit 2024\Revit.exe```)
+- run debug...
