@@ -201,8 +201,18 @@ namespace BsddRevitPlugin.Common
             {
 
             }
+            
+            List<Element> instances = new List<Element>();
+            try
+            {
+                instances.AddRange(GlobalSelectionI.LastSelectedElementsWithDocs[doc.PathName]);
+            }
+            catch (System.Exception)
+            {
+
+            }
             // Pack data into json format
-            List<IfcEntity> selectionData = BsddRevitPlugin.Logic.Model.ElementsManager.SelectionToIfcJson(doc, types);
+            List<IfcEntity> selectionData = BsddRevitPlugin.Logic.Model.ElementsManager.SelectionToIfcJson(doc, types, instances);
 
             // Send MainData to BsddSelection html
             eventUseLastSelection.UpdateBsddSelection(selectionData);

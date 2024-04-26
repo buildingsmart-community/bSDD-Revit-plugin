@@ -1094,6 +1094,11 @@ namespace BsddRevitPlugin.Logic.Model
             //Make element from Element or ElementType
             Element elem = doc.GetElement(elemId) as ElementType;
 
+            if(elem == null)
+            {
+                elem = doc.GetElement(elemId) as Element;
+            }
+
             Dictionary<IfcPropertySet, Dictionary<IfcPropertySingleValue, NominalValue>> ifcProps = new Dictionary<IfcPropertySet, Dictionary<IfcPropertySingleValue, NominalValue>>();
             List<IfcPropertySet> isDefinedBy = new List<IfcPropertySet>();
             IfcPropertySet ifcPropSet = new IfcPropertySet();
