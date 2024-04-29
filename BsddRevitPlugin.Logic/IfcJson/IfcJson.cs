@@ -17,6 +17,12 @@ namespace BsddRevitPlugin.Logic.IfcJson
         /// <summary>
         /// IfcJson parameter for the IFC entity type.
         /// </summary>
+        [JsonProperty("instance")]
+        public bool Instance { get; set; }
+
+        /// <summary>
+        /// IfcJson parameter for the IFC entity type.
+        /// </summary>
         [JsonProperty("type")]
         public string Type { get; set; }
 
