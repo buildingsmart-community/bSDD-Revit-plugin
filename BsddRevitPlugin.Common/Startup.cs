@@ -192,27 +192,18 @@ namespace BsddRevitPlugin.Common
             SelectEULS.Raise();
 
 
-            List<ElementType> types = new List<ElementType>();
+            List<Element> elem = new List<Element>();
             try
             {
-                types.AddRange(GlobalSelection.LastSelectedElementsWithDocs[doc.PathName]);
+                elem.AddRange(GlobalSelection.LastSelectedElementsWithDocs[doc.PathName]);
             }
             catch (System.Exception)
             {
 
             }
-            
-            List<Element> instances = new List<Element>();
-            try
-            {
-                instances.AddRange(GlobalSelectionI.LastSelectedElementsWithDocs[doc.PathName]);
-            }
-            catch (System.Exception)
-            {
-
-            }
+                        
             // Pack data into json format
-            List<IfcEntity> selectionData = BsddRevitPlugin.Logic.Model.ElementsManager.SelectionToIfcJson(doc, types, instances);
+            List<IfcEntity> selectionData = BsddRevitPlugin.Logic.Model.ElementsManager.SelectionToIfcJson(doc, elem);
 
             // Send MainData to BsddSelection html
             eventUseLastSelection.UpdateBsddSelection(selectionData);

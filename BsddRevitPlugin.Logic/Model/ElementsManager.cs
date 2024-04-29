@@ -17,6 +17,7 @@ using System.Windows.Input;
 using Revit.IFC.Export.Exporter.PropertySet;
 using System.Security.Principal;
 using System.Windows.Controls;
+using Autodesk.Revit.DB.Mechanical;
 
 
 namespace BsddRevitPlugin.Logic.Model
@@ -47,16 +48,15 @@ namespace BsddRevitPlugin.Logic.Model
 
             List<ElementType> elemListFiltered = new List<ElementType>();
 
-
             string typeId;
             List<string> idList = new List<string>();
             foreach (ElementType item in elemList)
             {
                 try
                 {
-                    if (item != null && item.Category != null)
-                    {
-                        if (
+                    if (item != null &&
+                        item.IsValidObject == true &&
+                        item.Category != null &&
                         item.Category.Name != "Levels" &&
                         item.Category.Name != "Grids" &&
                         item.Category.Name != "Location Data" &&
@@ -104,7 +104,6 @@ namespace BsddRevitPlugin.Logic.Model
                             }
                         }
                     }
-                }
                 catch { }
             }
 
@@ -122,14 +121,38 @@ namespace BsddRevitPlugin.Logic.Model
             {
                 try
                 {
-                    if (item != null && item.Category != null)
-                    {
-                        if (
+                    if( item != null &&
+                        item.IsValidObject == true &&
+                        item.Category != null &&
+                        item.LevelId != null &&
+                        item.get_Geometry(new Options()) != null &&
                         item.Category.Name != "Levels" &&
                         item.Category.Name != "Grids" &&
                         item.Category.Name != "Location Data" &&
                         item.Category.Name != "Model Groups" &&
                         item.Category.Name != "RVT Links" &&
+                        item.Category.Name != "Phases" &&
+                        item.Category.Name != "Revision" &&
+                        item.Category.Name != "Color Fill Schema" &&
+                        item.Category.Name != "Project Information" &&
+                        item.Category.Name != "Shared Site" &&
+                        item.Category.Name != "Survey Point" &&
+                        item.Category.Name != "Project Base Point" &&
+                        item.Category.Name != "Sun Path" &&
+                        item.Category.Name != "Internal Origin" &&
+                        item.Category.Name != "HVAC Load Schedules" &&
+                        item.Category.Name != "Building Type Settings" &&
+                        item.Category.Name != "Space Type Settings" &&
+                        item.Category.Name != "Cameras" &&
+                        item.Category.Name != "Legend Components" &&
+                        item.Category.Name != "Site" &&
+                        item.Category.Name != "Guide Grid" &&
+                        item.Category.Name != "Analytical Panels" &&
+                        item.Category.Name != "Analytical Openings" &&
+                        item.Category.Name != "Analytical Nodes" &&
+                        item.Category.Name != "Work Plane Grid" &&
+                        item.Category.Name != "Lines" &&
+                        item.Category.Name.IsNormalized() == true &&
                         item.Category.Name.Substring(System.Math.Max(0, item.Category.Name.Length - 4)) != ".dwg" &&
                         item.Category.Name.Substring(System.Math.Max(0, item.Category.Name.Length - 4)) != ".pdf"
                         )
@@ -137,7 +160,6 @@ namespace BsddRevitPlugin.Logic.Model
                             elemListFiltered.Add(item);
                         }
                     }
-                }
                 catch { }
             }
 
@@ -426,13 +448,23 @@ namespace BsddRevitPlugin.Logic.Model
                 int idInt = Convert.ToInt32(ifcEntity.Tag);
                 ElementId typeId = new ElementId(idInt);
                 ElementType elementType = doc.GetElement(typeId) as ElementType;
+                Element element = doc.GetElement(typeId);
 
                 //Get all instances of the elementtype
                 FilteredElementCollector collector = new FilteredElementCollector(doc);
-                var elements = collector
+                List<Element> elements = new List<Element>();
+                if (elementType != null)
+                {
+                    elements = collector
                     .WhereElementIsNotElementType()
                     .Where(e => e.GetTypeId() == elementType.Id)
                     .ToList();
+                } else
+                {
+                    elements.Add(doc.GetElement(typeId));
+                }
+                
+                        
 
                 //Get element ids
                 List<ElementId> elementIds = elements.Select(e => e.Id).ToList();
@@ -961,19 +993,30 @@ namespace BsddRevitPlugin.Logic.Model
         /// <param name="elemList">The list of selected Revit element types.</param>
         /// <returns>A IfcData object representing the ifcJSON structure.</returns>
         ///
-        public static List<IfcEntity> SelectionToIfcJson(Document doc, List<ElementType> elemListT, List<Element> elemListI)
+        public static List<IfcEntity> SelectionToIfcJson(Document doc, List<Element> elemList)
         {
             
-            if (doc == null && elemListT == null || elemListI == null)
+            if (doc == null && elemList == null)
             {
-                throw new ArgumentNullException(doc == null ? nameof(doc) : nameof(elemListT));
+                throw new ArgumentNullException(doc == null ? nameof(doc) : nameof(elemList));
             }
 
             var ifcEntities = new List<IfcEntity>();
-
-            if (elemListT != null)
+            List<ElementType> elemListType = new List<ElementType>();
+            ElementId id;
+            ElementType type;
+            foreach (var elem in elemList)
             {
-                foreach (ElementType elem in elemListT)
+                id = elem.GetTypeId();
+                type = doc.GetElement(id) as ElementType;
+                elemListType.Add(type);
+            }
+            elemList = ListFilter(elemList);
+            elemListType = ListFilter(elemListType);
+
+            if (elemList != null)
+            {
+                foreach (Element elem in elemList)
                 {
                     if (elem == null)
                     {
@@ -985,9 +1028,9 @@ namespace BsddRevitPlugin.Logic.Model
                 }
             }
 
-            if (elemListI != null)
+            if (elemListType != null)
             {
-                foreach (Element elem in elemListI)
+                foreach (ElementType elem in elemListType)
                 {
                     if (elem == null)
                     {
@@ -1014,6 +1057,7 @@ namespace BsddRevitPlugin.Logic.Model
         /// </summary>
         private static IfcEntity CreateIfcEntity(ElementType elem, Document doc)
         {
+            bool instance = false;
             string familyName = GetElementTypeFamilyName(elem, GetTypeParameterValueByElementType(elem, "IfcName"));
             string typeName = GetElementTypeName(elem, GetTypeParameterValueByElementType(elem, "IfcType"));
             string ifcTag = elem.Id.ToString();
@@ -1025,6 +1069,7 @@ namespace BsddRevitPlugin.Logic.Model
 
             var ifcEntity = new IfcEntity
             {
+                Instance = instance,
                 Type = ifcType,
                 Name = $"{familyName} - {typeName}",
                 Tag = ifcTag,
@@ -1051,6 +1096,7 @@ namespace BsddRevitPlugin.Logic.Model
             ElementId elemTypeId = elem.GetTypeId();
             ElementType elemType = doc.GetElement(elemTypeId) as ElementType;
 
+            bool instance = true;
             string Name = GetElementName(elem, GetParameterValueByElement(elem, "IfcName"));
             string familyName = GetElementTypeFamilyName(elemType, GetTypeParameterValueByElementType(elemType, "IfcName"));
             string typeName = GetElementTypeName(elemType, GetTypeParameterValueByElementType(elemType, "IfcType"));
@@ -1062,7 +1108,8 @@ namespace BsddRevitPlugin.Logic.Model
             var associations = GetElementAssociations(elem);
 
             var ifcEntity = new IfcEntity
-            { 
+            {
+                Instance = instance,
                 Type = ifcType,
                 Name = $"{Name} - {typeName}",
                 Tag = ifcTag,
@@ -1249,7 +1296,7 @@ namespace BsddRevitPlugin.Logic.Model
 
                 if (elementType?.LookupParameter(parameterName) != null)
                 {
-                    return _getParameterValueByCorrectStorageType2(elementType.LookupParameter(parameterName));
+                    return _getParameterValueByCorrectStorageType(elementType.LookupParameter(parameterName));
                 }
 
                 return null;
@@ -1269,7 +1316,7 @@ namespace BsddRevitPlugin.Logic.Model
 
                 if (element?.LookupParameter(parameterName) != null)
                 {
-                    return _getParameterValueByCorrectStorageType2(element.LookupParameter(parameterName));
+                    return _getParameterValueByCorrectStorageType(element.LookupParameter(parameterName));
                 }
 
                 return null;
@@ -1279,7 +1326,7 @@ namespace BsddRevitPlugin.Logic.Model
                 return null;
             }
         }
-        private static dynamic _getParameterValueByCorrectStorageType2(Parameter parameter)
+        private static dynamic _getParameterValueByCorrectStorageType(Parameter parameter)
         {
             switch (parameter.StorageType)
             {
