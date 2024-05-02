@@ -73,7 +73,7 @@ namespace BsddRevitPlugin.Logic.Model
         /// <param name="transaction">The active transaction used to save the classifications.</param>
         /// <param name="document">The document storing the saved Classification.</param>
         /// <param name="classifications">The set of Classification items to save.</param>
-        public static void UpdateClassifications(Transaction transaction, Document document, List<IFCClassification> classifications, Dictionary<string, string> bsddClassificationMappings = null)
+        public static void UpdateClassifications(Transaction transaction, Document document, List<IFCClassification> classifications, bool bsddExport, Dictionary<string, string> bsddClassificationMappings = null)
         {
             Schema schema = GetRevitClassificationSchema();
             if (schema != null)
@@ -97,7 +97,7 @@ namespace BsddRevitPlugin.Logic.Model
                         {
                             classificationParameter = bsddClassificationMappings[classification.ClassificationLocation];
                         }
-                        Entity classificationEntity = ConvertToRevitSchemaIfcClassification(schema, classification, classificationParameter);
+                        Entity classificationEntity = ConvertToRevitSchemaIfcClassification(schema, classification, bsddExport, classificationParameter);
                         DataStorage newClassification = DataStorage.Create(document);
                         newClassification.SetEntity(classificationEntity);
                         transaction.Commit();
@@ -112,7 +112,7 @@ namespace BsddRevitPlugin.Logic.Model
                         if (!classification.IsUnchanged(existingClassificationAsIfc))
                         {
                             transaction.Start("Update IFC Classification in DataStorage");
-                            Entity classificationEntity = ConvertToRevitSchemaIfcClassification(schema, classification);
+                            Entity classificationEntity = ConvertToRevitSchemaIfcClassification(schema, classification, bsddExport);
                             existingClassificationDataStorage.SetEntity(classificationEntity);
                             transaction.Commit();
                         }
@@ -265,7 +265,7 @@ namespace BsddRevitPlugin.Logic.Model
             };
         }
 
-        private static Entity ConvertToRevitSchemaIfcClassification(Schema schema, IFCClassification classification, string classificationParameter = null)
+        private static Entity ConvertToRevitSchemaIfcClassification(Schema schema, IFCClassification classification, bool bsddExport, string classificationParameter = null)
         {
             Entity classificationEntity = new Entity(schema);
 
@@ -279,31 +279,59 @@ namespace BsddRevitPlugin.Logic.Model
                 classificationEntity.Set<Int32>(classificationEditionDate_Month, classification.ClassificationEditionDate.Month);
                 classificationEntity.Set<Int32>(classificationEditionDate_Year, classification.ClassificationEditionDate.Year);
             }
-
-            if (!string.IsNullOrEmpty(classification.ClassificationLocation))
+            if (bsddExport)
             {
-                classificationEntity.Set<string>(classificationLocation, classification.ClassificationLocation);
-
-                List<string> fieldNames = new List<string>();
-                Uri locationUri;
-                bool success = Uri.TryCreate(classification.ClassificationLocation, UriKind.Absolute, out locationUri);
-                if (success)
+                if (!string.IsNullOrEmpty(classification.ClassificationLocation))
                 {
-                    string parameterNameFromUri = ElementsManager.CreateParameterNameFromUri(locationUri);
-                    if (!string.IsNullOrEmpty(parameterNameFromUri))
+                    classificationEntity.Set<string>(classificationLocation, classification.ClassificationLocation);
+
+                    List<string> fieldNames = new List<string>();
+                    Uri locationUri;
+                    bool success = Uri.TryCreate(classification.ClassificationLocation, UriKind.Absolute, out locationUri);
+                    if (success)
                     {
-                        fieldNames.Add(parameterNameFromUri);
+                        string parameterNameFromUri = ElementsManager.CreateParameterNameFromUri(locationUri);
+                        if (!string.IsNullOrEmpty(parameterNameFromUri))
+                        {
+                            fieldNames.Add(parameterNameFromUri);
+                        }
+                    }
+
+                    // // Add classification parameter to the list of field names as an additional mapped field
+                    // // Decided against this due to possible data consistency issues
+                    // if (!string.IsNullOrEmpty(classificationParameter))
+                    // {
+                    //     fieldNames.Add(classificationParameter);
+                    // }
+
+                    classificationEntity.Set<string>(classificationFieldName, string.Join(",", fieldNames));
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(classification.ClassificationFieldName))
+                    {
+                        List<string> fieldNames = new List<string>
+                        {
+                            classification.ClassificationFieldName
+                        };
+                        classificationEntity.Set<string>(classificationFieldName, string.Join(",", fieldNames));
                     }
                 }
-
-                // // Add classification parameter to the list of field names as an additional mapped field
-                // // Decided against this due to possible data consistency issues
-                // if (!string.IsNullOrEmpty(classificationParameter))
-                // {
-                //     fieldNames.Add(classificationParameter);
-                // }
-
-                classificationEntity.Set<string>(classificationFieldName, string.Join(",", fieldNames));
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(classification.ClassificationLocation))
+                {
+                    classificationEntity.Set<string>(classificationLocation, classification.ClassificationLocation);
+                }
+                if (!string.IsNullOrEmpty(classification.ClassificationFieldName))
+                {
+                    List<string> fieldNames = new List<string>
+                    {
+                        classification.ClassificationFieldName
+                    };
+                    classificationEntity.Set<string>(classificationFieldName, string.Join(",", fieldNames));
+                }
             }
 
             return classificationEntity;
