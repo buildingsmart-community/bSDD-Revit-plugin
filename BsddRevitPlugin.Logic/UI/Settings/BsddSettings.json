@@ -8,25 +8,23 @@
       "editionDate": "2024-03-07T00:00:00Z",
       "name": "Basis bouwproducten",
       "description": "",
-      "location": "https://identifier.buildingsmart.org/uri/volkerwesselsbvgo/basisbouwproducten/0.8.0",
-      "ClassificationFieldName": "bsdd/class/identifier.buildingsmart.org/uri/volkerwesselsbvgo/basisbouwproducten"
+      "location": "https://identifier.buildingsmart.org/uri/volkerwesselsbvgo/basisbouwproducten/0.8.0"
     },
     "parameterMapping": "Description"
   },
-  "filterDictionaries": [
-    {
-      "ifcClassification": {
-        "type": "IfcClassification",
-        "source": "buildingsmart",
-        "edition": "4.3",
-        "editionDate": "2024-01-12T00:00:00Z",
-        "name": "IFC",
-        "description": "",
-        "location": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3",
-        "ClassificationFieldName": "bsdd/class/identifier.buildingsmart.org/uri/buildingsmart/ifc"
-      },
-      "parameterMapping": "Export Type to IFC As"
+  "ifcDictionary": {
+    "ifcClassification": {
+      "type": "IfcClassification",
+      "source": "buildingsmart",
+      "edition": "4.3",
+      "editionDate": "2024-01-12T00:00:00Z",
+      "name": "IFC",
+      "description": "",
+      "location": "https://identifier.buildingsmart.org/uri/buildingsmart/ifc/4.3"
     },
+    "parameterMapping": "Export Type to IFC As"
+  },
+  "filterDictionaries": [
     {
       "ifcClassification": {
         "type": "IfcClassification",
@@ -35,8 +33,7 @@
         "editionDate": "2005-01-01T00:00:00Z",
         "name": "NL-SfB 2005",
         "description": "",
-        "location": "https://identifier.buildingsmart.org/uri/nlsfb/nlsfb2005/2.2",
-        "ClassificationFieldName": "bsdd/identifier.buildingsmart.org/uri/nlsfb/nlsfb2005"
+        "location": "https://identifier.buildingsmart.org/uri/nlsfb/nlsfb2005/2.2"
       },
       "parameterMapping": "Assembly Code"
     }

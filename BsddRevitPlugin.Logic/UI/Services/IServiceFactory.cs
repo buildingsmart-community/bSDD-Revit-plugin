@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace BsddRevitPlugin.Logic.UI.Services
 {
-    public interface IBrowserServiceFactory
+    public interface IServiceFactory
     {
         IBrowserService CreateBrowserService();
+        IIfcExportService CreateIfcExportService();
     }
 }
