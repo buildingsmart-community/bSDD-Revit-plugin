@@ -1,12 +1,9 @@
-﻿using Autodesk.Revit.DB;
-using BsddRevitPlugin.Logic.Model;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
 namespace BsddRevitPlugin.Logic.IfcJson
 {
-
     /// <summary>
     /// Represents the bSDD data as an IFC object.
     /// based on IfcTypeProduct:
@@ -78,7 +75,6 @@ namespace BsddRevitPlugin.Logic.IfcJson
 
     public class IfcClassificationReference : Association
     {
-
         [JsonProperty("location")]
         public Uri Location { get; set; }
 
@@ -105,7 +101,6 @@ namespace BsddRevitPlugin.Logic.IfcJson
     /// </summary>
     public class IfcClassification
     {
-
         [JsonProperty("type")]
         public string Type { get; set; }
 
@@ -125,16 +120,10 @@ namespace BsddRevitPlugin.Logic.IfcJson
         public string Description { get; set; }
 
         [JsonProperty("location")]
-        public Uri Location { get; set; }
+        public Uri Location { get; set; } // Renamed to Specification in IFC4
 
         //[JsonProperty("referenceTokens")]
         //public List<string> ReferenceTokens { get; set; }
-
-        // Addition for the Revit mapping parameter, should not be present in the ifcJSON data
-        [JsonProperty("classificationFieldName")]
-        public string ClassificationFieldName { get; set; } 
-        
-
     }
 
     /// <summary>
