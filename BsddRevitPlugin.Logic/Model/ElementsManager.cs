@@ -18,6 +18,10 @@ using Revit.IFC.Export.Exporter.PropertySet;
 using System.Security.Principal;
 using System.Windows.Controls;
 using Autodesk.Revit.DB.Mechanical;
+using System.Security.Cryptography;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
+using Autodesk.Revit.DB.Visual;
+using static System.Net.Mime.MediaTypeNames;
 
 
 namespace BsddRevitPlugin.Logic.Model
@@ -42,7 +46,7 @@ namespace BsddRevitPlugin.Logic.Model
         }
 
 
-        public static List<ElementType> ListFilter(List<ElementType> elemList)
+        public static List<ElementType> ListFilter(List<ElementType> elemList, Document doc)
         {
             Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -111,47 +115,53 @@ namespace BsddRevitPlugin.Logic.Model
             return elemListFiltered;
         }
 
-        public static List<Element> ListFilter(List<Element> elemList)
+        public static List<Element> ListFilter(List<Element> elemList, Document doc)
         {
             Logger logger = LogManager.GetCurrentClassLogger();
 
             List<Element> elemListFiltered = new List<Element>();
 
+            Categories all_categories = doc.Settings.Categories;
+            List<String> cats_model = new List<String>();
+
+            foreach (Category cat in all_categories)
+            {
+                if (cat.CategoryType == CategoryType.Model)
+                {
+                    cats_model.Add(cat.Name);
+                }
+            }
+            
             foreach (Element item in elemList)
             {
                 try
                 {
-                    if( item != null &&
+                    if (item.Category != null &&
+                        cats_model.Contains(item.Category.Name) &&
+                        item.Category.Name != "Detail Items" &&
+                        item.Category.Name != "Coordination Model" &&
+                        item.Category.Name != "Sheets" &&
+                        item.Category.Name != "Curtain Grids" &&
+                        item.Category.Name != "Materials" &&
+                        item.Category.Name != "Areas" &&
+                        item.Category.Name != "Rooms" &&
+                        item.Category.Name != "Spaces" &&
+                        item.Category.Name != "Raster Images" &&
+                        item.Category.Name != "Filled region" &&
+                        item.Category.Name != "Point Clouds" &&
+                        item.Category.Name != "Analysis Results" &&
+                        item.Category.Name != "Analysis Display Style" &&
+                        item.Category.Name != "Project Information" &&
+                        item.Category.Name != "Lines" &&
+                        item.Category.Name != "Site" &&
+                        item.Category.Name != "HVAC Zones" &&
+                        item.Category.Name != "Imports in Families" &&
+                        item.Category.Name != "RVT Links" &&
+                        //item.Category.Name != "Runs" && //OST_StairsRuns
+                        item != null &&
                         item.IsValidObject == true &&
-                        item.Category != null &&
                         item.LevelId != null &&
                         item.get_Geometry(new Options()) != null &&
-                        item.Category.Name != "Levels" &&
-                        item.Category.Name != "Grids" &&
-                        item.Category.Name != "Location Data" &&
-                        item.Category.Name != "Model Groups" &&
-                        item.Category.Name != "RVT Links" &&
-                        item.Category.Name != "Phases" &&
-                        item.Category.Name != "Revision" &&
-                        item.Category.Name != "Color Fill Schema" &&
-                        item.Category.Name != "Project Information" &&
-                        item.Category.Name != "Shared Site" &&
-                        item.Category.Name != "Survey Point" &&
-                        item.Category.Name != "Project Base Point" &&
-                        item.Category.Name != "Sun Path" &&
-                        item.Category.Name != "Internal Origin" &&
-                        item.Category.Name != "HVAC Load Schedules" &&
-                        item.Category.Name != "Building Type Settings" &&
-                        item.Category.Name != "Space Type Settings" &&
-                        item.Category.Name != "Cameras" &&
-                        item.Category.Name != "Legend Components" &&
-                        item.Category.Name != "Site" &&
-                        item.Category.Name != "Guide Grid" &&
-                        item.Category.Name != "Analytical Panels" &&
-                        item.Category.Name != "Analytical Openings" &&
-                        item.Category.Name != "Analytical Nodes" &&
-                        item.Category.Name != "Work Plane Grid" &&
-                        item.Category.Name != "Lines" &&
                         item.Category.Name.IsNormalized() == true &&
                         item.Category.Name.Substring(System.Math.Max(0, item.Category.Name.Length - 4)) != ".dwg" &&
                         item.Category.Name.Substring(System.Math.Max(0, item.Category.Name.Length - 4)) != ".pdf"
@@ -182,10 +192,20 @@ namespace BsddRevitPlugin.Logic.Model
                     // Create a classification set in which every dictionary will be collected
                     HashSet<IfcClassification> dictionaryCollection = new HashSet<IfcClassification>();
 
-                    //Get the elementType
+                    //Get the elementType or element
                     int idInt = Convert.ToInt32(ifcEntity.Tag);
                     ElementId typeId = new ElementId(idInt);
-                    ElementType elementType = doc.GetElement(typeId) as ElementType;
+                    Element elementI = null;
+                    ElementType elementT = null;
+                    if (doc.GetElement(typeId) as ElementType != null )
+                    {
+                        elementT = doc.GetElement(typeId) as ElementType;
+                    }
+                    else
+                    {
+                        elementI = doc.GetElement(typeId);
+                    }
+                    var element = elementT ?? elementI;
 
                     //Initialize parameters
                     string bsddParameterName = "";
@@ -202,7 +222,7 @@ namespace BsddRevitPlugin.Logic.Model
                     {
                         Entity entity = new Entity(schema);
                         entity.Set(field, JsonConvert.SerializeObject(ifcEntity.HasAssociations));
-                        elementType.SetEntity(entity);
+                        element.SetEntity(entity);
                     }
                     catch
                     {
@@ -292,7 +312,7 @@ namespace BsddRevitPlugin.Logic.Model
                                     parameterMappedName = GetMappedParameterName(ifcClassificationReference);
 
                                     //Check each type parameter from the object
-                                    foreach (Parameter typeparameter in elementType.Parameters)
+                                    foreach (Parameter typeparameter in element.Parameters)
                                     {
                                         string typeParameterName = typeparameter.Definition.Name;
 
@@ -399,7 +419,7 @@ namespace BsddRevitPlugin.Logic.Model
                                         dynamic value = GetParameterValueInCorrectDatatype(property);
 
                                         //Check each type parameter from the object
-                                        foreach (Parameter typeparameter in elementType.Parameters)
+                                        foreach (Parameter typeparameter in element.Parameters)
                                         {
                                             string typeParameterName = typeparameter.Definition.Name;
 
@@ -414,7 +434,7 @@ namespace BsddRevitPlugin.Logic.Model
                                                 }
                                                 catch (Exception e)
                                                 {
-                                                    logger.Info($"Property {property.Name} of type {property.Type} could not be set for elementType {elementType.Name},'{elementType.Id}'. Exception: {e.Message}");
+                                                    logger.Info($"Property {property.Name} of type {property.Type} could not be set for elementType {element.Name},'{element.Id}'. Exception: {e.Message}");
                                                 }
                                             }
                                         }
@@ -758,7 +778,7 @@ namespace BsddRevitPlugin.Logic.Model
                 // TODO: sometimes values come back as null, how does this look in the IFC?
                 try
                 {
-                    bsddParameterValue = GetTypeParameterValueByElementType(elementType, CreateParameterNameFromUri(dictionary.IfcClassification.Location));
+                    bsddParameterValue = GetParameterValueByElement(elementType, CreateParameterNameFromUri(dictionary.IfcClassification.Location));
 
                 }
                 catch (Exception e)
@@ -768,7 +788,7 @@ namespace BsddRevitPlugin.Logic.Model
                 try
                 {
 
-                    mappedParameterValue = GetTypeParameterValueByElementType(elementType, dictionary.ParameterMapping);
+                    mappedParameterValue = GetParameterValueByElement(elementType, dictionary.ParameterMapping);
                 }
                 catch (Exception e)
                 {
@@ -1011,8 +1031,8 @@ namespace BsddRevitPlugin.Logic.Model
                 type = doc.GetElement(id) as ElementType;
                 elemListType.Add(type);
             }
-            elemList = ListFilter(elemList);
-            elemListType = ListFilter(elemListType);
+            elemList = ListFilter(elemList, doc);
+            elemListType = ListFilter(elemListType, doc);
 
             if (elemList != null)
             {
@@ -1058,10 +1078,10 @@ namespace BsddRevitPlugin.Logic.Model
         private static IfcEntity CreateIfcEntity(ElementType elem, Document doc)
         {
             bool instance = false;
-            string familyName = GetElementTypeFamilyName(elem, GetTypeParameterValueByElementType(elem, "IfcName"));
-            string typeName = GetElementTypeName(elem, GetTypeParameterValueByElementType(elem, "IfcType"));
+            string familyName = GetElementName(elem, GetParameterValueByElement(elem, "IfcName"));
+            string typeName = GetElementName(elem, GetParameterValueByElement(elem, "IfcType"));
             string ifcTag = elem.Id.ToString();
-            string typeDescription = GetTypeParameterValueByElementType(elem, "Description");
+            string typeDescription = GetParameterValueByElement(elem, "Description");
             string ifcType = IFCMappingValue(doc, elem);
             string ifcPredefinedType = elem.get_Parameter(BuiltInParameter.IFC_EXPORT_PREDEFINEDTYPE_TYPE)?.AsString();
 
@@ -1071,7 +1091,7 @@ namespace BsddRevitPlugin.Logic.Model
             {
                 Instance = instance,
                 Type = ifcType,
-                Name = $"{familyName} - {typeName}",
+                Name = $"T: {typeName} - {familyName}",
                 Tag = ifcTag,
                 Description = string.IsNullOrWhiteSpace(typeDescription) ? null : typeDescription,
                 PredefinedType = ifcPredefinedType,
@@ -1095,13 +1115,12 @@ namespace BsddRevitPlugin.Logic.Model
         {
             ElementId elemTypeId = elem.GetTypeId();
             ElementType elemType = doc.GetElement(elemTypeId) as ElementType;
-
+            
             bool instance = true;
-            string Name = GetElementName(elem, GetParameterValueByElement(elem, "IfcName"));
-            string familyName = GetElementTypeFamilyName(elemType, GetTypeParameterValueByElementType(elemType, "IfcName"));
-            string typeName = GetElementTypeName(elemType, GetTypeParameterValueByElementType(elemType, "IfcType"));
+            string familyName = GetElementName(elemType ?? elem, GetParameterValueByElement(elemType ?? elem, "IfcName"));
+            string typeName = GetElementName(elemType ?? elem, GetParameterValueByElement(elemType ?? elem, "IfcType"));
             string ifcTag = elem.Id.ToString();
-            string typeDescription = GetTypeParameterValueByElementType(elemType, "Description");
+            string typeDescription = GetParameterValueByElement(elemType ?? elem, "Description");
             string ifcType = IFCMappingValue(doc, elem);
             string ifcPredefinedType = elem.get_Parameter(BuiltInParameter.IFC_EXPORT_PREDEFINEDTYPE_TYPE)?.AsString();
 
@@ -1111,7 +1130,7 @@ namespace BsddRevitPlugin.Logic.Model
             {
                 Instance = instance,
                 Type = ifcType,
-                Name = $"{Name} - {typeName}",
+                Name = $"I: {typeName} - {familyName}",
                 Tag = ifcTag,
                 Description = string.IsNullOrWhiteSpace(typeDescription) ? null : typeDescription,
                 PredefinedType = ifcPredefinedType,
@@ -1207,29 +1226,6 @@ namespace BsddRevitPlugin.Logic.Model
         }
 
 
-        /// <summary>
-        /// Retrieves the family name of the given element type.
-        /// </summary>
-        /// <param name="elementType">The element type.</param>
-        /// <param name="ifcName">The IFC name, returned if not null or empty.</param>
-        /// <returns>The family name or an empty string if unavailable.</returns>
-        public static string GetElementTypeFamilyName(ElementType elementType, string ifcName)
-        {
-            if (!string.IsNullOrEmpty(ifcName))
-            {
-                return ifcName;
-            }
-
-            try
-            {
-                return elementType.FamilyName;
-            }
-            catch
-            {
-                return string.Empty;
-            }
-        }
-
         public static string GetElementName(Element element, string ifcName)
         {
             if (!string.IsNullOrEmpty(ifcName))
@@ -1253,7 +1249,7 @@ namespace BsddRevitPlugin.Logic.Model
         /// <param name="elementType">The element type.</param>
         /// <param name="ifcType">The IFC type, returned if not null or empty.</param>
         /// <returns>The element type name or an empty string if unavailable.</returns>
-        public static string GetElementTypeName(ElementType elementType, string ifcType)
+        public static string GetElementName(ElementType elementType, string ifcType)
         {
             if (!string.IsNullOrEmpty(ifcType))
             {
@@ -1287,7 +1283,7 @@ namespace BsddRevitPlugin.Logic.Model
             }
         }
 
-        public static dynamic GetTypeParameterValueByElementType(ElementType elementType, string parameterName)
+        public static dynamic GetParameterValueByElement(ElementType elementType, string parameterName)
         {
             try
             {
@@ -1462,7 +1458,15 @@ namespace BsddRevitPlugin.Logic.Model
 
             };
 
-            return mappingTable[cat + "\t"];
+            try
+            {
+                return mappingTable[cat + "\t"];
+            }
+            catch
+            {
+                mappingTable.Add(cat + "\t", "Not Exported");
+                return mappingTable[cat + "\t"];
+            }
         }
     }
 }
