@@ -67,12 +67,12 @@ namespace BsddRevitPlugin.Common.Commands
                     storedClassifications = storedClassifications.Any() ? new List<IFCClassification> { storedClassifications[0] } : new List<IFCClassification>();
 
                     // Store temporary bSDD Classifications
-                    IfcClassificationManager.UpdateClassifications(new Transaction(document, "Store temporary bSDD Classifications"), document, bsddClassifications, IfcClassificationManager.getBsddClassificationParameterMap());
+                    IfcClassificationManager.UpdateClassifications(new Transaction(document, "Store temporary bSDD Classifications"), document, bsddClassifications, true, IfcClassificationManager.getBsddClassificationParameterMap());
 
                     IFCExport(document, ifcExportOptions, bsddIFCExportConfiguration, activeViewId, ifcExportService);
 
                     // Restore saved Classifications
-                    IfcClassificationManager.UpdateClassifications(new Transaction(document, "Restore saved Classifications"), document, storedClassifications);
+                    IfcClassificationManager.UpdateClassifications(new Transaction(document, "Restore saved Classifications"), document, storedClassifications, false);
                 }
                 return Result.Succeeded;
             }
