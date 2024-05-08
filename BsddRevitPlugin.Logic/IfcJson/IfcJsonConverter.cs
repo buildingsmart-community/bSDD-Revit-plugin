@@ -59,18 +59,30 @@ namespace BsddRevitPlugin.Logic.IfcJson
                     }
                 }
             }
-
+            
             if (jsonObject["isDefinedBy"] != null)
             {
                 ifcData.IsDefinedBy = new List<IfcPropertySet>();
                 foreach (JObject item in jsonObject["isDefinedBy"])
                 {
-                    switch (item["type"].ToString())
+                    IfcPropertySet propertySet = item.ToObject<IfcPropertySet>();
+                    if (item["hasProperties"] != null)
                     {
-                        case "IfcPropertySet":
-                            ifcData.IsDefinedBy.Add(item.ToObject<IfcPropertySet>());
-                            break;
+                        propertySet.HasProperties = new List<IfcProperty>();
+                        foreach (JObject propertyItem in item["hasProperties"])
+                        {
+                            switch (propertyItem["type"].ToString())
+                            {
+                                case "IfcPropertySingleValue":
+                                    propertySet.HasProperties.Add(propertyItem.ToObject<IfcPropertySingleValue>());
+                                    break;
+                                case "IfcPropertyEnumeratedValue":
+                                    propertySet.HasProperties.Add(propertyItem.ToObject<IfcPropertyEnumeratedValue>());
+                                    break;
+                            }
+                        }
                     }
+                    ifcData.IsDefinedBy.Add(propertySet);
                 }
             }
 
