@@ -937,11 +937,33 @@ namespace BsddRevitPlugin.Logic.Model
                                     {
                                         //Define nominalvalue Type and Value
                                         nominalValue = new IfcValue();
-                                        nominalValue.Type = "IfcLabel";
-                                        nominalValue.Value = paramPSet.AsValueString();
+                                        ForgeTypeId paramTypeId = paramPSet.Definition.GetDataType();
+
+                                        switch (paramTypeId)
+                                        {
+                                            case var _ when paramTypeId == SpecTypeId.String.Text:
+                                                nominalValue.Type = "IfcText";
+                                                nominalValue.Value = paramPSet.AsString();
+                                                break;
+                                            case var _ when paramTypeId == SpecTypeId.Number:
+                                                nominalValue.Type = "IfcReal";
+                                                nominalValue.Value = paramPSet.AsDouble();
+                                                break;
+                                            case var _ when paramTypeId == SpecTypeId.Boolean.YesNo:
+                                                nominalValue.Type = "IfcBoolean";
+                                                nominalValue.Value = paramPSet.AsInteger() == 1;
+                                                break;
+                                            case var _ when paramTypeId == SpecTypeId.Int.Integer:
+                                                nominalValue.Type = "IfcInteger";
+                                                nominalValue.Value = paramPSet.AsInteger();
+                                                break;
+                                            default:
+                                                nominalValue.Type = "IfcText";
+                                                nominalValue.Value = paramPSet.AsValueString();
+                                                break;
+                                        }
 
                                         //Define property NominalValue, name and value
-                                        //hasProperties = new List<IfcPropertySingleValue> { ifcPropValue };
                                         ifcPropValue = new IfcPropertySingleValue
                                         {
                                             NominalValue = nominalValue,
