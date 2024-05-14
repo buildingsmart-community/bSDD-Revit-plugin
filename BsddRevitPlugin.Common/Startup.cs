@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Events;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Events;
 using BIM.IFC.Export.UI;
@@ -37,12 +38,12 @@ namespace BsddRevitPlugin.Common
         private IBrowserService _selectionBrowserService;
         private BsddSelection MainDockableWindow;
 
-        public Startup(UIControlledApplication application, IBrowserServiceFactory browserServiceFactory)
+        public Startup(UIControlledApplication application, IServiceFactory serviceFactory)
         {
-            GlobalBrowserServiceFactory.Factory = browserServiceFactory;
+            GlobalServiceFactory.Factory = serviceFactory;
 
             _application = application;
-            _selectionBrowserService = browserServiceFactory.CreateBrowserService();
+            _selectionBrowserService = serviceFactory.CreateBrowserService();
         }
 
         /// <summary>
@@ -97,27 +98,29 @@ namespace BsddRevitPlugin.Common
             return Result.Succeeded;
         }
 
-        // Event handler for DocumentOpened event
+        // Event handler for when a document is opened in the application
         private void Application_DocumentOpened(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)
 
         {
-            //Create an Instance of the IFC Export Manager
-            IfcExportManager ifcexportManager = new IfcExportManager();
-
-            //Get the bsdd confguration from document or create a new one
-            IFCExportConfiguration bsddIFCExportConfiguration = ifcexportManager.GetOrSetBsddConfiguration(e.Document);
-
-            RefreshSettingsAndSelection(e.Document);
+            ReloadSettings(sender, e);
         }
 
+        // Event handler for when a new document is created in the application
         private void Application_DocumentCreated(object sender, Autodesk.Revit.DB.Events.DocumentCreatedEventArgs e)
-
         {
-            //Create an Instance of the IFC Export Manager
-            IfcExportManager ifcexportManager = new IfcExportManager();
+            ReloadSettings(sender, e);
+        }
 
-            //Get the bsdd confguration from document or create a new one
-            IFCExportConfiguration bsddIFCExportConfiguration = ifcexportManager.GetOrSetBsddConfiguration(e.Document);
+
+        // Reload the settings and selection for the document when a RevitAPIPostDoc event occurs.
+        private void ReloadSettings(object sender, RevitAPIPostDocEventArgs e)
+        {
+
+            // Create an Instance of the IFC Export Manager
+            IIfcExportService ifcExportService = GlobalServiceFactory.Factory.CreateIfcExportService();
+
+            // Set the bsdd confguration from document or create a new one
+            ifcExportService.GetOrSetBsddConfiguration(e.Document);
 
             RefreshSettingsAndSelection(e.Document);
         }
@@ -127,14 +130,15 @@ namespace BsddRevitPlugin.Common
         private void Application_DocumentChanged(object sender, Autodesk.Revit.DB.Events.DocumentChangedEventArgs e)
 
         {
-            //Doubt this is nesssecary
-            //RefreshSettingsAndSelection(e.GetDocument());
-        }  
+            // Doubt this is necessary
+            // RefreshSettingsAndSelection(e.GetDocument());
+        }
+
         // Event handler for DocumentClosed event
         private void Application_DocumentClosing(object sender, Autodesk.Revit.DB.Events.DocumentClosingEventArgs e)
 
         {
-            //remove last selection from closing doc
+            // Remove last selection from closing doc
             GlobalSelection.LastSelectedElementsWithDocs.Remove(e.Document.PathName);
         }
 
@@ -211,6 +215,7 @@ namespace BsddRevitPlugin.Common
 
 
         }
+
         // BitmapImage NewBitmapImage(
         //     Assembly a, string imageName)
         // {

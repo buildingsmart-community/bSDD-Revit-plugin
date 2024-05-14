@@ -133,7 +133,6 @@
     <Compile Include="IfcJson\IfcJson.cs" />
     <Compile Include="IfcJson\IfcJsonConverter.cs" />
     <Compile Include="Model\ElementsManager.cs" />
-    <Compile Include="Model\IfcExportManager.cs" />
     <Compile Include="Model\SettingsManager.cs" />
     <Compile Include="Model\IfcClassificationManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -142,10 +141,12 @@
     <Compile Include="UI\BsddBridge\BsddSearchBridge.cs" />
     <Compile Include="UI\BsddBridge\BsddSelectionBridge.cs" />
     <Compile Include="UI\DockablePanel\Selectors.cs" />
-    <Compile Include="UI\Services\GlobalBrowserServiceFactory.cs" />
+    <Compile Include="UI\Services\GlobalServiceFactory.cs" />
     <Compile Include="UI\Services\IBrowserService.cs" />
-    <Compile Include="UI\Services\IBrowserServiceFactory.cs" />
+    <Compile Include="UI\Services\IfcExportService.cs" />
+    <Compile Include="UI\Services\IServiceFactory.cs" />
     <Compile Include="UI\Services\ICustomBrowserControl.cs" />
+    <Compile Include="UI\Services\IIfcExportService.cs" />
     <Compile Include="UI\Translations\LanguageConverter.cs" />
     <Compile Include="UI\View\BsddSelection.xaml.cs">
       <DependentUpon>BsddSelection.xaml</DependentUpon>

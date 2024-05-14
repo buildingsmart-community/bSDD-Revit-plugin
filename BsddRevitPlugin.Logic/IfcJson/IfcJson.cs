@@ -1,12 +1,9 @@
-﻿using Autodesk.Revit.DB;
-using BsddRevitPlugin.Logic.Model;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
 namespace BsddRevitPlugin.Logic.IfcJson
 {
-
     /// <summary>
     /// Represents the bSDD data as an IFC object.
     /// based on IfcTypeProduct:
@@ -84,7 +81,6 @@ namespace BsddRevitPlugin.Logic.IfcJson
 
     public class IfcClassificationReference : Association
     {
-
         [JsonProperty("location")]
         public Uri Location { get; set; }
 
@@ -111,7 +107,6 @@ namespace BsddRevitPlugin.Logic.IfcJson
     /// </summary>
     public class IfcClassification
     {
-
         [JsonProperty("type")]
         public string Type { get; set; }
 
@@ -131,16 +126,10 @@ namespace BsddRevitPlugin.Logic.IfcJson
         public string Description { get; set; }
 
         [JsonProperty("location")]
-        public Uri Location { get; set; }
+        public Uri Location { get; set; } // Renamed to Specification in IFC4
 
         //[JsonProperty("referenceTokens")]
         //public List<string> ReferenceTokens { get; set; }
-
-        // Addition for the Revit mapping parameter, should not be present in the ifcJSON data
-        [JsonProperty("classificationFieldName")]
-        public string ClassificationFieldName { get; set; } 
-        
-
     }
 
     /// <summary>
@@ -155,16 +144,16 @@ namespace BsddRevitPlugin.Logic.IfcJson
         public string Name { get; set; }
 
         [JsonProperty("hasProperties")]
-        public List<IfcPropertySingleValue> HasProperties { get; set; }
+        public List<IfcProperty> HasProperties { get; set; }
     }
 
     /// <summary>
-    /// Represents an IFC property with a single value.
+    /// IfcProperty is an abstract generalization for all types of properties that can be associated with IFC objects through the property set mechanism.
     /// </summary>
-    public class IfcPropertySingleValue
+    public class IfcProperty
     {
         [JsonProperty("type")]
-        public string Type { get; set; }
+        public virtual string Type { get; }
 
         [JsonProperty("name")]
         public string Name { get; set; }
@@ -172,14 +161,53 @@ namespace BsddRevitPlugin.Logic.IfcJson
         [JsonProperty("specification")]
         public string Specification { get; set; }
 
+        public IfcProperty()
+        {
+            Type = "IfcProperty";
+        }
+    }
+
+    /// <summary>
+    /// The property with a single value IfcPropertySingleValue defines a property object which has a single (numeric or descriptive) value assigned.
+    /// </summary>
+    public class IfcPropertySingleValue : IfcProperty
+    {
+        [JsonProperty("type")]
+        public override string Type { get; }
+
         [JsonProperty("nominalValue")]
-        public NominalValue NominalValue { get; set; }
+        public IfcValue NominalValue { get; set; }
+
+        public IfcPropertySingleValue() : base()
+        {
+            Type = "IfcPropertySingleValue";
+        }
+    }
+
+    /// <summary>
+    /// A property with an enumerated value, IfcPropertyEnumeratedValue, defines a property object which has a value assigned that is chosen from an enumeration.
+    /// </summary>
+    public class IfcPropertyEnumeratedValue : IfcProperty
+    {
+        [JsonProperty("type")]
+        public override string Type { get; }
+
+        [JsonProperty("enumerationValues")]
+        public List<IfcValue> EnumerationValues { get; set; }
+
+        [JsonProperty("enumerationReference")]
+        public IfcPropertyEnumeration EnumerationReference { get; set; }
+
+        public IfcPropertyEnumeratedValue() : base()
+        {
+            Type = "IfcPropertyEnumeratedValue";
+        }
     }
 
     /// <summary>
     /// Represents the nominal value of an IFC property.
     /// </summary>
-    public class NominalValue
+    public class IfcValue
     {
         [JsonProperty("type")]
         public string Type { get; set; }
@@ -188,5 +216,21 @@ namespace BsddRevitPlugin.Logic.IfcJson
         public object Value { get; set; }
     }
 
+    public class IfcPropertyEnumeration
+    {
+        [JsonProperty("type")]
+        public string Type { get; set; }
+
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        [JsonProperty("enumerationValues")]
+        public HashSet<IfcValue> EnumerationValues { get; set; }
+
+        public IfcPropertyEnumeration()
+        {
+            Type = "IfcPropertyEnumeration";
+        }
+    }
 
 }
