@@ -7,8 +7,8 @@ namespace BsddRevitPlugin.V2023
     {
         public Result OnStartup(UIControlledApplication application)
         {
-            var browserServiceFactory = new Services.BrowserServiceFactory2023();
-            var startup = new BsddRevitPlugin.Common.Startup(application, browserServiceFactory);
+            var serviceFactory = new Services.ServiceFactory2023();
+            var startup = new Common.Startup(application, serviceFactory);
             return startup.OnStartup(application);
         }
 

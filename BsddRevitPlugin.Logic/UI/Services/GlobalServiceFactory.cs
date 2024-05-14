@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace BsddRevitPlugin.Logic.UI.Services
 {
-    public static class GlobalBrowserServiceFactory
+    public static class GlobalServiceFactory
     {
-        public static IBrowserServiceFactory Factory { get; set; }
+        public static IServiceFactory Factory { get; set; }
     }
 }
