@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Revit.IFC.Import.Data;
 using System;
 using System.Collections.Generic;
 
@@ -213,6 +214,7 @@ namespace BsddRevitPlugin.Logic.IfcJson
         public string Type { get; set; }
 
         [JsonProperty("value")]
+        //public object Value { get; set; }
         public object Value { get; set; }
     }
 
