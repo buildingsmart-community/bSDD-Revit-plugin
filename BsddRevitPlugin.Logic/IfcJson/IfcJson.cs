@@ -32,6 +32,13 @@ namespace BsddRevitPlugin.Logic.IfcJson
         public string Name { get; set; }
 
         /// <summary>
+        /// Optional name for use by the participating software systems or users. For some subtypes of IfcRoot
+        /// the insertion of the Name attribute may be required. This would be enforced by a where rule.
+        /// </summary>
+        [JsonProperty("material")]
+        public string Material { get; set; }
+
+        /// <summary>
         /// Optional description, provided for exchanging informative comments.
         /// </summary>
         [JsonProperty("description")]
@@ -91,6 +98,7 @@ namespace BsddRevitPlugin.Logic.IfcJson
         [JsonProperty("referencedSource")]
         public IfcClassification ReferencedSource { get; set; }
     }
+    
     public class IfcMaterial : Association
     {
         [JsonProperty("description")]
