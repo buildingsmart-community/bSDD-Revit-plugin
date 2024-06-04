@@ -18,6 +18,15 @@ using BsddRevitPlugin.Logic.UI.DockablePanel;
 using Revit.IFC.Export.Toolkit;
 using Revit.IFC.Import.Data;
 using Autodesk.Revit.DB.IFC;
+using Autodesk.Revit.DB.Architecture;
+using Material = Autodesk.Revit.DB.Material;
+using Document = Autodesk.Revit.DB.Document;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Windows.Media.Media3D;
+using System.Windows.Media;
+using Autodesk.Revit.Creation;
+using System.Xml.Linq;
 
 
 namespace BsddRevitPlugin.Logic.Model
@@ -1170,14 +1179,17 @@ namespace BsddRevitPlugin.Logic.Model
             string typeDescription = GetParameterValueByElement(elemType ?? elem, "Description");
             string ifcType = IFCMappingValue(doc, elem);
             string ifcPredefinedType = elem.get_Parameter(BuiltInParameter.IFC_EXPORT_PREDEFINEDTYPE_TYPE)?.AsString();
+            string materials = GetElementMaterials(elem, doc);
 
             var associations = GetElementAssociations(elem);
+            //var materials = GetElementMaterials(elem, doc);
 
             var ifcEntity = new IfcEntity
             {
                 Instance = instance,
                 Type = ifcType,
                 Name = $"I: {typeName} - {familyName}",
+                Material = materials,
                 Tag = ifcTag,
                 Description = string.IsNullOrWhiteSpace(typeDescription) ? null : typeDescription,
                 PredefinedType = ifcPredefinedType,
@@ -2045,42 +2057,168 @@ namespace BsddRevitPlugin.Logic.Model
                     return "";
             };
         }
-        public static string GetMaterialName(Element e, Document DbDoc)
+
+        
+        public static string GetElementMaterials(Element e, Document doc)
         {
-            string materialName = "not defined1";
-            Autodesk.Revit.DB.Material firstMaterial = null;
+            //schema
+            //https://help.autodesk.com/view/RVT/2022/ENU/?guid=Revit_API_Revit_API_Developers_Guide_Revit_Geometric_Elements_Material_Element_Material_html
 
-            // Reference to the Revit API Document
-            Document doc = DbDoc;
+            // koppeling materialen via IfcRelAssociatesMaterial
+            // verbindt een IfcElement met een IfcMaterial, IfcMaterialLayerSet (layered element zoals wall), of IfcMaterialProfileSet (profielen).
 
-            // Reference to the element you are interested in
-            ElementId elementId = e.GetTypeId();
-            //Element element = doc.GetElement(elementId);
+            // IfcElement(bijv.IfcWall, IfcBeam, IfcColumn)
+            //  |
+            //  | --IfcRelAssociatesMaterial
+            //      |
+            //      | --IfcMaterial
 
-            //// Get the Material Id of the element
-            //ICollection<ElementId> materialIds = element.GetMaterialIds(false);
-            //foreach (ElementId materialId in materialIds)
-            //{
-            //    firstMaterial = doc.GetElement(materialId) as Autodesk.Revit.DB.Material;
-            if (firstMaterial != null)
+            // IfcWall
+            //  |
+            //  | --IfcRelAssociatesMaterial
+            //      |
+            //      | --IfcMaterialLayerSet
+            //          |
+            //          | --IfcMaterial(Baksteen)
+            //          | --IfcMaterial(Isolatie)
+            //          | --IfcMaterial(Gipsplaat)
+
+
+            // IfcElement(bijv.IfcBeam, IfcColumn)
+            //  |
+            //  | --IfcRelAssociatesMaterial
+            //      |
+            //      | --IfcMaterialProfileSet
+            //          |
+            //          | --IfcMaterialProfile(1..n)
+            //              |
+            //              | --IfcProfileDef(bijv.IfcRectangleProfileDef, IfcCircleProfileDef)
+            //              | --IfcMaterial
+
+            // Wall->WallType->GetCompoundStructure->GetLayers->MaterialId
+
+
+            //Make materila list
+            List<Material> mat = new List<Material>();
+
+            //Get HostObject
+            HostObject hostObject = e as HostObject;
+            CompoundStructure compoundStructure = null;
+
+            // Find out or there are any material parameters
+            foreach (Parameter parameter in e.Parameters)
             {
-                // Found the first material, break out of the loop
-                //        break;
+                // Check if the parameter is related to materials
+                if (parameter.Definition.GetDataType() == SpecTypeId.Reference.Material)
+                {
+                    Material Pmat = null;
+                    ElementId materialId = parameter.AsElementId();
+                    if (-1 == materialId.IntegerValue)
+                    {
+                        //Invalid ElementId, assume the material is "By Category"
+                        if (null != e.Category)
+                        {
+                            Pmat = e.Category.Material;
+                            mat.Add(Pmat);
+                        }
+                    }
+                    else
+                    {
+                        Pmat = doc.GetElement(materialId) as Material;
+                        mat.Add(Pmat);
+                    }
+                }
             }
-            //}
 
-            if (firstMaterial != null)
+            try
             {
-                //                materialName = firstMaterial.Name;
-                // You can access other properties of the material here
-                // For example, firstMaterial.Color, firstMaterial.Transparency, etc.
+                FamilyInstance familyInstance = e as FamilyInstance;
+                FamilySymbol familySymbol = familyInstance.Symbol;
+                foreach (Parameter parameter in familySymbol.Parameters)
+                {
+                    // Check if the parameter is related to materials
+                    if (parameter.Definition.GetDataType() == SpecTypeId.Reference.Material)
+                    {
+                        Material Pmat = null;
+                        ElementId materialId = parameter.AsElementId();
+                        if (-1 == materialId.IntegerValue)
+                        {
+                            //Invalid ElementId, assume the material is "By Category"
+                            if (null != e.Category)
+                            {
+                                Pmat = e.Category.Material;
+                                mat.Add(Pmat);
+                            }
+                        }
+                        else
+                        {
+                            Pmat = doc.GetElement(materialId) as Material;
+                            mat.Add(Pmat);
+                        }
+                    }
+                }
             }
-            else
+            catch { }
+            
+
+            // #Is Hostobject with compound structure
+            if (
+                hostObject != null ||
+                hostObject.Category.Name == "OST_Ceilings" ||
+                hostObject.Category.Name == "OST_Roofs" ||
+                hostObject.Category.Name == "Walls" ||
+                hostObject.Category.Name == "Floors"
+                )
             {
-                materialName = "No material found1";
+                if (hostObject.Category.Name == "Walls")
+                {
+                    Wall wall = hostObject as Wall;
+                    compoundStructure = wall.WallType.GetCompoundStructure();
+                }
+                else if (hostObject.Category.Name == "Floors")
+                {
+                    Wall wall = hostObject as Wall;
+                    compoundStructure = wall.WallType.GetCompoundStructure();
+                }
+                else if (hostObject.Category.Name == "OST_Ceilings")
+                {
+                    Wall wall = hostObject as Wall;
+                    compoundStructure = wall.WallType.GetCompoundStructure();
+                }
+                else if (hostObject.Category.Name == "OST_Roofs")
+                {
+                    Wall wall = hostObject as Wall;
+                    compoundStructure = wall.WallType.GetCompoundStructure();
+                }
+                if (compoundStructure != null) 
+                {
+                    var layers = compoundStructure.GetLayers();
+                    if(layers == null)
+                    {
+                        //find category and subcategory corresponding to the compoundstructure layer
+                    }
+                    foreach (var layer in layers)
+                    {
+                        ElementId matId = layer.MaterialId;
+                        Material material = doc.GetElement(layer.MaterialId) as Material;
+                        mat.Add(material);
+                    }
+                }
             }
 
-            return materialName;
+            // Find elements included in the element
+            
+
+            
+            // else if material profile
+
+            // else material
+
+
+
+           
+            
+            return mat[0].Name.ToString();
         }
         public static Uri GetLocationParam(string domain, Element element)
         {
@@ -2173,7 +2311,7 @@ namespace BsddRevitPlugin.Logic.Model
             }
         }
 
-        
+
     }
 }
 
