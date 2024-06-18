@@ -12,7 +12,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 
-
 namespace BsddRevitPlugin.Logic.Model
 {
     public static class ElementsManager
@@ -33,7 +32,6 @@ namespace BsddRevitPlugin.Logic.Model
             }
             return schema;
         }
-
 
         public static List<ElementType> ListFilter(List<ElementType> elemList)
         {
@@ -209,7 +207,7 @@ namespace BsddRevitPlugin.Logic.Model
                                     var enumerationValue = propertyEnumeratedValue.EnumerationValues.First();
                                     specType = GetParameterTypeFromProperty(enumerationValue);
                                 }
-                                bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property.Name);
+                                bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property);
                                 parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType));
                             }
                         }
@@ -317,7 +315,7 @@ namespace BsddRevitPlugin.Logic.Model
                                     {
                                         continue;
                                     }
-                                    createAndSetTypeProperty(elementType, propertySet, property.Name, propertySingleValue.NominalValue);
+                                    createAndSetTypeProperty(elementType, propertySet, property, propertySingleValue.NominalValue);
                                 }
                                 else if (property.Type == "IfcPropertyEnumeratedValue")
                                 {
@@ -327,7 +325,7 @@ namespace BsddRevitPlugin.Logic.Model
                                         continue;
                                     }
                                     var enumerationValue = propertyEnumeratedValue.EnumerationValues.First();
-                                    createAndSetTypeProperty(elementType, propertySet, property.Name, enumerationValue);
+                                    createAndSetTypeProperty(elementType, propertySet, property, enumerationValue);
                                 }
                             }
                         }
@@ -344,13 +342,13 @@ namespace BsddRevitPlugin.Logic.Model
             }
         }
 
-        private static void createAndSetTypeProperty(ElementType elementType, IfcPropertySet propertySet, string propertyName, IfcValue propertyValue)
+        private static void createAndSetTypeProperty(ElementType elementType, IfcPropertySet propertySet, IfcProperty property, IfcValue propertyValue)
         {
 
             Logger logger = LogManager.GetCurrentClassLogger();
 
             //Create parameter name for each unique the bsdd property
-            string bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, propertyName);
+            string bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property);
 
             ////Commenting this switch: Issue with LoadBearing etc being allready added as a param without all categories
             //switch (property.Name)
@@ -401,7 +399,7 @@ namespace BsddRevitPlugin.Logic.Model
                         }
                         catch (Exception e)
                         {
-                            logger.Info($"Property {propertyName}  could not be set for elementType {elementType.Name},'{elementType.Id}'. Exception: {e.Message}");
+                            logger.Info($"Property {property.Name}  could not be set for elementType {elementType.Name},'{elementType.Id}'. Exception: {e.Message}");
                         }
                     }
                 }
@@ -629,9 +627,15 @@ namespace BsddRevitPlugin.Logic.Model
         /// </summary>
         /// <param name="uri">The URI to create the parameter name from.</param>
         /// <returns>The parameter name created from the URI.</returns>
-        public static string CreateParameterNameFromPropertySetAndProperty(string propertySet, string property)
+        public static string CreateParameterNameFromPropertySetAndProperty(string propertySet, IfcProperty property)
         {
-            string parameterName = $"bsdd/prop/{propertySet}/{property}";
+            string parameterName;
+
+            if (!IfcParameterMappings.Mappings.TryGetValue(property.Specification, out parameterName))
+            {
+                parameterName = $"bsdd/prop/{propertySet}/{property.Name}";
+            }
+
             return parameterName;
         }
 
@@ -906,89 +910,99 @@ namespace BsddRevitPlugin.Logic.Model
         /// </summary>
         /// <param name="elementType">The element type.</param>
         /// <returns>The IfcDefinition with the bsdd parameters</returns>
-        public static List<IfcPropertySet> IfcDefinition(ElementType elem)
+        public static List<IfcPropertySet> IfcDefinition(ElementType elementType)
         {
-            Dictionary<IfcPropertySet, Dictionary<IfcPropertySingleValue, IfcValue>> ifcProps = new Dictionary<IfcPropertySet, Dictionary<IfcPropertySingleValue, IfcValue>>();
-            List<IfcPropertySet> isDefinedBy = new List<IfcPropertySet>();
-            IfcPropertySet ifcPropSet = new IfcPropertySet();
-            List<IfcProperty> hasProperties = new List<IfcProperty>();
-            IfcPropertySingleValue ifcPropValue = new IfcPropertySingleValue();
-            IfcValue nominalValue = new IfcValue();
-            string[] promptArr = null;
-            List<string> pSetDone = new List<string>();
-
-            foreach (Parameter parameter in elem.Parameters)
+            var propertySetsDictionary = new Dictionary<string, List<IfcProperty>>();
+        
+            foreach (Parameter parameter in elementType.Parameters)
             {
-                if (parameter.Definition.Name.StartsWith("bsdd/prop/", false, null) == true)
+                string parameterName = parameter.Definition.Name;
+        
+                if (!parameter.HasValue ||
+                    (!parameterName.StartsWith("bsdd/prop/", StringComparison.Ordinal) &&
+                    !IfcParameterMappings.IfcParameters.Contains(parameterName, StringComparer.Ordinal)))
                 {
-                    if (parameter.HasValue == true)
-                    {
-                        //Remove bsdd/prop/ from property name and split property name in property [1] value and propertyset [0]
-                        promptArr = parameter.Definition.Name.Remove(0, 10).Split('/');
-
-                        if (!pSetDone.Contains(promptArr[0]))
-                        {
-                            hasProperties = new List<IfcProperty>();
-                            foreach (Parameter paramPSet in elem.Parameters)
-                            {
-                                if (paramPSet.Definition.Name.StartsWith("bsdd/prop/" + promptArr[0], false, null) == true)
-                                {
-                                    if (paramPSet.HasValue == true)
-                                    {
-                                        //Define nominalvalue Type and Value
-                                        nominalValue = new IfcValue();
-                                        ForgeTypeId paramTypeId = paramPSet.Definition.GetDataType();
-
-                                        switch (paramTypeId)
-                                        {
-                                            case var _ when paramTypeId == SpecTypeId.String.Text:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.AsString();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.Number:
-                                                nominalValue.Type = "IfcReal";
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.Boolean.YesNo:
-                                                nominalValue.Type = "IfcBoolean";
-                                                nominalValue.Value = paramPSet.AsInteger() == 1;
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.Int.Integer:
-                                                nominalValue.Type = "IfcInteger";
-                                                nominalValue.Value = paramPSet.AsInteger();
-                                                break;
-                                            default:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.AsValueString();
-                                                break;
-                                        }
-
-                                        //Define property NominalValue, name and value
-                                        ifcPropValue = new IfcPropertySingleValue
-                                        {
-                                            NominalValue = nominalValue,
-                                            Name = paramPSet.Definition.Name.Remove(0, 10).Split('/')[1]
-                                        };
-
-                                        hasProperties.Add(ifcPropValue);
-                                    }
-                                }
-                            }
-                            //Embed name en value in propertyset with name Arr[0] 
-                            ifcPropSet = new IfcPropertySet();
-                            ifcPropSet.Type = "IfcPropertySet";
-                            ifcPropSet.Name = promptArr[0];
-                            ifcPropSet.HasProperties = hasProperties;
-
-                            isDefinedBy.Add(ifcPropSet);
-
-                            pSetDone.Add(promptArr[0]);
-                        }
-                    }
+                    continue;
                 }
+        
+                string[] parameterParts = parameterName.StartsWith("bsdd/prop/", StringComparison.Ordinal)
+                    ? parameterName.Remove(0, 10).Split('/')
+                    : new string[] { "", parameterName };
+        
+                string propertySetName = parameterParts[0];
+                string propertyName = parameterParts[1];
+        
+                var nominalValue = new IfcValue
+                {
+                    Type = GetIfcValueType(parameter.Definition.GetDataType()),
+                    Value = GetParameterValue(parameter)
+                };
+        
+                var property = new IfcPropertySingleValue
+                {
+                    NominalValue = nominalValue,
+                    Name = propertyName
+                };
+        
+                if (!propertySetsDictionary.ContainsKey(propertySetName))
+                {
+                    propertySetsDictionary[propertySetName] = new List<IfcProperty>();
+                }
+        
+                propertySetsDictionary[propertySetName].Add(property);
             }
-            //embed propertyset in Ifc Defenition
-            return isDefinedBy;
+        
+            var propertySets = new List<IfcPropertySet>();
+        
+            foreach (var propertySetPair in propertySetsDictionary)
+            {
+                var propertySet = new IfcPropertySet
+                {
+                    Type = "IfcPropertySet",
+                    Name = propertySetPair.Key,
+                    HasProperties = propertySetPair.Value
+                };
+        
+                propertySets.Add(propertySet);
+            }
+        
+            return propertySets;
+        }
+
+        private static string GetIfcValueType(ForgeTypeId typeId)
+        {
+            switch (typeId)
+            {
+                case var _ when typeId == SpecTypeId.String.Text:
+                    return "IfcText";
+                case var _ when typeId == SpecTypeId.Number:
+                    return "IfcReal";
+                case var _ when typeId == SpecTypeId.Boolean.YesNo:
+                    return "IfcBoolean";
+                case var _ when typeId == SpecTypeId.Int.Integer:
+                    return "IfcInteger";
+                default:
+                    return "IfcText";
+            }
+        }
+
+        private static object GetParameterValue(Parameter parameter)
+        {
+            ForgeTypeId typeId = parameter.Definition.GetDataType();
+
+            switch (typeId)
+            {
+                case var _ when typeId == SpecTypeId.String.Text:
+                    return parameter.AsString();
+                case var _ when typeId == SpecTypeId.Number:
+                    return parameter.AsDouble();
+                case var _ when typeId == SpecTypeId.Boolean.YesNo:
+                    return parameter.AsInteger() == 1;
+                case var _ when typeId == SpecTypeId.Int.Integer:
+                    return parameter.AsInteger();
+                default:
+                    return parameter.AsValueString();
+            }
         }
 
         /// <summary>
