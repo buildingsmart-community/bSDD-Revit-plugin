@@ -305,6 +305,7 @@ namespace BsddRevitPlugin.Logic.Utilities
                         try
                         {
                             ExternalDefinitionCreationOptions externalDefinitionCreationOptions = new ExternalDefinitionCreationOptions(parameterName, specType);
+                            externalDefinitionCreationOptions.UserModifiable = false;
 
                             externalDefinitionCreationOptions.GUID = BsddRevitPlugin.Logic.Utilities.UuidFromUri.CreateUuidFromUri(parameterName);
                             logger.Info($"Parameter = {parameterName}, GUID = {externalDefinitionCreationOptions.GUID.ToString()}");
