@@ -11,6 +11,7 @@ using Autodesk.Revit.UI;
 using NLog;
 using BIM.IFC.Export.UI;
 using Autodesk.Revit.DB.IFC;
+using NLog.Fluent;
 
 namespace BsddRevitPlugin.Common.Commands
 {
@@ -30,65 +31,220 @@ namespace BsddRevitPlugin.Common.Commands
 
 
             BindingMap bindingMap = doc.ParameterBindings;
+            var count = bindingMap.Size;
+            int i= 0;
             DefinitionBindingMapIterator it = bindingMap.ForwardIterator();
 
-            Element elem = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Floors).FirstElement(); 
+            // Get the first Floor element
+            Element elem = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Floors).FirstElement();
 
-            while (it.MoveNext())
+            Parameter parameter = null;
+
+           
+            foreach (var p in doc.ParameterBindings)
             {
-                InternalDefinition def = it.Key as InternalDefinition;
-                if (def != null)
+
+                if (p is InstanceBinding instanceBinding)
                 {
-                    logger.Info($"Paramname =  {def.Name}");
-                    // Use the InternalDefinition here
-                    if (def.Name == "testinstancebinding")
+                   
+                }
+                else if (p is TypeBinding typeBinding)
+                {
+                    
+                }
+            }
+            if (false)
+            {
+                try
+                {
+                    foreach (var p in bindingMap)
                     {
-                        Binding oldBinding = bindingMap.get_Item(def);
 
-                        if (oldBinding is InstanceBinding instanceBinding)
+
+                        it.MoveNext();
+                        InternalDefinition def = it.Key as InternalDefinition;
+                        if (def != null)
                         {
-                            CategorySet oldCategories = instanceBinding.Categories;
-                            CategorySet newCategories = doc.Application.Create.NewCategorySet();
-
-                            // Copy the old categories to the new set
-                            foreach (Category category in oldCategories)
+                            logger.Info($"Paramname =  {def.Name}");
+                            // Use the InternalDefinition here
+                            if (def.Name == "testinstancebinding")
                             {
-                                newCategories.Insert(category);
-                            }
-                            // Add the new category
-                            Category newCategory = doc.Settings.Categories.get_Item(BuiltInCategory.OST_Floors);
-                            newCategories.Insert(newCategory);
+                                Binding oldBinding = bindingMap.get_Item(def);
 
-                            // Create a new binding with the new category set
-                            InstanceBinding newBinding = doc.Application.Create.NewInstanceBinding(newCategories);
+                                if (oldBinding is InstanceBinding instanceBinding)
+                                {
+                                    CategorySet oldCategories = instanceBinding.Categories;
+                                    CategorySet newCategories = doc.Application.Create.NewCategorySet();
 
-                            // Replace the old binding with the new one
-                            using (Transaction t = new Transaction(doc, "Modify Binding"))
-                            {
-                                t.Start();
-                                bindingMap.ReInsert(def, newBinding, def.GetGroupTypeId());
-                                t.Commit();
+                                    // Copy the old categories to the new set
+                                    foreach (Category category in oldCategories)
+                                    {
+                                        newCategories.Insert(category);
+                                    }
+                                    // Add the new category
+                                    Category newCategory = doc.Settings.Categories.get_Item(BuiltInCategory.OST_Floors);
+                                    newCategories.Insert(newCategory);
+
+                                    // Create a new binding with the new category set
+                                    InstanceBinding newBinding = doc.Application.Create.NewInstanceBinding(newCategories);
+
+                                    // Replace the old binding with the new one
+                                    using (Transaction t = new Transaction(doc, "Modify Binding"))
+                                    {
+                                        t.Start();
+                                        bindingMap.ReInsert(def, newBinding, def.GetGroupTypeId());
+                                        t.Commit();
+                                    }
+
+                                }
+                                else if (oldBinding is TypeBinding typeBinding)
+                                {
+                                    CategorySet oldCategories = typeBinding.Categories;
+                                    CategorySet newCategories = doc.Application.Create.NewCategorySet();
+
+                                    // Copy the old categories to the new set
+                                    foreach (Category category in oldCategories)
+                                    {
+                                        newCategories.Insert(category);
+                                    }
+                                    // Add the new category
+                                    Category newCategory = doc.Settings.Categories.get_Item(BuiltInCategory.OST_Floors);
+                                    newCategories.Insert(newCategory);
+
+                                    // Create a new binding with the new category set
+                                    TypeBinding newBinding = doc.Application.Create.NewTypeBinding(newCategories);
+
+                                    // Replace the old binding with the new one
+                                    using (Transaction t = new Transaction(doc, "Modify Binding"))
+                                    {
+                                        t.Start();
+                                        bindingMap.ReInsert(def, newBinding, def.GetGroupTypeId());
+                                        t.Commit();
+                                    }
+                                }
+
                             }
                         }
 
                     }
                 }
-            }
+                catch (Exception e)
+                {
 
-            foreach (var item in doc.ParameterBindings)
+                    logger.Error(e);
+                }
+            }
+            
+
+            // Get the Parameter from the Element
+            Parameter param = elem.LookupParameter("testinstancebinding");
+
+            // Get the Definition from the Parameter
+            //Definition def2 = param.Definition;
+
+            // Get the Binding from the BindingMap
+            //Binding binding = bindingMap.get_Item(def2);
+
+
+
+            if (true)
             {
 
-                switch (item)
+                try
                 {
-                    case InstanceBinding instanceBinding:
-                        logger.Info($"InstanceBinding {instanceBinding}");
-                        break;
-                    case TypeBinding typeBinding:
-                        logger.Info($"TypeBinding {typeBinding}");
-                        break;
+
+                    bool continue2 = true;
+
+                    while (it.MoveNext() || continue2)
+                    {
+                        InternalDefinition def = it.Key as InternalDefinition;
+                        if (def != null)
+                        {
+                            logger.Info($"Paramname =  {def.Name}");
+                            // Use the InternalDefinition here
+                            if (def.Name == "testinstancebinding")
+                            {
+                                Binding oldBinding = bindingMap.get_Item(def);
+
+                                if (oldBinding is InstanceBinding instanceBinding)
+                                {
+                                    CategorySet oldCategories = instanceBinding.Categories;
+                                    CategorySet newCategories = doc.Application.Create.NewCategorySet();
+
+                                    // Copy the old categories to the new set
+                                    foreach (Category category in oldCategories)
+                                    {
+                                        newCategories.Insert(category);
+                                    }
+                                    // Add the new category
+                                    Category newCategory = doc.Settings.Categories.get_Item(BuiltInCategory.OST_Floors);
+                                    newCategories.Insert(newCategory);
+
+                                    // Create a new binding with the new category set
+                                    InstanceBinding newBinding = doc.Application.Create.NewInstanceBinding(newCategories);
+
+                                    // Replace the old binding with the new one
+                                    using (Transaction t = new Transaction(doc, "Modify Binding"))
+                                    {
+                                        t.Start();
+                                        bindingMap.ReInsert(def, newBinding, def.GetGroupTypeId());
+                                        t.Commit();
+                                    }
+                                    break;
+                                }
+                                else if (oldBinding is TypeBinding typeBinding)
+                                {
+                                    CategorySet oldCategories = typeBinding.Categories;
+                                    CategorySet newCategories = doc.Application.Create.NewCategorySet();
+
+                                    // Copy the old categories to the new set
+                                    foreach (Category category in oldCategories)
+                                    {
+                                        newCategories.Insert(category);
+                                    }
+                                    // Add the new category
+                                    Category newCategory = doc.Settings.Categories.get_Item(BuiltInCategory.OST_Floors);
+                                    newCategories.Insert(newCategory);
+
+                                    // Create a new binding with the new category set
+                                    TypeBinding newBinding = doc.Application.Create.NewTypeBinding(newCategories);
+
+                                    // Replace the old binding with the new one
+                                    using (Transaction t = new Transaction(doc, "Modify Binding"))
+                                    {
+                                        t.Start();
+                                        bindingMap.ReInsert(def, newBinding, def.GetGroupTypeId());
+                                        t.Commit();
+                                    }
+                                    break;
+                                }
+
+                            }
+                        }
+                    }
                 }
-                logger.Info($"log {item}");
+                catch (Exception e)
+                {
+
+                    logger.Error(e);
+                }
             }
+
+
+            //foreach (var item in doc.ParameterBindings)
+            //{
+
+            //    switch (item)
+            //    {
+            //        case InstanceBinding instanceBinding:
+            //            logger.Info($"InstanceBinding {instanceBinding}");
+            //            break;
+            //        case TypeBinding typeBinding:
+            //            logger.Info($"TypeBinding {typeBinding}");
+            //            break;
+            //    }
+            //    logger.Info($"log {item}");
+            //}
 
             
             return Result.Succeeded;
