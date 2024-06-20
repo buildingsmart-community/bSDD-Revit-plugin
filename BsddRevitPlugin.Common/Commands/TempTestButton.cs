@@ -11,12 +11,15 @@ using Autodesk.Revit.UI;
 using NLog;
 using BIM.IFC.Export.UI;
 using Autodesk.Revit.DB.IFC;
+using NLog.Fluent;
 
 namespace BsddRevitPlugin.Common.Commands
 {
     [Transaction(TransactionMode.Manual)]
     public class TempTestButton : IExternalCommand
     {
+        // Static variable to maintain the toggle state
+        private static bool isFeatureEnabled = false;
         public Result Execute(
             ExternalCommandData commandData, ref string message, ElementSet elements)
         {
@@ -25,73 +28,56 @@ namespace BsddRevitPlugin.Common.Commands
             UIDocument uiDoc = uiApp.ActiveUIDocument;
             Document doc = uiDoc.Document;
 
-            var table = uiApp.Application.ExportIFCCategoryTable;
+            // Toggle the feature state
+            isFeatureEnabled = !isFeatureEnabled;
 
-
-
-            BindingMap bindingMap = doc.ParameterBindings;
-            DefinitionBindingMapIterator it = bindingMap.ForwardIterator();
-
-            Element elem = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Floors).FirstElement(); 
-
-            while (it.MoveNext())
+            // Your code to enable/disable the feature based on isFeatureEnabled
+            // Since we cannot directly toggle UserModifiable, this part would be conceptual.
+            // For example, you might enable/disable a custom handler that intercepts user actions.
+            if (isFeatureEnabled)
             {
-                InternalDefinition def = it.Key as InternalDefinition;
-                if (def != null)
+                // Start a transaction to modify document data
+                using (Transaction tx = new Transaction(doc, "Toggle UserModifiable"))
                 {
-                    logger.Info($"Paramname =  {def.Name}");
-                    // Use the InternalDefinition here
-                    if (def.Name == "testinstancebinding")
+                    tx.Start();
+
+                    // Iterate through all shared parameters in the document
+                    var bindingMap = doc.ParameterBindings;
+                    DefinitionBindingMapIterator it = bindingMap.ForwardIterator();
+                    while (it.MoveNext())
                     {
-                        Binding oldBinding = bindingMap.get_Item(def);
-
-                        if (oldBinding is InstanceBinding instanceBinding)
+                        if (it.Key is ExternalDefinition externalDefinition &&
+                            externalDefinition.Name.StartsWith("bsdd/"))
                         {
-                            CategorySet oldCategories = instanceBinding.Categories;
-                            CategorySet newCategories = doc.Application.Create.NewCategorySet();
+                            // Retrieve the current binding for the parameter
+                            Binding binding = bindingMap.get_Item(it.Key);
 
-                            // Copy the old categories to the new set
-                            foreach (Category category in oldCategories)
+                            // Check if the binding is an instance of ElementBinding
+                            if (binding is ElementBinding elementBinding)
                             {
-                                newCategories.Insert(category);
-                            }
-                            // Add the new category
-                            Category newCategory = doc.Settings.Categories.get_Item(BuiltInCategory.OST_Floors);
-                            newCategories.Insert(newCategory);
-
-                            // Create a new binding with the new category set
-                            InstanceBinding newBinding = doc.Application.Create.NewInstanceBinding(newCategories);
-
-                            // Replace the old binding with the new one
-                            using (Transaction t = new Transaction(doc, "Modify Binding"))
-                            {
-                                t.Start();
-                                bindingMap.ReInsert(def, newBinding, def.GetGroupTypeId());
-                                t.Commit();
+                                // Toggle UserModifiable for each category in the binding
+                                var categories = elementBinding.Categories;
+                                foreach (Category category in categories)
+                                {
+                                    // Here you would toggle the UserModifiable property
+                                    // Note: Revit API does not directly allow toggling UserModifiable on shared parameters.
+                                    // This step is more about conceptually what you'd want to do, but may not be directly achievable as described.
+                                }
                             }
                         }
-
                     }
+
+                    tx.Commit();
                 }
             }
-
-            foreach (var item in doc.ParameterBindings)
+            else
             {
-
-                switch (item)
-                {
-                    case InstanceBinding instanceBinding:
-                        logger.Info($"InstanceBinding {instanceBinding}");
-                        break;
-                    case TypeBinding typeBinding:
-                        logger.Info($"TypeBinding {typeBinding}");
-                        break;
-                }
-                logger.Info($"log {item}");
+               
             }
-
             
+
             return Result.Succeeded;
         }
+
     }
 }
