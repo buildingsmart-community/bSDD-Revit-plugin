@@ -133,7 +133,7 @@
     <Compile Include="IfcJson\IfcJson.cs" />
     <Compile Include="IfcJson\IfcJsonConverter.cs" />
     <Compile Include="Model\ElementsManager.cs" />
-    <Compile Include="IfcJson\IfcParameterMappings.cs" />
+    <Compile Include="Utilities\IfcParameterMappings.cs" />
     <Compile Include="Model\SettingsManager.cs" />
     <Compile Include="Model\IfcClassificationManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -158,6 +158,7 @@
     <Compile Include="UI\Wrappers\MethodsWrapped.cs" />
     <Compile Include="UI\Wrappers\RevitEventWrapper.cs" />
     <Compile Include="Utilities\FileHandling.cs" />
+    <Compile Include="Utilities\IfcProperties.cs" />
     <Compile Include="Utilities\Parameters.cs" />
     <Compile Include="Utilities\UuidFromUri.cs" />
   </ItemGroup>
