@@ -317,7 +317,7 @@ namespace BsddRevitPlugin.Logic.Model
                                     {
                                         continue;
                                     }
-                                    createAndSetTypeProperty(elementType, propertySet, property.Name, propertySingleValue.NominalValue);
+                                    createAndSetTypeProperty(elementType, propertySet, property, propertySingleValue.NominalValue);
                                 }
                                 else if (property.Type == "IfcPropertyEnumeratedValue")
                                 {
@@ -327,7 +327,7 @@ namespace BsddRevitPlugin.Logic.Model
                                         continue;
                                     }
                                     var enumerationValue = propertyEnumeratedValue.EnumerationValues.First();
-                                    createAndSetTypeProperty(elementType, propertySet, property.Name, enumerationValue);
+                                    createAndSetTypeProperty(elementType, propertySet, property, enumerationValue);
                                 }
                             }
                         }
@@ -344,13 +344,13 @@ namespace BsddRevitPlugin.Logic.Model
             }
         }
 
-        private static void createAndSetTypeProperty(ElementType elementType, IfcPropertySet propertySet, string propertyName, IfcValue propertyValue)
+        private static void createAndSetTypeProperty(ElementType elementType, IfcPropertySet propertySet, IfcProperty property, IfcValue propertyValue)
         {
 
             Logger logger = LogManager.GetCurrentClassLogger();
 
             //Create parameter name for each unique the bsdd property
-            string bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, propertyName);
+            string bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property);
 
             ////Commenting this switch: Issue with LoadBearing etc being allready added as a param without all categories
             //switch (property.Name)
@@ -401,7 +401,7 @@ namespace BsddRevitPlugin.Logic.Model
                         }
                         catch (Exception e)
                         {
-                            logger.Info($"Property {propertyName}  could not be set for elementType {elementType.Name},'{elementType.Id}'. Exception: {e.Message}");
+                            logger.Info($"Property {property.Name}  could not be set for elementType {elementType.Name},'{elementType.Id}'. Exception: {e.Message}");
                         }
                     }
                 }
@@ -629,9 +629,15 @@ namespace BsddRevitPlugin.Logic.Model
         /// </summary>
         /// <param name="uri">The URI to create the parameter name from.</param>
         /// <returns>The parameter name created from the URI.</returns>
-        public static string CreateParameterNameFromPropertySetAndProperty(string propertySet, string property)
+        public static string CreateParameterNameFromPropertySetAndProperty(string propertySet, IfcProperty property)
         {
-            string parameterName = $"bsdd/prop/{propertySet}/{property}";
+            string parameterName;
+
+            if (!IfcParameterMappings.Mappings.TryGetValue(property.Specification, out parameterName))
+            {
+                parameterName = $"bsdd/prop/{propertySet}/{property.Name}";
+            }
+
             return parameterName;
         }
 
@@ -906,7 +912,7 @@ namespace BsddRevitPlugin.Logic.Model
         /// </summary>
         /// <param name="elementType">The element type.</param>
         /// <returns>The IfcDefinition with the bsdd parameters</returns>
-        public static List<IfcPropertySet> IfcDefinition(ElementType elem)
+        public static List<IfcPropertySet> IfcDefinition(ElementType elementType)
         {
             var propertySetsDictionary = new Dictionary<string, List<IfcProperty>>();
 
