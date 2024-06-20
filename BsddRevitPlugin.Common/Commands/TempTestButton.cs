@@ -18,6 +18,8 @@ namespace BsddRevitPlugin.Common.Commands
     [Transaction(TransactionMode.Manual)]
     public class TempTestButton : IExternalCommand
     {
+        // Static variable to maintain the toggle state
+        private static bool isFeatureEnabled = false;
         public Result Execute(
             ExternalCommandData commandData, ref string message, ElementSet elements)
         {
@@ -26,228 +28,56 @@ namespace BsddRevitPlugin.Common.Commands
             UIDocument uiDoc = uiApp.ActiveUIDocument;
             Document doc = uiDoc.Document;
 
-            var table = uiApp.Application.ExportIFCCategoryTable;
+            // Toggle the feature state
+            isFeatureEnabled = !isFeatureEnabled;
 
-
-
-            BindingMap bindingMap = doc.ParameterBindings;
-            var count = bindingMap.Size;
-            int i= 0;
-            DefinitionBindingMapIterator it = bindingMap.ForwardIterator();
-
-            // Get the first Floor element
-            Element elem = new FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Floors).FirstElement();
-
-            Parameter parameter = null;
-
-           
-            foreach (var p in doc.ParameterBindings)
+            // Your code to enable/disable the feature based on isFeatureEnabled
+            // Since we cannot directly toggle UserModifiable, this part would be conceptual.
+            // For example, you might enable/disable a custom handler that intercepts user actions.
+            if (isFeatureEnabled)
             {
+                // Start a transaction to modify document data
+                using (Transaction tx = new Transaction(doc, "Toggle UserModifiable"))
+                {
+                    tx.Start();
 
-                if (p is InstanceBinding instanceBinding)
-                {
-                   
-                }
-                else if (p is TypeBinding typeBinding)
-                {
-                    
-                }
-            }
-            if (false)
-            {
-                try
-                {
-                    foreach (var p in bindingMap)
+                    // Iterate through all shared parameters in the document
+                    var bindingMap = doc.ParameterBindings;
+                    DefinitionBindingMapIterator it = bindingMap.ForwardIterator();
+                    while (it.MoveNext())
                     {
-
-
-                        it.MoveNext();
-                        InternalDefinition def = it.Key as InternalDefinition;
-                        if (def != null)
+                        if (it.Key is ExternalDefinition externalDefinition &&
+                            externalDefinition.Name.StartsWith("bsdd/"))
                         {
-                            logger.Info($"Paramname =  {def.Name}");
-                            // Use the InternalDefinition here
-                            if (def.Name == "testinstancebinding")
+                            // Retrieve the current binding for the parameter
+                            Binding binding = bindingMap.get_Item(it.Key);
+
+                            // Check if the binding is an instance of ElementBinding
+                            if (binding is ElementBinding elementBinding)
                             {
-                                Binding oldBinding = bindingMap.get_Item(def);
-
-                                if (oldBinding is InstanceBinding instanceBinding)
+                                // Toggle UserModifiable for each category in the binding
+                                var categories = elementBinding.Categories;
+                                foreach (Category category in categories)
                                 {
-                                    CategorySet oldCategories = instanceBinding.Categories;
-                                    CategorySet newCategories = doc.Application.Create.NewCategorySet();
-
-                                    // Copy the old categories to the new set
-                                    foreach (Category category in oldCategories)
-                                    {
-                                        newCategories.Insert(category);
-                                    }
-                                    // Add the new category
-                                    Category newCategory = doc.Settings.Categories.get_Item(BuiltInCategory.OST_Floors);
-                                    newCategories.Insert(newCategory);
-
-                                    // Create a new binding with the new category set
-                                    InstanceBinding newBinding = doc.Application.Create.NewInstanceBinding(newCategories);
-
-                                    // Replace the old binding with the new one
-                                    using (Transaction t = new Transaction(doc, "Modify Binding"))
-                                    {
-                                        t.Start();
-                                        bindingMap.ReInsert(def, newBinding, def.GetGroupTypeId());
-                                        t.Commit();
-                                    }
-
+                                    // Here you would toggle the UserModifiable property
+                                    // Note: Revit API does not directly allow toggling UserModifiable on shared parameters.
+                                    // This step is more about conceptually what you'd want to do, but may not be directly achievable as described.
                                 }
-                                else if (oldBinding is TypeBinding typeBinding)
-                                {
-                                    CategorySet oldCategories = typeBinding.Categories;
-                                    CategorySet newCategories = doc.Application.Create.NewCategorySet();
-
-                                    // Copy the old categories to the new set
-                                    foreach (Category category in oldCategories)
-                                    {
-                                        newCategories.Insert(category);
-                                    }
-                                    // Add the new category
-                                    Category newCategory = doc.Settings.Categories.get_Item(BuiltInCategory.OST_Floors);
-                                    newCategories.Insert(newCategory);
-
-                                    // Create a new binding with the new category set
-                                    TypeBinding newBinding = doc.Application.Create.NewTypeBinding(newCategories);
-
-                                    // Replace the old binding with the new one
-                                    using (Transaction t = new Transaction(doc, "Modify Binding"))
-                                    {
-                                        t.Start();
-                                        bindingMap.ReInsert(def, newBinding, def.GetGroupTypeId());
-                                        t.Commit();
-                                    }
-                                }
-
-                            }
-                        }
-
-                    }
-                }
-                catch (Exception e)
-                {
-
-                    logger.Error(e);
-                }
-            }
-            
-
-            // Get the Parameter from the Element
-            Parameter param = elem.LookupParameter("testinstancebinding");
-
-            // Get the Definition from the Parameter
-            //Definition def2 = param.Definition;
-
-            // Get the Binding from the BindingMap
-            //Binding binding = bindingMap.get_Item(def2);
-
-
-
-            if (true)
-            {
-
-                try
-                {
-
-                    bool continue2 = true;
-
-                    while (it.MoveNext() || continue2)
-                    {
-                        InternalDefinition def = it.Key as InternalDefinition;
-                        if (def != null)
-                        {
-                            logger.Info($"Paramname =  {def.Name}");
-                            // Use the InternalDefinition here
-                            if (def.Name == "testinstancebinding")
-                            {
-                                Binding oldBinding = bindingMap.get_Item(def);
-
-                                if (oldBinding is InstanceBinding instanceBinding)
-                                {
-                                    CategorySet oldCategories = instanceBinding.Categories;
-                                    CategorySet newCategories = doc.Application.Create.NewCategorySet();
-
-                                    // Copy the old categories to the new set
-                                    foreach (Category category in oldCategories)
-                                    {
-                                        newCategories.Insert(category);
-                                    }
-                                    // Add the new category
-                                    Category newCategory = doc.Settings.Categories.get_Item(BuiltInCategory.OST_Floors);
-                                    newCategories.Insert(newCategory);
-
-                                    // Create a new binding with the new category set
-                                    InstanceBinding newBinding = doc.Application.Create.NewInstanceBinding(newCategories);
-
-                                    // Replace the old binding with the new one
-                                    using (Transaction t = new Transaction(doc, "Modify Binding"))
-                                    {
-                                        t.Start();
-                                        bindingMap.ReInsert(def, newBinding, def.GetGroupTypeId());
-                                        t.Commit();
-                                    }
-                                    break;
-                                }
-                                else if (oldBinding is TypeBinding typeBinding)
-                                {
-                                    CategorySet oldCategories = typeBinding.Categories;
-                                    CategorySet newCategories = doc.Application.Create.NewCategorySet();
-
-                                    // Copy the old categories to the new set
-                                    foreach (Category category in oldCategories)
-                                    {
-                                        newCategories.Insert(category);
-                                    }
-                                    // Add the new category
-                                    Category newCategory = doc.Settings.Categories.get_Item(BuiltInCategory.OST_Floors);
-                                    newCategories.Insert(newCategory);
-
-                                    // Create a new binding with the new category set
-                                    TypeBinding newBinding = doc.Application.Create.NewTypeBinding(newCategories);
-
-                                    // Replace the old binding with the new one
-                                    using (Transaction t = new Transaction(doc, "Modify Binding"))
-                                    {
-                                        t.Start();
-                                        bindingMap.ReInsert(def, newBinding, def.GetGroupTypeId());
-                                        t.Commit();
-                                    }
-                                    break;
-                                }
-
                             }
                         }
                     }
-                }
-                catch (Exception e)
-                {
 
-                    logger.Error(e);
+                    tx.Commit();
                 }
             }
-
-
-            //foreach (var item in doc.ParameterBindings)
-            //{
-
-            //    switch (item)
-            //    {
-            //        case InstanceBinding instanceBinding:
-            //            logger.Info($"InstanceBinding {instanceBinding}");
-            //            break;
-            //        case TypeBinding typeBinding:
-            //            logger.Info($"TypeBinding {typeBinding}");
-            //            break;
-            //    }
-            //    logger.Info($"log {item}");
-            //}
-
+            else
+            {
+               
+            }
             
+
             return Result.Succeeded;
         }
+
     }
 }

@@ -1,11 +1,8 @@
 ﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Mechanical;
 using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BsddRevitPlugin.Logic.Utilities
 {
@@ -13,16 +10,23 @@ namespace BsddRevitPlugin.Logic.Utilities
     {
         public string parameterName { get; set; }
         public ForgeTypeId specType { get; set; }
+        public bool existing { get; set; }
 
         public ParameterCreation(string parameterName, ForgeTypeId specType)
         {
             this.parameterName = parameterName;
             this.specType = specType;
         }
+        public ParameterCreation(string parameterName, ForgeTypeId specType, bool existing)
+        {
+            this.parameterName = parameterName;
+            this.specType = specType;
+            this.existing = existing;
+        }
     }
     public static class Parameters
     {
-       
+
         #region Shared Parameters
 
         /// <summary>
@@ -45,7 +49,7 @@ namespace BsddRevitPlugin.Logic.Utilities
         /// <param name="instance">True if it's an instance parameter, otherwise it's a type parameter</param>
         public static void CreateSharedParameterForAllCategories(Document doc, string parameterName, string groupName, ForgeTypeId specType, ForgeTypeId groupType, bool instance)
         {
-            CreateSharedParameter(doc,parameterName, groupName, specType, groupType, instance, null);
+            CreateSharedParameter(doc, parameterName, groupName, specType, groupType, instance, null);
         }
 
         /// <summary>
@@ -72,7 +76,7 @@ namespace BsddRevitPlugin.Logic.Utilities
                     throw new System.Exception();
 
                 // Apply selected parameter categories
-                CategorySet categories = (categoryList == null) ? AllCategories(doc) : ToCategorySet(doc,categoryList);
+                CategorySet categories = (categoryList == null) ? AllCategories(doc) : ToCategorySet(doc, categoryList);
 
                 // Create new parameter group if it does not exist yet
                 DefinitionGroup groupDef =
@@ -262,26 +266,6 @@ namespace BsddRevitPlugin.Logic.Utilities
                 // Apply selected parameter categories
                 CategorySet categories = (categoryList == null) ? AllCategories(document) : ToCategorySet(document, categoryList);
 
-                //// create a new shared parameter, since the file is empty everything has to be created from scratch
-                //document.Application.OpenSharedParameterFile()
-                //    .Groups.Create(groupName).Definitions.Create(
-                //    new ExternalDefinitionCreationOptions(parameterName, specType));
-
-                //// Create an instance or type binding
-                //Binding bin = (instance) ?
-                //    (Binding)document.Application.Create.NewInstanceBinding(categories) :
-                //    (Binding)document.Application.Create.NewTypeBinding(categories);
-
-                //// Apply parameter bindings
-                //var def = document.Application.OpenSharedParameterFile()
-                //    .Groups.get_Item(groupName).Definitions.get_Item(parameterName);
-                //document.ParameterBindings.Insert(def, bin, groupType);
-
-
-
-
-                //-----------------------------------
-
                 // Create new parameter group if it does not exist yet
                 DefinitionGroup groupDef =
                     document.Application.OpenSharedParameterFile()
@@ -299,40 +283,53 @@ namespace BsddRevitPlugin.Logic.Utilities
                     string parameterName = parameter.parameterName;
                     ForgeTypeId specType = parameter.specType;
 
-                    // If the parameter definition does not exist yet, create it
-                    if (groupDef.Definitions.get_Item(parameterName) == null)
+                    if (parameter.existing)
                     {
-                        try
+                        //PARAMETER EXISTS: ADD CATEGORY IF NEEDED
+                        AddCategoryToProjectParameter(doc, parameterName, categoryList.First());
+
+                    }
+                    else
+                    {
+                        // PARAMETER DOES NOT EXIST: MAKE A NEW ONE FOR JUST THE ONE CATEGORY
+
+                        // If the parameter definition does not exist yet, create it
+                        if (groupDef.Definitions.get_Item(parameterName) == null)
                         {
-                            ExternalDefinitionCreationOptions externalDefinitionCreationOptions = new ExternalDefinitionCreationOptions(parameterName, specType);
-                            externalDefinitionCreationOptions.UserModifiable = false;
+                            try
+                            {
+                                ExternalDefinitionCreationOptions externalDefinitionCreationOptions = new ExternalDefinitionCreationOptions(parameterName, specType);
 
-                            externalDefinitionCreationOptions.GUID = BsddRevitPlugin.Logic.Utilities.UuidFromUri.CreateUuidFromUri(parameterName);
-                            logger.Info($"Parameter = {parameterName}, GUID = {externalDefinitionCreationOptions.GUID.ToString()}");
+                                if (false)
+                                {
+                                    externalDefinitionCreationOptions.UserModifiable = false;
+                                }
 
-                            ExternalDefinition def =
-                                groupDef.Definitions.Create
-                                (externalDefinitionCreationOptions) as ExternalDefinition;
+                                externalDefinitionCreationOptions.GUID = BsddRevitPlugin.Logic.Utilities.UuidFromUri.CreateUuidFromUri(parameterName);
+                                logger.Info($"Parameter = {parameterName}, GUID = {externalDefinitionCreationOptions.GUID.ToString()}");
 
-                            // Apply instance or type binding
-                            Binding bin = (instance) ?
-                                (Binding)document.Application.Create.NewInstanceBinding(categories) :
-                                (Binding)document.Application.Create.NewTypeBinding(categories);
+                                ExternalDefinition def =
+                                    groupDef.Definitions.Create
+                                    (externalDefinitionCreationOptions) as ExternalDefinition;
 
-                            document.ParameterBindings.Insert(def, bin, groupType);
+                                // Apply instance or type binding
+                                Binding bin = (instance) ?
+                                    (Binding)document.Application.Create.NewInstanceBinding(categories) :
+                                    (Binding)document.Application.Create.NewTypeBinding(categories);
 
-                        }
-                        catch (Exception e)
-                        {
-                            logger.Info($"Failed to create parameter '{parameterName}' groupname: '{groupName}' spectype: '{specType.GetType().ToString()}' grouptype: '{groupType.GetType().ToString()}': {e.Message}");
+                                document.ParameterBindings.Insert(def, bin, groupType);
 
-                            
+                            }
+                            catch (Exception e)
+                            {
+                                logger.Info($"Failed to create parameter '{parameterName}' groupname: '{groupName}' spectype: '{specType.GetType().ToString()}' grouptype: '{groupType.GetType().ToString()}': {e.Message}");
+
+
+                            }
                         }
                     }
-                }
-              
 
-                //-----------------------------------
+                }
 
                 // apply old shared parameter file
                 document.Application.SharedParametersFilename = sharedParameterFile;
@@ -403,6 +400,86 @@ namespace BsddRevitPlugin.Logic.Utilities
         }
 
 
+        public static bool ExistingProjectParameter(Document doc, string paramName)
+        {
+            BindingMap bindingMap = doc.ParameterBindings;
+            DefinitionBindingMapIterator it = bindingMap.ForwardIterator();
+
+            while (it.MoveNext())
+            {
+                if (it.Key is InternalDefinition def && def.Name == paramName)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        public static void AddCategoryToProjectParameter(Document doc, string paramName, Category newCategory)
+        {
+            Logger logger = LogManager.GetCurrentClassLogger();
+            BindingMap bindingMap = doc.ParameterBindings;
+            DefinitionBindingMapIterator it = bindingMap.ForwardIterator();
+
+            try
+            {
+                while (it.MoveNext())
+                {
+                    if (it.Key is InternalDefinition def && def.Name == paramName)
+                    {
+                        Binding oldBinding = bindingMap.get_Item(def);
+                        CategorySet oldCategories = GetCategoriesFromBinding(oldBinding);
+
+                        if (oldCategories != null && !oldCategories.Contains(newCategory))
+                        {
+                            CategorySet newCategories = doc.Application.Create.NewCategorySet();
+                            foreach (Category category in oldCategories)
+                            {
+                                newCategories.Insert(category);
+                            }
+                            newCategories.Insert(newCategory);
+
+                            Binding newBinding = CreateBindingBasedOnType(doc, oldBinding, newCategories);
+                            if (newBinding != null)
+                            {
+                                bindingMap.ReInsert(def, newBinding, def.GetGroupTypeId());
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                logger.Error(e);
+            }
+        }
+
+        private static CategorySet GetCategoriesFromBinding(Binding binding)
+        {
+            if (binding is InstanceBinding instanceBinding)
+            {
+                return instanceBinding.Categories;
+            }
+            else if (binding is TypeBinding typeBinding)
+            {
+                return typeBinding.Categories;
+            }
+            return null;
+        }
+
+        private static Binding CreateBindingBasedOnType(Document doc, Binding oldBinding, CategorySet categories)
+        {
+            if (oldBinding is InstanceBinding)
+            {
+                return doc.Application.Create.NewInstanceBinding(categories);
+            }
+            else if (oldBinding is TypeBinding)
+            {
+                return doc.Application.Create.NewTypeBinding(categories);
+            }
+            return null;
+        }
 
     }
 }
