@@ -167,7 +167,7 @@ namespace BsddRevitPlugin.Logic.Model
 
                                     //Create parameter name for each unique the bsdd classificationReference
                                     bsddParameterName = CreateParameterNameFromIFCClassificationReferenceSourceLocation(ifcClassificationReference);
-                                    parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType));
+                                    parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType, Parameters.ExistingProjectParameter(doc, bsddParameterName)));
 
                                     break;
 
@@ -210,14 +210,14 @@ namespace BsddRevitPlugin.Logic.Model
                                     specType = GetParameterTypeFromProperty(enumerationValue);
                                 }
                                 bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property.Name);
-                                parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType));
+                                parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType, Parameters.ExistingProjectParameter(doc, bsddParameterName)));
                             }
                         }
                     }
+
                     //First create all parameters at once (in Release creating parameters seperately sometimes fails)
-                    //Add a project parameter for the bsdd parameter in all Revit categorices if it does not exist 
-                    //NOTE: THIS IS UP FOR DISCUSSION, AS IT MIGHT NOT BE NECESSARY TO ADD THE PARAMETER TO ALL CATEGORIES
-                    Parameters.CreateProjectParametersForAllCategories(doc, parametersToCreate, "tempGroupName", groupType, false);
+                    List<Category> currentCategoryLst = new List<Category>() { elementType.Category };
+                    Parameters.CreateProjectParameters(doc,parametersToCreate, "tempGroupName", groupType, false, currentCategoryLst);
 
                     //Set Revit parameters for each association
                     if (associations != null)
