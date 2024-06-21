@@ -320,7 +320,7 @@ namespace BsddRevitPlugin.Logic.Utilities
                                 externalDefinitionCreationOptions.UserModifiable = settings.UserModifiableParameters;
 
                                 externalDefinitionCreationOptions.GUID = BsddRevitPlugin.Logic.Utilities.UuidFromUri.CreateUuidFromUri(parameterName);
-                                logger.Info($"Parameter = {parameterName}, GUID = {externalDefinitionCreationOptions.GUID.ToString()}");
+                                logger.Info($"Parameter = {parameterName}, GUID = {externalDefinitionCreationOptions.GUID.ToString()}, UserModifiable = {externalDefinitionCreationOptions.UserModifiable}");
 
                                 ExternalDefinition def =
                                     groupDef.Definitions.Create

@@ -1,7 +1,6 @@
 ﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.Model;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
 using BsddRevitPlugin.Logic.Utilities;
@@ -16,10 +15,10 @@ namespace BsddRevitPlugin.Common.Commands
     public class TempTestButton : IExternalCommand
     {
 
+        Logger logger = LogManager.GetCurrentClassLogger();
         public Result Execute(
             ExternalCommandData commandData, ref string message, ElementSet elements)
         {
-            Logger logger = LogManager.GetCurrentClassLogger();
             UIApplication uiApp = commandData.Application;
             UIDocument uiDoc = uiApp.ActiveUIDocument;
             Document doc = uiDoc.Document;
@@ -84,11 +83,18 @@ namespace BsddRevitPlugin.Common.Commands
 
                 BindingMap bindingMap = doc.ParameterBindings;
                 DefinitionBindingMapIterator it = bindingMap.ForwardIterator();
+                logger.Info($"Total count: {bindingMap.Size}");
+
+                List<Definition> defenitions = new List<Definition>();
+
+                int i = 0;
 
                 while (it.MoveNext())
                 {
+                    logger.Info($"Iteration #2: {i}");
                     Definition definition = it.Key;
                     Binding binding = it.Current as Binding;
+
                     bool parameterIsType = true;
                     if (binding is InstanceBinding)
                     {
@@ -97,6 +103,9 @@ namespace BsddRevitPlugin.Common.Commands
                     // Check if the parameter name starts with "bsdd/"
                     if (definition.Name.StartsWith("bsdd/"))
                     {
+
+                        logger.Info($"Iteration #2 -> bsdd/: {i}");
+                        
                         ForgeTypeId forgeTypeId = definition.GetDataType();
                         // Retrieve categories associated with this parameter
                         List<Category> categories = new List<Category>();
@@ -111,17 +120,34 @@ namespace BsddRevitPlugin.Common.Commands
                         // Add to dictionary
                         sharedParameterSave.Add(new ParameterCreation(definition.Name, forgeTypeId, false, categories, parameterIsType));
 
-                        // Remove the parameter from the document
-                        bool removed = doc.ParameterBindings.Remove(definition);
+                        defenitions.Add(definition);
 
-                        if (!removed)
-                        {
-                            TaskDialog.Show("Error", $"Failed to remove parameter: {definition.Name}");
-                        }
+                        //// Remove the parameter from the document
+                        //bool removed = doc.ParameterBindings.Remove(definition);
+
+                        //if (!removed)
+                        //{
+                        //    logger.Error($"Failed to remove parameter: {definition.Name}");
+                        //}
+                    }
+                    i++;
+                }
+                logger.Info($"Total iterations #2: {i}");
+
+                foreach (var definition in defenitions)
+                {
+                    bool removed = doc.ParameterBindings.Remove(definition);
+
+                    if (!removed)
+                    {
+                        logger.Error($"Failed to remove parameter: {definition.Name}");
                     }
                 }
 
                 tx.Commit();
+
+              
+
 
                 return sharedParameterSave;
             }
