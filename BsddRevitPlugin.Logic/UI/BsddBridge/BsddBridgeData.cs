@@ -47,6 +47,9 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
 
         [JsonProperty("includeTestDictionaries")]
         public bool IncludeTestDictionaries { get; set; }
+
+        [JsonProperty("userModifiableParameters")]
+        public bool UserModifiableParameters { get; set; }
     }
 
     public class BsddBridgeData

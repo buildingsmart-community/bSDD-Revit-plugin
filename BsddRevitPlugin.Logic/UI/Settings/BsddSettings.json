@@ -39,5 +39,6 @@
     }
   ],
   "language": "en-GB",
-  "includeTestDictionaries": true
+  "includeTestDictionaries": true,
+  "userModifiableParameters":  false
 }

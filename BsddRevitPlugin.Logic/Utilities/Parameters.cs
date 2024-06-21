@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using BsddRevitPlugin.Logic.UI.BsddBridge;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -8,9 +9,12 @@ namespace BsddRevitPlugin.Logic.Utilities
 {
     public class ParameterCreation
     {
+
         public string parameterName { get; set; }
         public ForgeTypeId specType { get; set; }
         public bool existing { get; set; }
+        public List<Category> categories { get; set; }
+        public bool isType { get; set; }
 
         public ParameterCreation(string parameterName, ForgeTypeId specType)
         {
@@ -23,9 +27,26 @@ namespace BsddRevitPlugin.Logic.Utilities
             this.specType = specType;
             this.existing = existing;
         }
+        public ParameterCreation(string parameterName, ForgeTypeId specType, bool existing, List<Category> categories)
+        {
+            this.parameterName = parameterName;
+            this.specType = specType;
+            this.existing = existing;
+            this.categories = categories;
+        }
+        public ParameterCreation(string parameterName, ForgeTypeId specType, bool existing, List<Category> categories, bool isType)
+        {
+            this.parameterName = parameterName;
+            this.specType = specType;
+            this.existing = existing;
+            this.categories = categories;
+            this.isType = isType;
+        }
     }
     public static class Parameters
     {
+
+        public static bool userModifiable;
 
         #region Shared Parameters
 
@@ -227,18 +248,7 @@ namespace BsddRevitPlugin.Logic.Utilities
 
             //TransactionManager.Instance.TransactionTaskDone();
         }
-        /// <summary>
-        /// Create a new Project Parameter in this current Revit document for all applicable categories
-        /// </summary>
-        /// <param name="parameterName">Name</param>
-        /// <param name="groupName">Group of the parameter for shared parameters</param>
-        /// <param name="specType">The type of new parameter.</param>
-        /// <param name="groupType">The type of the group to which the parameter belongs.</param>
-        /// <param name="instance">True if it's an instance parameter, otherwise it's a type parameter</param>
-        public static void CreateProjectParametersForAllCategories(Document doc, List<ParameterCreation> parametersToCreate, string groupName, ForgeTypeId groupType, bool instance)
-        {
-            CreateProjectParameters(doc, parametersToCreate, groupName, groupType, instance, null);
-        }
+       
         /// <summary>
         /// Create a new Project Parameters in this current Revit document
         /// </summary>
@@ -248,7 +258,7 @@ namespace BsddRevitPlugin.Logic.Utilities
         /// <param name="groupType">The type of the group to which the parameter belongs.</param>
         /// <param name="instance">True if it's an instance parameter, otherwise it's a type parameter</param>
         /// <param name="categoryList">A list of categories this parameter applies to. If no category is supplied, all possible categories are selected</param>
-        public static void CreateProjectParameters(Document doc, List<ParameterCreation> parametersToCreate, string groupName, ForgeTypeId groupType, bool instance, System.Collections.Generic.IEnumerable<Category> categoryList)
+        public static void CreateProjectParameters(Document doc, List<ParameterCreation> parametersToCreate, string groupName, ForgeTypeId groupType)
         {
             Logger logger = LogManager.GetCurrentClassLogger();
             // get document and open transaction
@@ -263,8 +273,6 @@ namespace BsddRevitPlugin.Logic.Utilities
                 using (System.IO.File.Create(tempSharedParameterFile)) { }
                 document.Application.SharedParametersFilename = tempSharedParameterFile;
 
-                // Apply selected parameter categories
-                CategorySet categories = (categoryList == null) ? AllCategories(document) : ToCategorySet(document, categoryList);
 
                 // Create new parameter group if it does not exist yet
                 DefinitionGroup groupDef =
@@ -280,13 +288,20 @@ namespace BsddRevitPlugin.Logic.Utilities
 
                 foreach (var parameter in parametersToCreate)
                 {
+                    
+                    // Apply selected parameter categories
+                    CategorySet categories = (parameter.categories == null) ? AllCategories(document) : ToCategorySet(document, parameter.categories);
+
                     string parameterName = parameter.parameterName;
                     ForgeTypeId specType = parameter.specType;
 
                     if (parameter.existing)
                     {
                         //PARAMETER EXISTS: ADD CATEGORY IF NEEDED
-                        AddCategoryToProjectParameter(doc, parameterName, categoryList.First());
+                        foreach (Category category in categories)
+                        {
+                            AddCategoryToProjectParameter(doc, parameterName, category);
+                        }
 
                     }
                     else
@@ -300,10 +315,9 @@ namespace BsddRevitPlugin.Logic.Utilities
                             {
                                 ExternalDefinitionCreationOptions externalDefinitionCreationOptions = new ExternalDefinitionCreationOptions(parameterName, specType);
 
-                                if (false)
-                                {
-                                    externalDefinitionCreationOptions.UserModifiable = false;
-                                }
+                                
+                                var settings = GlobalBsddSettings.bsddsettings;
+                                externalDefinitionCreationOptions.UserModifiable = settings.UserModifiableParameters;
 
                                 externalDefinitionCreationOptions.GUID = BsddRevitPlugin.Logic.Utilities.UuidFromUri.CreateUuidFromUri(parameterName);
                                 logger.Info($"Parameter = {parameterName}, GUID = {externalDefinitionCreationOptions.GUID.ToString()}");
@@ -313,9 +327,9 @@ namespace BsddRevitPlugin.Logic.Utilities
                                     (externalDefinitionCreationOptions) as ExternalDefinition;
 
                                 // Apply instance or type binding
-                                Binding bin = (instance) ?
-                                    (Binding)document.Application.Create.NewInstanceBinding(categories) :
-                                    (Binding)document.Application.Create.NewTypeBinding(categories);
+                                Binding bin = (parameter.isType) ?
+                                    (Binding)document.Application.Create.NewTypeBinding(categories) :
+                                    (Binding)document.Application.Create.NewInstanceBinding(categories);
 
                                 document.ParameterBindings.Insert(def, bin, groupType);
 

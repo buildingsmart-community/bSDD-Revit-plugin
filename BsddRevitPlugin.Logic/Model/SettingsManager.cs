@@ -16,7 +16,7 @@ namespace BsddRevitPlugin.Logic.Model
     {
         
         // bSDD plugin settings schema ID
-        private static Guid s_schemaId = new Guid("0D11EA95-B4DE-44DB-834E-93D9C19D02DC");
+        private static Guid s_schemaId = new Guid("DECC0D30-C1B3-441D-B847-5DB5332EE5B1");
     private const string BsddSettingsFieldName = "BsddSettings";
 
         /// <summary>

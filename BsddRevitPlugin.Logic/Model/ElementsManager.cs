@@ -124,6 +124,7 @@ namespace BsddRevitPlugin.Logic.Model
                     int idInt = Convert.ToInt32(ifcEntity.Tag);
                     ElementId typeId = new ElementId(idInt);
                     ElementType elementType = doc.GetElement(typeId) as ElementType;
+                    List<Category> categories = new List<Category>() { elementType.Category };
 
                     //Initialize parameters
                     string bsddParameterName = "";
@@ -167,7 +168,7 @@ namespace BsddRevitPlugin.Logic.Model
 
                                     //Create parameter name for each unique the bsdd classificationReference
                                     bsddParameterName = CreateParameterNameFromIFCClassificationReferenceSourceLocation(ifcClassificationReference);
-                                    parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType, Parameters.ExistingProjectParameter(doc, bsddParameterName)));
+                                    parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType, Parameters.ExistingProjectParameter(doc, bsddParameterName), categories, true));
 
                                     break;
 
@@ -210,14 +211,14 @@ namespace BsddRevitPlugin.Logic.Model
                                     specType = GetParameterTypeFromProperty(enumerationValue);
                                 }
                                 bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property.Name);
-                                parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType, Parameters.ExistingProjectParameter(doc, bsddParameterName)));
+                                parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType, Parameters.ExistingProjectParameter(doc, bsddParameterName), categories, true));
                             }
                         }
                     }
 
                     //First create all parameters at once (in Release creating parameters seperately sometimes fails)
                     List<Category> currentCategoryLst = new List<Category>() { elementType.Category };
-                    Parameters.CreateProjectParameters(doc,parametersToCreate, "tempGroupName", groupType, false, currentCategoryLst);
+                    Parameters.CreateProjectParameters(doc,parametersToCreate, "tempGroupName", groupType);
 
                     //Set Revit parameters for each association
                     if (associations != null)
@@ -227,7 +228,7 @@ namespace BsddRevitPlugin.Logic.Model
                             switch (association)
                             {
                                 case IfcClassificationReference ifcClassificationReference:
-                                    // do something with ifcClassificationReference
+                                    // do something with ifcClassificationReferences
 
                                     dictionaryCollection.Add(ifcClassificationReference.ReferencedSource);
 
