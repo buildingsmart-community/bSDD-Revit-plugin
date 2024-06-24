@@ -282,7 +282,7 @@ namespace BsddRevitPlugin.Logic.UI.Services
 
             //Property Sets
             configuration.ExportInternalRevitPropertySets = false;
-            configuration.ExportIFCCommonPropertySets = false;
+            configuration.ExportIFCCommonPropertySets = true;
             configuration.ExportBaseQuantities = true;
             //configuration material prop sets
             configuration.ExportSchedulesAsPsets = false;
