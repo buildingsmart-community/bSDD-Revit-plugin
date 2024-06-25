@@ -43,7 +43,8 @@ namespace BsddRevitPlugin.Logic.IfcExport
                 ElementType elementType = element as ElementType;
                 if (elementType != null)
                 {
-                    var elementTypeAssociations = ElementsManager.GetElementTypeAssociations(elementType);
+                    ElementsManager.GetElementTypeAssociations(elementType, doc, out var ass);
+                    var elementTypeAssociations = ass;
                     foreach (var association in elementTypeAssociations)
                     {
 

@@ -2,6 +2,7 @@
 using Revit.IFC.Import.Data;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 
 namespace BsddRevitPlugin.Logic.IfcJson
 {
@@ -101,14 +102,134 @@ namespace BsddRevitPlugin.Logic.IfcJson
     
     public class IfcMaterial : Association
     {
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
         [JsonProperty("description")]
         public string Description { get; set; }
 
-        [JsonProperty("name")]
-        public string MaterialName { get; set; }
+        [JsonProperty("category")]
+        public string Category { get; set; }
 
-        [JsonProperty("type")]
-        public string MaterialType { get; set; }
+        [JsonProperty("HasRepresentation")]
+        public IfcMaterialDefinitionRepresentation HasRepresentation { get; set; }
+
+        [JsonProperty("isRelatedWith")]
+        public IfcMaterialRelationship IsRelatedWith { get; set; }
+
+        [JsonProperty("relatesTo")]
+        public IfcMaterialRelationship RelatesTo { get; set; }
+    }
+
+    public class IfcMaterialDefinitionRepresentation
+    {
+        [JsonProperty("representedMaterial")]
+        public IfcMaterial RepresentedMaterial { get; set; }
+    }
+
+    public class IfcMaterialRelationship
+    {
+        [JsonProperty("relatingMaterial")]
+        public IfcMaterial RelatingMaterial { get; set; }
+        
+        [JsonProperty("relatedMaterials")]
+        public IfcMaterial RelatedMaterials { get; set; }
+        
+        [JsonProperty("expression")]
+        public string Expression { get; set; }
+    }
+
+    public class IfcMaterialLayerSet : Association
+    {
+        [JsonProperty("ifcMaterialLayer")]
+        public List<IfcMaterialLayer> IfcMaterialLayer { get; set; }
+
+        [JsonProperty("layerSetName")]
+        public string LayerSetName { get; set; }
+
+        [JsonProperty("description")]
+        public string Description { get; set; }
+
+        [JsonProperty("totalThickness")]
+        public double TotalThickness { get; set; }
+    }
+
+    public class IfcMaterialLayer
+    {
+        [JsonProperty("material")]
+        public IfcMaterial Material { get; set; }
+
+        [JsonProperty("layerThickness")]
+        public double LayerThickness { get; set; }
+
+        [JsonProperty("isVentilated")]
+        public bool IsVentilated { get; set; }
+
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        [JsonProperty("description")]
+        public string Description { get; set; }
+
+        [JsonProperty("category")]
+        public string Category { get; set; }
+
+        [JsonProperty("priority")]
+        public int Priority { get; set; }
+
+        [JsonProperty("toMaterialLayerSet")]
+        public IfcMaterialLayerSet ToMaterialLayerSet { get; set; }
+    }
+
+    public class IfcMaterialProfileSet : Association
+    {
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        [JsonProperty("description")]
+        public string Description { get; set; }
+
+        [JsonProperty("materialProfiles")]
+        public List<IfcMaterialProfile> MaterialProfiles { get; set; }
+
+        [JsonProperty("compositeProfile")]
+        public IfcCompositeProfileDef CompositeProfile { get; set; }
+    }
+    public class IfcMaterialProfile : Association
+    {
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        [JsonProperty("description")]
+        public string Description { get; set; }
+
+        [JsonProperty("material")]
+        public IfcMaterial Material { get; set; }
+
+        [JsonProperty("Profile")]
+        public IfcProfileDef Profile { get; set; }
+
+        [JsonProperty("priority")]
+        public int Priority { get; set; }
+
+        [JsonProperty("category")]
+        public string Category { get; set; }
+
+        [JsonProperty("ToMaterialProfileSet")]
+        public IfcMaterialProfileSet ToMaterialProfileSet { get; set; }
+    }
+
+    public class IfcCompositeProfileDef
+    {
+        //Profiles
+        //Label
+    }
+    public class IfcProfileDef
+    {
+        //ProfileType
+        //ProfileName
+        //HasExternalReference
+        //HasProperties
     }
 
     /// <summary>

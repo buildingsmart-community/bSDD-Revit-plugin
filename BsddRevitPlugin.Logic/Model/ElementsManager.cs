@@ -27,6 +27,13 @@ using System.Windows.Media.Media3D;
 using System.Windows.Media;
 using Autodesk.Revit.Creation;
 using System.Xml.Linq;
+using Autodesk.Revit.DB.Structure;
+using System.Windows.Controls;
+using Autodesk.Revit.DB.Mechanical;
+using System.Collections;
+using Autodesk.Revit.DB.Visual;
+using Revit.IFC.Export.Utility;
+using System.Reflection;
 
 
 namespace BsddRevitPlugin.Logic.Model
@@ -758,7 +765,31 @@ namespace BsddRevitPlugin.Logic.Model
         /// </summary>
         /// <param name="entity">The entity from which to retrieve the associations.</param>
         /// <returns>A dictionary of associations with the location as the key.</returns>        
-        private static IEnumerable<IfcClassificationReference> getElementTypeClassificationsReferencesFromExtensibleStorage(ElementType elementType)
+        private static void getElementTypeClassificationsReferencesFromExtensibleStorage(ElementType elementType, out IEnumerable<IfcClassificationReference> a, out IEnumerable<IfcMaterial> b)
+        {
+            // TODO: Implement Ienumerable<Associations> so materials are also added correctly or add a separate function for materials
+
+            Schema schema = GetBsddDataSchema();
+            var storageEntity = elementType.GetEntity(schema);
+
+
+            if (storageEntity.Schema != null)
+            {
+                var field = schema.GetField(s_IfcClassificationData);
+                var jsonString = storageEntity.Get<string>(field);
+
+                if (!string.IsNullOrEmpty(jsonString))
+                {
+                    a = JsonConvert.DeserializeObject<List<IfcClassificationReference>>(jsonString);
+                    b = JsonConvert.DeserializeObject<List<IfcMaterial>>(jsonString);
+                }
+            }
+
+            a = Enumerable.Empty<IfcClassificationReference>();
+            b = Enumerable.Empty<IfcMaterial>();
+        }
+
+        private static IEnumerable<IfcMaterial> getElementTypeIfcRelAssociatesMaterialFromExtensibleStorage(ElementType elementType)
         {
             // TODO: Implement Ienumerable<Associations> so materials are also added correctly or add a separate function for materials
             Schema schema = GetBsddDataSchema();
@@ -772,16 +803,18 @@ namespace BsddRevitPlugin.Logic.Model
 
                 if (!string.IsNullOrEmpty(jsonString))
                 {
-                    return JsonConvert.DeserializeObject<List<IfcClassificationReference>>(jsonString);
+                    return JsonConvert.DeserializeObject<List<IfcMaterial>>(jsonString);
                 }
             }
 
-            return Enumerable.Empty<IfcClassificationReference>();
+            return Enumerable.Empty<IfcMaterial>();
         }
 
-        private static IEnumerable<IfcClassificationReference> getElementClassificationsReferencesFromExtensibleStorage(Element element)
+
+        private static IEnumerable<Association> getElementClassificationsReferencesFromExtensibleStorage(Element element)
         {
-            // TODO: Implement Ienumerable<Associations> so materials are also added correctly or add a separate function for materials
+            // TODO: Implement IEnumerable<Associations> so materials are also added correctly or add a separate function for materials
+            
             Schema schema = GetBsddDataSchema();
             var storageEntity = element.GetEntity(schema);
 
@@ -799,6 +832,8 @@ namespace BsddRevitPlugin.Logic.Model
 
             return Enumerable.Empty<IfcClassificationReference>();
         }
+
+       
 
         /// <summary>
         /// Retrieves the classification data mapped to the current settings for a given element type.
@@ -943,19 +978,22 @@ namespace BsddRevitPlugin.Logic.Model
         /// </summary>
         /// <param name="entity">The entity from which to retrieve the associations.</param>
         /// <returns>A dictionary of associations with the location as the key.</returns>        
-        public static Dictionary<Uri, IfcClassificationReference> GetElementTypeAssociations(ElementType elementType)
+        public static List<Association> GetElementTypeAssociations(ElementType elementType, Document doc, out Dictionary<Uri, IfcClassificationReference> associationsRef)
         {
 
+            var associations = new List<Association>();
+
             Logger logger = LogManager.GetCurrentClassLogger();
-            var associations = new Dictionary<Uri, IfcClassificationReference>();
+            //make new dictionary
+            associationsRef = new Dictionary<Uri, IfcClassificationReference>();
+            //
             var activeDictionaryData = GetClassificationDataFromSettings(elementType);
-
-
-            foreach (var association in getElementTypeClassificationsReferencesFromExtensibleStorage(elementType))
+                        
+            foreach (var association in getElementClassificationsReferencesFromExtensibleStorage(elementType))
             {
                 if (association is IfcClassificationReference ifcClassificationReference)
                 {
-                    associations[ifcClassificationReference.ReferencedSource.Location] = ifcClassificationReference;
+                    associationsRef[ifcClassificationReference.ReferencedSource.Location] = ifcClassificationReference;
                 }
             }
 
@@ -964,10 +1002,10 @@ namespace BsddRevitPlugin.Logic.Model
                 Uri dictionaryUri = entry.Key;
                 (string Identification, string Name) value = entry.Value;
 
-                if (!associations.TryGetValue(dictionaryUri, out var association))
+                if (!associationsRef.TryGetValue(dictionaryUri, out var association))
                 {
                     // add new IfcClassificationReference to the dictionary based on dictionaryUri, Identification and Name
-                    associations[dictionaryUri] = new IfcClassificationReference
+                    associationsRef[dictionaryUri] = new IfcClassificationReference
                     {
                         Type = "IfcClassificationReference",
                         Identification = value.Identification,
@@ -978,6 +1016,7 @@ namespace BsddRevitPlugin.Logic.Model
                             Location = dictionaryUri,
                         }
                     };
+                    
                 }
                 else
                 {
@@ -986,24 +1025,150 @@ namespace BsddRevitPlugin.Logic.Model
                     ifcClassificationReference.Identification = value.Identification;
                     ifcClassificationReference.Name = value.Name;
                 }
+            }
+
+
+            //Material associations
+            var associationsMat = new Dictionary<ElementId, IfcMaterial>();
+            var associationsMatLayerset = new Dictionary<ElementId, IfcMaterialLayerSet>();
+            var associationsMatProfileset = new Dictionary<ElementId, IfcMaterialProfileSet>();
+            var associationsMatProfile = new IfcMaterialProfile();
+            
+            if (GetElementMaterialsProfileset(elementType, doc) != null)
+            {
+                ElementId elemId = elementType.Id;
+                associationsMatLayerset[elemId] = GetElementMaterialsLayerset(elementType, doc);
+
+
+
+
+
+
+
+                foreach (Material mat in GetElementMaterialsProfileset(elementType, doc))
+                {
+
+                    ElementId elemId = mat.Id;
+                    if (!associationsMatProfileset.TryGetValue(elemId, out var association))
+                    {
+                        // add new IfcMaterial to the dictionary based on dictionaryUri, Identification and Name
+                        associationsMatProfileset[elemId] = new IfcMaterialProfileSet
+                        {
+                            Type = "IfcMaterialProfileSet",
+                            Name = mat.Name,
+                            IfcMaterialProfile = new IfcMaterialProfile
+                            {
+                                IfcMaterial = new IfcMaterial
+                                {
+                                    Name = mat.Name,
+                                }
+                            }
+                        };
+                    }
+                    else
+                    {
+                        //update the existing IfcClassificationReference with the new values from the revit typeEntity
+                        var ifcMaterialProfileset = (IfcMaterialProfileSet)association;
+                        ifcMaterialProfileset.Type = mat.GetType().ToString();
+                        ifcMaterialProfileset.Name = mat.Name;
+                    }
+                }
+            }
+
+            if (GetElementMaterialsLayerset(elementType, doc) != null)
+            {
+                ElementId elemId = elementType.Id;
+                associationsMatLayerset[elemId] = GetElementMaterialsLayerset(elementType, doc);
+            }
+
+            if (GetElementMaterials(elementType, doc) != null)
+            {
+                foreach (Material mat in GetElementMaterials(elementType, doc))
+                {
+
+                    ElementId elemId = mat.Id;
+                    if (!associationsMat.TryGetValue(elemId, out var association))
+                    {
+                        //get the description value
+                        BuiltInParameter desiredBIP = BuiltInParameter.ALL_MODEL_DESCRIPTION;
+                        string descriptionValue = "";
+
+                        Parameter description = mat.get_Parameter(desiredBIP);
+                        if (description != null)
+                        {
+                            descriptionValue = description.AsString();
+                        }
+
+                        // add new IfcMaterial to the dictionary based on dictionaryUri, Identification and Name
+                        associationsMat[elemId] = new IfcMaterial
+                        {
+                            Name = mat.Name,
+                            Description = descriptionValue,
+                            Category = mat.Category.Name,
+                            //HasRepresentation = mat.,
+                            //IsRelatedWith = mat.,
+                            //RelatesTo = mat.,
+                            Type = "IfcMaterial",
+                        };
+                    }
+                    else
+                    {
+                        //update the existing IfcClassificationReference with the new values from the revit typeEntity
+                        var ifcMaterial = (IfcMaterial)association;
+                        ifcMaterial.Name = mat.Name;
+                    }
+                }
+            }
+
+
+
+            //combine associations
+            foreach (KeyValuePair<Uri, IfcClassificationReference> pair in associationsRef)
+            {
+                Association association = new Association();
+                association = (IfcClassificationReference)pair.Value;
+                associations.Add(association);
+            }
+
+            foreach (KeyValuePair<ElementId, IfcMaterial> pair in associationsMat)
+            {
+                Association association = new Association();
+                association = (IfcMaterial)pair.Value;
+                associations.Add(association);
+            }
+
+            foreach (KeyValuePair<ElementId, IfcMaterialLayerSet> pair in associationsMatLayerset)
+            {
+                Association association = new Association();
+                association = (IfcMaterialLayerSet)pair.Value;
+                associations.Add(association);
+            }
+
+            foreach (KeyValuePair<ElementId, IfcMaterialProfileSet> pair in associationsMatProfileset)
+            {
+                Association association = new Association();
+                association = (IfcMaterialProfileSet)pair.Value;
+                associations.Add(association);
             }
 
             return associations;
         }
 
-        public static Dictionary<Uri, IfcClassificationReference> GetElementAssociations(Element element)
+        public static List<Association> GetElementAssociations(Element element, Document doc)
         {
+            var associations = new List<Association>();
+
 
             Logger logger = LogManager.GetCurrentClassLogger();
-            var associations = new Dictionary<Uri, IfcClassificationReference>();
+            var associationsRef = new Dictionary<Uri, IfcClassificationReference>();
             var activeDictionaryData = GetClassificationDataFromSettings(element);
 
 
-            foreach (var association in getElementClassificationsReferencesFromExtensibleStorage(element))
+            foreach (var associationR in getElementClassificationsReferencesFromExtensibleStorage(element))
             {
-                if (association is IfcClassificationReference ifcClassificationReference)
+                if (associationR is IfcClassificationReference ifcClassificationReference)
                 {
-                    associations[ifcClassificationReference.ReferencedSource.Location] = ifcClassificationReference;
+                    associationsRef[ifcClassificationReference.ReferencedSource.Location] = ifcClassificationReference;
                 }
             }
 
@@ -1012,10 +1177,10 @@ namespace BsddRevitPlugin.Logic.Model
                 Uri dictionaryUri = entry.Key;
                 (string Identification, string Name) value = entry.Value;
 
-                if (!associations.TryGetValue(dictionaryUri, out var association))
+                if (!associationsRef.TryGetValue(dictionaryUri, out var associationR))
                 {
                     // add new IfcClassificationReference to the dictionary based on dictionaryUri, Identification and Name
-                    associations[dictionaryUri] = new IfcClassificationReference
+                    associationsRef[dictionaryUri] = new IfcClassificationReference
                     {
                         Type = "IfcClassificationReference",
                         Identification = value.Identification,
@@ -1030,10 +1195,59 @@ namespace BsddRevitPlugin.Logic.Model
                 else
                 {
                     //update the existing IfcClassificationReference with the new values from the revit typeEntity
-                    var ifcClassificationReference = (IfcClassificationReference)association;
+                    var ifcClassificationReference = (IfcClassificationReference)associationR;
                     ifcClassificationReference.Identification = value.Identification;
                     ifcClassificationReference.Name = value.Name;
                 }
+            }
+
+            //Material associations
+            var associationsMat = new Dictionary<ElementId, IfcMaterial>();
+            
+            List<Material> materials = new List<Material>();
+            materials = GetElementMaterials(element, doc);
+
+            if(materials != null)
+            {
+                foreach (Material mat in materials)
+                {
+
+                    ElementId elemId = mat.Id;
+                    if (!associationsMat.TryGetValue(elemId, out var associationM))
+                    {
+                        // add new IfcMaterial to the dictionary based on elementId and IfcMaterial
+                        associationsMat[elemId] = new IfcMaterial
+                        {
+                            Type = "IfcMaterial",
+                            Name = mat.Name,
+                        };
+                    }
+                    else
+                    {
+                        //update the existing IfcClassificationReference with the new values from the revit typeEntity
+                        var ifcMaterial = (IfcMaterial)associationM;
+                        ifcMaterial.Type = mat.GetType().ToString();
+                        ifcMaterial.Name = mat.Name;
+                    }
+                }
+            }
+            
+
+
+            
+            //combine associations
+            foreach (KeyValuePair < Uri, IfcClassificationReference > pair in associationsRef)
+            {
+                Association association = new Association();
+                association = (IfcClassificationReference)pair.Value;
+                associations.Add(association);
+            }
+            
+            foreach (KeyValuePair<ElementId, IfcMaterial> pair in associationsMat)
+            {
+                Association association = new Association();
+                association = (IfcMaterial)pair.Value;
+                associations.Add(association);
             }
 
             return associations;
@@ -1137,12 +1351,14 @@ namespace BsddRevitPlugin.Logic.Model
             string typeDescription = GetParameterValueByElement(elem, "Description");
             string ifcType = IFCMappingValue(doc, elem);
             string ifcPredefinedType = elem.get_Parameter(BuiltInParameter.IFC_EXPORT_PREDEFINEDTYPE_TYPE)?.AsString();
+            //string materials = GetElementMaterials(elem, doc);
 
             var ifcEntity = new IfcEntity
             {
                 Instance = instance,
                 Type = ifcType,
                 Name = $"T: {typeName} - {familyName}",
+                //Material = materials,
                 Tag = ifcTag,
                 Description = string.IsNullOrWhiteSpace(typeDescription) ? null : typeDescription,
                 PredefinedType = ifcPredefinedType,
@@ -1155,14 +1371,11 @@ namespace BsddRevitPlugin.Logic.Model
                 ifcEntity.IsDefinedBy = propertySets;
             }
 
-            var associations = GetElementTypeAssociations(elem);
+            var associations = GetElementTypeAssociations(elem, doc, out Dictionary<Uri, IfcClassificationReference> a);
             if (associations != null && associations.Count > 0)
             {
-                ifcEntity.HasAssociations = associations.Values.ToList<Association>();
+                ifcEntity.HasAssociations = associations;
             }
-
-            //Embed Ifc Definition Ifc Entity
-            //ifcEntity.IsDefinedBy = isDefinedBy;
 
             return ifcEntity;
         }
@@ -1179,17 +1392,14 @@ namespace BsddRevitPlugin.Logic.Model
             string typeDescription = GetParameterValueByElement(elemType ?? elem, "Description");
             string ifcType = IFCMappingValue(doc, elem);
             string ifcPredefinedType = elem.get_Parameter(BuiltInParameter.IFC_EXPORT_PREDEFINEDTYPE_TYPE)?.AsString();
-            string materials = GetElementMaterials(elem, doc);
-
-            var associations = GetElementAssociations(elem);
-            //var materials = GetElementMaterials(elem, doc);
+            //string materials = GetElementMaterials(elem, doc);
 
             var ifcEntity = new IfcEntity
             {
                 Instance = instance,
                 Type = ifcType,
                 Name = $"I: {typeName} - {familyName}",
-                Material = materials,
+                //Material = materials,
                 Tag = ifcTag,
                 Description = string.IsNullOrWhiteSpace(typeDescription) ? null : typeDescription,
                 PredefinedType = ifcPredefinedType,
@@ -1198,9 +1408,10 @@ namespace BsddRevitPlugin.Logic.Model
             //embed propertysets bsdd/prop/ in Ifc Defenition
             ifcEntity.IsDefinedBy = IfcDefinition(doc, elem);
 
+            var associations = GetElementAssociations(elem, doc);
             if (associations != null && associations.Count > 0)
             {
-                ifcEntity.HasAssociations = associations.Values.ToList<Association>();
+                ifcEntity.HasAssociations = associations;
             }
 
             //Embed Ifc Definition Ifc Entity
@@ -1243,680 +1454,683 @@ namespace BsddRevitPlugin.Logic.Model
                                 {
                                     if (paramPSet.HasValue == true)
                                     {
-                                        //Define nominalvalue Type and Value
-                                        nominalValue = new IfcValue();
-                                        ForgeTypeId paramTypeId = paramPSet.Definition.GetDataType();
-
-                                        switch (paramTypeId)
+                                        if(paramPSet.Definition.GetDataType() != SpecTypeId.Reference.Material)
                                         {
-                                            case var _ when paramTypeId == SpecTypeId.Boolean.YesNo:
-                                                nominalValue.Type = "IfcBoolean"; //BOOLEAN
-                                                nominalValue.Value = paramPSet.AsInteger(); //0 or 1
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.Int.Integer:
-                                                nominalValue.Type = "IfcInteger"; //INTEGER
-                                                nominalValue.Value = paramPSet.AsInteger();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.Int.NumberOfPoles:
-                                                nominalValue.Type = "IfcCountMeasure"; //NUMBER
-                                                nominalValue.Value = paramPSet.AsInteger();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.String.Url:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            case var _ when paramTypeId == SpecTypeId.String.Text:
-                                                nominalValue.Type = "IfcText"; //STRING
-                                                nominalValue.Value = paramPSet.AsString();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.String.MultilineText:
-                                                nominalValue.Type = "IfcText"; //STRING
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            case var _ when paramTypeId == SpecTypeId.Reference.Material:
-                                                nominalValue.Type = "IfcMaterial"; //??
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.Reference.LoadClassification:
-                                                nominalValue.Type = "IfcElectricCurrentMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.Reference.Image:
-                                                nominalValue.Type = "Ifc";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            /*case var _ when paramTypeId == SpecTypeId.Reference.FillPattern:
-                                                nominalValue.Type = "IfcInteger";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            
-                                            case var _ when paramTypeId == SpecTypeId.Acceleration:
-                                                nominalValue.Type = "IfcAccelerationMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.AirFlow:
-                                                nominalValue.Type = "IfcVolumetricFlowRateMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.AirFlowDensity:
-                                                nominalValue.Type = "IfcMassDensityMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.AirFlowDividedByCoolingLoad:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            /*case var _ when paramTypeId == SpecTypeId.AirFlowDividedByVolume:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            case var _ when paramTypeId == SpecTypeId.Angle:
-                                                nominalValue.Type = "IfcPlaneAngleMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.AngularSpeed:
-                                                nominalValue.Type = "IfcAngularVelocityMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.ApparentPower:
-                                                nominalValue.Type = "IfcPowerMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.ApparentPowerDensity:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            case var _ when paramTypeId == SpecTypeId.Area:
-                                                nominalValue.Type = "IfcAreaMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.AreaDividedByCoolingLoad:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            /*case var _ when paramTypeId == SpecTypeId.AreaDividedByHeatingLoad:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            case var _ when paramTypeId == SpecTypeId.AreaForce:
-                                                nominalValue.Type = "IfcPlanarForceMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.AreaForceScale:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            /*case var _ when paramTypeId == SpecTypeId.AreaSpringCoefficient:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            case var _ when paramTypeId == SpecTypeId.BarDiameter:
-                                                nominalValue.Type = "IfcLengthMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.CableTraySize:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;
-                                            m*m not existing in ifc? */
-                                            /*case var _ when paramTypeId == SpecTypeId.ColorTemperature:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            case var _ when paramTypeId == SpecTypeId.ConduitSize:
-                                                nominalValue.Type = "IfcLengthMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.CoolingLoad:
-                                                nominalValue.Type = "IfcPowerMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.CoolingLoadDividedByArea:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            /*case var _ when paramTypeId == SpecTypeId.CoolingLoadDividedByVolume:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            /*case var _ when paramTypeId == SpecTypeId.CostPerArea:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            /*case var _ when paramTypeId == SpecTypeId.CostRateEnergy:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            /*case var _ when paramTypeId == SpecTypeId.CostRatePower:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            case var _ when paramTypeId == SpecTypeId.CrackWidth:
-                                                nominalValue.Type = "IfcLengthMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.CrossSection:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            /*case var _ when paramTypeId == SpecTypeId.Currency:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            case var _ when paramTypeId == SpecTypeId.Current:
-                                                nominalValue.Type = "IfcElectricCurrentMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.Custom:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            case var _ when paramTypeId == SpecTypeId.DecimalSheetLength:
-                                                nominalValue.Type = "IfcLengthMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.DemandFactor:
-                                                nominalValue.Type = "IfcReal"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.Diffusivity:
-                                                nominalValue.Type = "IfcMoistureDiffusivityMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            //m2 / s but not IfcKinematicViscosityMeasure was not found
-                                            /*case var _ when paramTypeId == SpecTypeId.Displacement:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;
-                                            m1? */
-                                            case var _ when paramTypeId == SpecTypeId.Distance:
-                                                nominalValue.Type = "IfcLengthMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.DuctInsulationThickness:
-                                                nominalValue.Type = "IfcLengthMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.DuctLiningThickness:
-                                                nominalValue.Type = "IfcLengthMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.DuctSize:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;
-                                            m* m not existing in ifc ? */
-                                            case var _ when paramTypeId == SpecTypeId.Efficacy:
-                                                nominalValue.Type = "IfcReal"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            //lm / W lummen per Watt no entity found
-                                            case var _ when paramTypeId == SpecTypeId.ElectricalFrequency:
-                                                nominalValue.Type = "IfcFrequencyMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.ElectricalPotential:
-                                                nominalValue.Type = "IfcElectricVoltageMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.ElectricalPower:
-                                                nominalValue.Type = "IfcPowerMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.ElectricalPowerDensity:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;
-                                            W / m3 no entity found*/
-                                            case var _ when paramTypeId == SpecTypeId.ElectricalResistivity:
-                                                nominalValue.Type = "IfcElectricResistanceMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.ElectricalTemperature:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            /*case var _ when paramTypeId == SpecTypeId.ElectricalTemperatureDifference:
-                                                nominalValue.Type = "IfcTemperatureRateOfChangeMeasure";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            case var _ when paramTypeId == SpecTypeId.Energy:
-                                                nominalValue.Type = "IfcEnergyMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.Factor:
-                                                nominalValue.Type = "IfcReal"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.Flow:
-                                                nominalValue.Type = "IfcVolumetricFlowRateMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.FlowPerPower:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            case var _ when paramTypeId == SpecTypeId.Force:
-                                                nominalValue.Type = "IfcForceMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.ForceScale:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            /*case var _ when paramTypeId == SpecTypeId.HeatCapacityPerArea:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            /*case var _ when paramTypeId == SpecTypeId.HeatGain:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;
-                                            Delta? */
-                                            /*case var _ when paramTypeId == SpecTypeId.HeatingLoad:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            /*case var _ when paramTypeId == SpecTypeId.HeatingLoadDividedByArea:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            /*case var _ when paramTypeId == SpecTypeId.HeatingLoadDividedByVolume:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            case var _ when paramTypeId == SpecTypeId.HeatTransferCoefficient:
-                                                nominalValue.Type = "IfcThermalTransmittanceMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.HvacDensity:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;
-                                            NotFiniteNumberException clear what density exactly*/
-                                            case var _ when paramTypeId == SpecTypeId.HvacEnergy:
-                                                nominalValue.Type = "IfcEnergyMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.HvacFriction:
-                                                nominalValue.Type = "IfcReal"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            //F or FR (Friction) not found
-                                            case var _ when paramTypeId == SpecTypeId.HvacMassPerTime:
-                                                nominalValue.Type = "IfcMassFlowRateMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            // kg / s = Mass per time = flowrate
-                                            case var _ when paramTypeId == SpecTypeId.HvacPower:
-                                                nominalValue.Type = "IfcPowerMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.HvacPowerDensity:
-                                                nominalValue.Type = "IfcHeatFluxDensityMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.HvacPressure:
-                                                nominalValue.Type = "IfcPressureMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.HvacRoughness:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            case var _ when paramTypeId == SpecTypeId.HvacSlope:
-                                                nominalValue.Type = "IfcPlaneAngleMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.HvacTemperature:
-                                                nominalValue.Type = "IfcThermodynamicTemperatureMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.HvacTemperatureDifference:
-                                                nominalValue.Type = "IfcTemperatureRateOfChangeMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            // k (Kelvin) per s
-                                            case var _ when paramTypeId == SpecTypeId.HvacVelocity:
-                                                nominalValue.Type = "IfcLinearVelocityMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.HvacViscosity:
-                                                nominalValue.Type = "IfcDynamicViscosityMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.Illuminance:
-                                                nominalValue.Type = "IfcIlluminanceMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.IsothermalMoistureCapacity:
-                                                nominalValue.Type = "IfcIsothermalMoistureCapacityMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.Length:
-                                                nominalValue.Type = "IfcLengthMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.LinearForce:
-                                                nominalValue.Type = "IfcLinearForceMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.LinearForceScale:
-                                                nominalValue.Type = "IfcLinearForceMeasure";
-                                                nominalValue.Value = paramPset.ToString();
-                                                break;*/
-                                            case var _ when paramTypeId == SpecTypeId.LinearMoment:
-                                                nominalValue.Type = "IfcLinearMomentMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.LinearMomentScale:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            /*case var _ when paramTypeId == SpecTypeId.LineSpringCoefficient:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            /*case var _ when paramTypeId == SpecTypeId.Luminance:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            case var _ when paramTypeId == SpecTypeId.LuminousFlux:
-                                                nominalValue.Type = "IfcLuminousFluxMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.LuminousIntensity:
-                                                nominalValue.Type = "IfcLuminousIntensityMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.Mass:
-                                                nominalValue.Type = "IfcMassMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.MassDensity:
-                                                nominalValue.Type = "IfcMassDensityMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.MassPerUnitArea:
-                                                nominalValue.Type = "IfcAreaDensityMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.MassPerUnitLength:
-                                                nominalValue.Type = "IfcMassPerLengthMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.Moment:
-                                                nominalValue.Type = "IfcTorqueMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.MomentOfInertia:
-                                                nominalValue.Type = "IfcMomentOfInertiaMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.MomentScale:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            case var _ when paramTypeId == SpecTypeId.Number:
-                                                nominalValue.Type = "IfcReal"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.Period:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            case var _ when paramTypeId == SpecTypeId.Permeability:
-                                                nominalValue.Type = "IfcVaporPermeabilityMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.PipeDimension:
-                                                nominalValue.Type = "IfcLengthMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.PipeInsulationThickness:
-                                                nominalValue.Type = "IfcLengthMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.PipeMassPerUnitLength:
-                                                nominalValue.Type = "IfcMassPerLengthMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.PipeSize:
-                                                nominalValue.Type = "IfcLengthMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.PipingDensity:
-                                                nominalValue.Type = "IfcMassDensityMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.PipingFriction:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            case var _ when paramTypeId == SpecTypeId.PipingMass:
-                                                nominalValue.Type = "IfcMassMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.PipingMassPerTime:
-                                                nominalValue.Type = "IfcMassFlowRateMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.PipingRoughness:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            case var _ when paramTypeId == SpecTypeId.PipingSlope:
-                                                nominalValue.Type = "IfcPlaneAngleMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.PipingTemperature:
-                                                nominalValue.Type = "IfcThermodynamicTemperatureMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.PipingTemperatureDifference:
-                                                nominalValue.Type = "IfcTemperatureRateOfChangeMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.PipingVelocity:
-                                                nominalValue.Type = "IfcLinearVelocityMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.PipingViscosity:
-                                                nominalValue.Type = "IfcDynamicViscosityMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.PipingVolume:
-                                                nominalValue.Type = "IfcVolumeMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.PointSpringCoefficient:
-                                                nominalValue.Type = "IfcLinearStiffnessMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.PowerPerFlow:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            /*case var _ when paramTypeId == SpecTypeId.PowerPerLength:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            /*case var _ when paramTypeId == SpecTypeId.Pulsation:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            case var _ when paramTypeId == SpecTypeId.ReinforcementArea:
-                                                nominalValue.Type = "IfcAreaMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.ReinforcementAreaPerUnitLength:
-                                                nominalValue.Type = "IfcAreaMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.ReinforcementCover:
-                                                nominalValue.Type = "IfcLengthMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.ReinforcementLength:
-                                                nominalValue.Type = "IfcLengthMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.ReinforcementSpacing:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            case var _ when paramTypeId == SpecTypeId.ReinforcementVolume:
-                                                nominalValue.Type = "IfcVolumeMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.Rotation:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            /*case var _ when paramTypeId == SpecTypeId.RotationalLineSpringCoefficient:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            /*case var _ when paramTypeId == SpecTypeId.RotationalPointSpringCoefficient:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            case var _ when paramTypeId == SpecTypeId.RotationAngle:
-                                                nominalValue.Type = "IfcPlaneAngleMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.SectionArea:
-                                                nominalValue.Type = "IfcAreaMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.SectionDimension:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            /*case var _ when paramTypeId == SpecTypeId.SectionModulus:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            /*case var _ when paramTypeId == SpecTypeId.SectionProperty:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            case var _ when paramTypeId == SpecTypeId.SheetLength:
-                                                nominalValue.Type = "IfcLengthMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.SiteAngle:
-                                                nominalValue.Type = "IfcPlaneAngleMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.Slope:
-                                                nominalValue.Type = "IfcPlaneAngleMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.SpecificHeat:
-                                                nominalValue.Type = "IfcSpecificHeatCapacityMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.SpecificHeatOfVaporization:
-                                                nominalValue.Type = "IfcHeatingValueMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.Speed:
-                                                nominalValue.Type = "IfcLinearVelocityMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.Stationing:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            /*case var _ when paramTypeId == SpecTypeId.StationingInterval:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;*/
-                                            case var _ when paramTypeId == SpecTypeId.Stress:
-                                                nominalValue.Type = "IfcModulusOfElasticityMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.StructuralFrequency:
-                                                nominalValue.Type = "IfcFrequencyMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.StructuralVelocity:
-                                                nominalValue.Type = "IfcLinearVelocityMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.SurfaceAreaPerUnitLength:
-                                                nominalValue.Type = "IfcAreaMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.ThermalConductivity:
-                                                nominalValue.Type = "IfcThermalConductivityMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.ThermalExpansionCoefficient:
-                                                nominalValue.Type = "IfcThermalExpansionCoefficientMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.ThermalGradientCoefficientForMoistureCapacity:
-                                                nominalValue.Type = "IfcIsothermalMoistureCapacityMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            /*case var _ when paramTypeId == SpecTypeId.ThermalMass:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.ToString();
-                                                break;
-                                            capacity to store energie J / K or J / Celcium Degrees*/
-                                            case var _ when paramTypeId == SpecTypeId.ThermalResistance:
-                                                nominalValue.Type = "IfcThermalResistanceMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.Time:
-                                                nominalValue.Type = "IfcTimeMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.UnitWeight:
-                                                nominalValue.Type = "IfcMassMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.Volume:
-                                                nominalValue.Type = "IfcVolumeMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.WarpingConstant:
-                                                nominalValue.Type = "IfcWarpingConstantMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.Wattage:
-                                                nominalValue.Type = "IfcPowerMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.Weight:
-                                                nominalValue.Type = "IfcMassMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.WeightPerUnitLength:
-                                                nominalValue.Type = "IfcMassMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
-                                            case var _ when paramTypeId == SpecTypeId.WireDiameter:
-                                                nominalValue.Type = "IfcLengthMeasure"; //REAL
-                                                nominalValue.Value = paramPSet.AsDouble();
-                                                break;
+                                            //Define nominalvalue Type and Value
+                                            nominalValue = new IfcValue();
+                                            ForgeTypeId paramTypeId = paramPSet.Definition.GetDataType();
 
-                                            default:
-                                                nominalValue.Type = "IfcText";
-                                                nominalValue.Value = paramPSet.AsString();
-                                                break;
+                                            switch (paramTypeId)
+                                            {
+                                                case var _ when paramTypeId == SpecTypeId.Boolean.YesNo:
+                                                    nominalValue.Type = "IfcBoolean"; //BOOLEAN
+                                                    nominalValue.Value = paramPSet.AsInteger(); //0 or 1
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.Int.Integer:
+                                                    nominalValue.Type = "IfcInteger"; //INTEGER
+                                                    nominalValue.Value = paramPSet.AsInteger();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.Int.NumberOfPoles:
+                                                    nominalValue.Type = "IfcCountMeasure"; //NUMBER
+                                                    nominalValue.Value = paramPSet.AsInteger();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.String.Url:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                case var _ when paramTypeId == SpecTypeId.String.Text:
+                                                    nominalValue.Type = "IfcText"; //STRING
+                                                    nominalValue.Value = paramPSet.AsString();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.String.MultilineText:
+                                                    nominalValue.Type = "IfcText"; //STRING
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                case var _ when paramTypeId == SpecTypeId.Reference.Material:
+                                                    nominalValue.Type = "IfcMaterial"; //??
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.Reference.LoadClassification:
+                                                    nominalValue.Type = "IfcElectricCurrentMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.Reference.Image:
+                                                    nominalValue.Type = "Ifc";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                /*case var _ when paramTypeId == SpecTypeId.Reference.FillPattern:
+                                                    nominalValue.Type = "IfcInteger";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+
+                                                case var _ when paramTypeId == SpecTypeId.Acceleration:
+                                                    nominalValue.Type = "IfcAccelerationMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.AirFlow:
+                                                    nominalValue.Type = "IfcVolumetricFlowRateMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.AirFlowDensity:
+                                                    nominalValue.Type = "IfcMassDensityMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.AirFlowDividedByCoolingLoad:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                /*case var _ when paramTypeId == SpecTypeId.AirFlowDividedByVolume:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                case var _ when paramTypeId == SpecTypeId.Angle:
+                                                    nominalValue.Type = "IfcPlaneAngleMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.AngularSpeed:
+                                                    nominalValue.Type = "IfcAngularVelocityMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.ApparentPower:
+                                                    nominalValue.Type = "IfcPowerMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.ApparentPowerDensity:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                case var _ when paramTypeId == SpecTypeId.Area:
+                                                    nominalValue.Type = "IfcAreaMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.AreaDividedByCoolingLoad:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                /*case var _ when paramTypeId == SpecTypeId.AreaDividedByHeatingLoad:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                case var _ when paramTypeId == SpecTypeId.AreaForce:
+                                                    nominalValue.Type = "IfcPlanarForceMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.AreaForceScale:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                /*case var _ when paramTypeId == SpecTypeId.AreaSpringCoefficient:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                case var _ when paramTypeId == SpecTypeId.BarDiameter:
+                                                    nominalValue.Type = "IfcLengthMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.CableTraySize:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;
+                                                m*m not existing in ifc? */
+                                                /*case var _ when paramTypeId == SpecTypeId.ColorTemperature:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                case var _ when paramTypeId == SpecTypeId.ConduitSize:
+                                                    nominalValue.Type = "IfcLengthMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.CoolingLoad:
+                                                    nominalValue.Type = "IfcPowerMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.CoolingLoadDividedByArea:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                /*case var _ when paramTypeId == SpecTypeId.CoolingLoadDividedByVolume:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                /*case var _ when paramTypeId == SpecTypeId.CostPerArea:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                /*case var _ when paramTypeId == SpecTypeId.CostRateEnergy:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                /*case var _ when paramTypeId == SpecTypeId.CostRatePower:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                case var _ when paramTypeId == SpecTypeId.CrackWidth:
+                                                    nominalValue.Type = "IfcLengthMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.CrossSection:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                /*case var _ when paramTypeId == SpecTypeId.Currency:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                case var _ when paramTypeId == SpecTypeId.Current:
+                                                    nominalValue.Type = "IfcElectricCurrentMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.Custom:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                case var _ when paramTypeId == SpecTypeId.DecimalSheetLength:
+                                                    nominalValue.Type = "IfcLengthMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.DemandFactor:
+                                                    nominalValue.Type = "IfcReal"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.Diffusivity:
+                                                    nominalValue.Type = "IfcMoistureDiffusivityMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                //m2 / s but not IfcKinematicViscosityMeasure was not found
+                                                /*case var _ when paramTypeId == SpecTypeId.Displacement:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;
+                                                m1? */
+                                                case var _ when paramTypeId == SpecTypeId.Distance:
+                                                    nominalValue.Type = "IfcLengthMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.DuctInsulationThickness:
+                                                    nominalValue.Type = "IfcLengthMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.DuctLiningThickness:
+                                                    nominalValue.Type = "IfcLengthMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.DuctSize:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;
+                                                m* m not existing in ifc ? */
+                                                case var _ when paramTypeId == SpecTypeId.Efficacy:
+                                                    nominalValue.Type = "IfcReal"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                //lm / W lummen per Watt no entity found
+                                                case var _ when paramTypeId == SpecTypeId.ElectricalFrequency:
+                                                    nominalValue.Type = "IfcFrequencyMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.ElectricalPotential:
+                                                    nominalValue.Type = "IfcElectricVoltageMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.ElectricalPower:
+                                                    nominalValue.Type = "IfcPowerMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.ElectricalPowerDensity:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;
+                                                W / m3 no entity found*/
+                                                case var _ when paramTypeId == SpecTypeId.ElectricalResistivity:
+                                                    nominalValue.Type = "IfcElectricResistanceMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.ElectricalTemperature:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                /*case var _ when paramTypeId == SpecTypeId.ElectricalTemperatureDifference:
+                                                    nominalValue.Type = "IfcTemperatureRateOfChangeMeasure";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                case var _ when paramTypeId == SpecTypeId.Energy:
+                                                    nominalValue.Type = "IfcEnergyMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.Factor:
+                                                    nominalValue.Type = "IfcReal"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.Flow:
+                                                    nominalValue.Type = "IfcVolumetricFlowRateMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.FlowPerPower:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                case var _ when paramTypeId == SpecTypeId.Force:
+                                                    nominalValue.Type = "IfcForceMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.ForceScale:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                /*case var _ when paramTypeId == SpecTypeId.HeatCapacityPerArea:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                /*case var _ when paramTypeId == SpecTypeId.HeatGain:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;
+                                                Delta? */
+                                                /*case var _ when paramTypeId == SpecTypeId.HeatingLoad:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                /*case var _ when paramTypeId == SpecTypeId.HeatingLoadDividedByArea:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                /*case var _ when paramTypeId == SpecTypeId.HeatingLoadDividedByVolume:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                case var _ when paramTypeId == SpecTypeId.HeatTransferCoefficient:
+                                                    nominalValue.Type = "IfcThermalTransmittanceMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.HvacDensity:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;
+                                                NotFiniteNumberException clear what density exactly*/
+                                                case var _ when paramTypeId == SpecTypeId.HvacEnergy:
+                                                    nominalValue.Type = "IfcEnergyMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.HvacFriction:
+                                                    nominalValue.Type = "IfcReal"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                //F or FR (Friction) not found
+                                                case var _ when paramTypeId == SpecTypeId.HvacMassPerTime:
+                                                    nominalValue.Type = "IfcMassFlowRateMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                // kg / s = Mass per time = flowrate
+                                                case var _ when paramTypeId == SpecTypeId.HvacPower:
+                                                    nominalValue.Type = "IfcPowerMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.HvacPowerDensity:
+                                                    nominalValue.Type = "IfcHeatFluxDensityMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.HvacPressure:
+                                                    nominalValue.Type = "IfcPressureMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.HvacRoughness:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                case var _ when paramTypeId == SpecTypeId.HvacSlope:
+                                                    nominalValue.Type = "IfcPlaneAngleMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.HvacTemperature:
+                                                    nominalValue.Type = "IfcThermodynamicTemperatureMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.HvacTemperatureDifference:
+                                                    nominalValue.Type = "IfcTemperatureRateOfChangeMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                // k (Kelvin) per s
+                                                case var _ when paramTypeId == SpecTypeId.HvacVelocity:
+                                                    nominalValue.Type = "IfcLinearVelocityMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.HvacViscosity:
+                                                    nominalValue.Type = "IfcDynamicViscosityMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.Illuminance:
+                                                    nominalValue.Type = "IfcIlluminanceMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.IsothermalMoistureCapacity:
+                                                    nominalValue.Type = "IfcIsothermalMoistureCapacityMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.Length:
+                                                    nominalValue.Type = "IfcLengthMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.LinearForce:
+                                                    nominalValue.Type = "IfcLinearForceMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.LinearForceScale:
+                                                    nominalValue.Type = "IfcLinearForceMeasure";
+                                                    nominalValue.Value = paramPset.ToString();
+                                                    break;*/
+                                                case var _ when paramTypeId == SpecTypeId.LinearMoment:
+                                                    nominalValue.Type = "IfcLinearMomentMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.LinearMomentScale:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                /*case var _ when paramTypeId == SpecTypeId.LineSpringCoefficient:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                /*case var _ when paramTypeId == SpecTypeId.Luminance:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                case var _ when paramTypeId == SpecTypeId.LuminousFlux:
+                                                    nominalValue.Type = "IfcLuminousFluxMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.LuminousIntensity:
+                                                    nominalValue.Type = "IfcLuminousIntensityMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.Mass:
+                                                    nominalValue.Type = "IfcMassMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.MassDensity:
+                                                    nominalValue.Type = "IfcMassDensityMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.MassPerUnitArea:
+                                                    nominalValue.Type = "IfcAreaDensityMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.MassPerUnitLength:
+                                                    nominalValue.Type = "IfcMassPerLengthMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.Moment:
+                                                    nominalValue.Type = "IfcTorqueMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.MomentOfInertia:
+                                                    nominalValue.Type = "IfcMomentOfInertiaMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.MomentScale:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                case var _ when paramTypeId == SpecTypeId.Number:
+                                                    nominalValue.Type = "IfcReal"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.Period:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                case var _ when paramTypeId == SpecTypeId.Permeability:
+                                                    nominalValue.Type = "IfcVaporPermeabilityMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.PipeDimension:
+                                                    nominalValue.Type = "IfcLengthMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.PipeInsulationThickness:
+                                                    nominalValue.Type = "IfcLengthMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.PipeMassPerUnitLength:
+                                                    nominalValue.Type = "IfcMassPerLengthMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.PipeSize:
+                                                    nominalValue.Type = "IfcLengthMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.PipingDensity:
+                                                    nominalValue.Type = "IfcMassDensityMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.PipingFriction:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                case var _ when paramTypeId == SpecTypeId.PipingMass:
+                                                    nominalValue.Type = "IfcMassMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.PipingMassPerTime:
+                                                    nominalValue.Type = "IfcMassFlowRateMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.PipingRoughness:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                case var _ when paramTypeId == SpecTypeId.PipingSlope:
+                                                    nominalValue.Type = "IfcPlaneAngleMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.PipingTemperature:
+                                                    nominalValue.Type = "IfcThermodynamicTemperatureMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.PipingTemperatureDifference:
+                                                    nominalValue.Type = "IfcTemperatureRateOfChangeMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.PipingVelocity:
+                                                    nominalValue.Type = "IfcLinearVelocityMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.PipingViscosity:
+                                                    nominalValue.Type = "IfcDynamicViscosityMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.PipingVolume:
+                                                    nominalValue.Type = "IfcVolumeMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.PointSpringCoefficient:
+                                                    nominalValue.Type = "IfcLinearStiffnessMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.PowerPerFlow:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                /*case var _ when paramTypeId == SpecTypeId.PowerPerLength:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                /*case var _ when paramTypeId == SpecTypeId.Pulsation:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                case var _ when paramTypeId == SpecTypeId.ReinforcementArea:
+                                                    nominalValue.Type = "IfcAreaMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.ReinforcementAreaPerUnitLength:
+                                                    nominalValue.Type = "IfcAreaMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.ReinforcementCover:
+                                                    nominalValue.Type = "IfcLengthMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.ReinforcementLength:
+                                                    nominalValue.Type = "IfcLengthMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.ReinforcementSpacing:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                case var _ when paramTypeId == SpecTypeId.ReinforcementVolume:
+                                                    nominalValue.Type = "IfcVolumeMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.Rotation:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                /*case var _ when paramTypeId == SpecTypeId.RotationalLineSpringCoefficient:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                /*case var _ when paramTypeId == SpecTypeId.RotationalPointSpringCoefficient:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                case var _ when paramTypeId == SpecTypeId.RotationAngle:
+                                                    nominalValue.Type = "IfcPlaneAngleMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.SectionArea:
+                                                    nominalValue.Type = "IfcAreaMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.SectionDimension:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                /*case var _ when paramTypeId == SpecTypeId.SectionModulus:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                /*case var _ when paramTypeId == SpecTypeId.SectionProperty:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                case var _ when paramTypeId == SpecTypeId.SheetLength:
+                                                    nominalValue.Type = "IfcLengthMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.SiteAngle:
+                                                    nominalValue.Type = "IfcPlaneAngleMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.Slope:
+                                                    nominalValue.Type = "IfcPlaneAngleMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.SpecificHeat:
+                                                    nominalValue.Type = "IfcSpecificHeatCapacityMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.SpecificHeatOfVaporization:
+                                                    nominalValue.Type = "IfcHeatingValueMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.Speed:
+                                                    nominalValue.Type = "IfcLinearVelocityMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.Stationing:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                /*case var _ when paramTypeId == SpecTypeId.StationingInterval:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;*/
+                                                case var _ when paramTypeId == SpecTypeId.Stress:
+                                                    nominalValue.Type = "IfcModulusOfElasticityMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.StructuralFrequency:
+                                                    nominalValue.Type = "IfcFrequencyMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.StructuralVelocity:
+                                                    nominalValue.Type = "IfcLinearVelocityMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.SurfaceAreaPerUnitLength:
+                                                    nominalValue.Type = "IfcAreaMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.ThermalConductivity:
+                                                    nominalValue.Type = "IfcThermalConductivityMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.ThermalExpansionCoefficient:
+                                                    nominalValue.Type = "IfcThermalExpansionCoefficientMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.ThermalGradientCoefficientForMoistureCapacity:
+                                                    nominalValue.Type = "IfcIsothermalMoistureCapacityMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                /*case var _ when paramTypeId == SpecTypeId.ThermalMass:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.ToString();
+                                                    break;
+                                                capacity to store energie J / K or J / Celcium Degrees*/
+                                                case var _ when paramTypeId == SpecTypeId.ThermalResistance:
+                                                    nominalValue.Type = "IfcThermalResistanceMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.Time:
+                                                    nominalValue.Type = "IfcTimeMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.UnitWeight:
+                                                    nominalValue.Type = "IfcMassMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.Volume:
+                                                    nominalValue.Type = "IfcVolumeMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.WarpingConstant:
+                                                    nominalValue.Type = "IfcWarpingConstantMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.Wattage:
+                                                    nominalValue.Type = "IfcPowerMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.Weight:
+                                                    nominalValue.Type = "IfcMassMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.WeightPerUnitLength:
+                                                    nominalValue.Type = "IfcMassMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+                                                case var _ when paramTypeId == SpecTypeId.WireDiameter:
+                                                    nominalValue.Type = "IfcLengthMeasure"; //REAL
+                                                    nominalValue.Value = paramPSet.AsDouble();
+                                                    break;
+
+                                                default:
+                                                    nominalValue.Type = "IfcText";
+                                                    nominalValue.Value = paramPSet.AsString();
+                                                    break;
+                                            }
+
+                                            //Define property NominalValue, name and value
+                                            ifcPropValue = new IfcPropertySingleValue
+                                            {
+                                                NominalValue = nominalValue,
+                                                Name = paramPSet.Definition.Name.Remove(0, 10).Split('/')[1]
+                                            };
+
+                                            hasProperties.Add(ifcPropValue);
                                         }
-
-                                        //Define property NominalValue, name and value
-                                        ifcPropValue = new IfcPropertySingleValue
-                                        {
-                                            NominalValue = nominalValue,
-                                            Name = paramPSet.Definition.Name.Remove(0, 10).Split('/')[1]
-                                        };
-
-                                        hasProperties.Add(ifcPropValue);
                                     }
                                 }
                             }
@@ -2059,7 +2273,7 @@ namespace BsddRevitPlugin.Logic.Model
         }
 
         
-        public static string GetElementMaterials(Element e, Document doc)
+        public static List<Material> GetElementMaterials(Element e, Document doc)
         {
             //schema
             //https://help.autodesk.com/view/RVT/2022/ENU/?guid=Revit_API_Revit_API_Developers_Guide_Revit_Geometric_Elements_Material_Element_Material_html
@@ -2095,15 +2309,13 @@ namespace BsddRevitPlugin.Logic.Model
             //              | --IfcProfileDef(bijv.IfcRectangleProfileDef, IfcCircleProfileDef)
             //              | --IfcMaterial
 
+            //material constituent set???
+
             // Wall->WallType->GetCompoundStructure->GetLayers->MaterialId
 
 
             //Make materila list
             List<Material> mat = new List<Material>();
-
-            //Get HostObject
-            HostObject hostObject = e as HostObject;
-            CompoundStructure compoundStructure = null;
 
             // Find out or there are any material parameters
             foreach (Parameter parameter in e.Parameters)
@@ -2119,7 +2331,10 @@ namespace BsddRevitPlugin.Logic.Model
                         if (null != e.Category)
                         {
                             Pmat = e.Category.Material;
-                            mat.Add(Pmat);
+                            if (Pmat != null)
+                            {
+                                mat.Add(Pmat);
+                            }
                         }
                     }
                     else
@@ -2130,95 +2345,199 @@ namespace BsddRevitPlugin.Logic.Model
                 }
             }
 
-            try
+            for (int i = 0; i < mat.Count; i++)
             {
-                FamilyInstance familyInstance = e as FamilyInstance;
-                FamilySymbol familySymbol = familyInstance.Symbol;
-                foreach (Parameter parameter in familySymbol.Parameters)
+                if (mat[i] == null)
                 {
-                    // Check if the parameter is related to materials
-                    if (parameter.Definition.GetDataType() == SpecTypeId.Reference.Material)
-                    {
-                        Material Pmat = null;
-                        ElementId materialId = parameter.AsElementId();
-                        if (-1 == materialId.IntegerValue)
-                        {
-                            //Invalid ElementId, assume the material is "By Category"
-                            if (null != e.Category)
-                            {
-                                Pmat = e.Category.Material;
-                                mat.Add(Pmat);
-                            }
-                        }
-                        else
-                        {
-                            Pmat = doc.GetElement(materialId) as Material;
-                            mat.Add(Pmat);
-                        }
-                    }
+                    mat.RemoveAt(mat.IndexOf(mat[i]));
+                    i--;
                 }
             }
-            catch { }
-            
 
-            // #Is Hostobject with compound structure
+            if (mat.Count > 0)
+            {
+                return mat;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public static IfcMaterialProfileSet GetElementMaterialsProfileset(ElementType e, Document doc)
+        {
+            //Make material list
+            List<IfcMaterialProfile> mat = new List<IfcMaterialProfile>();
+
+            //Get HostObject by query existing FamilyInstances with the same ElementType
+            var instances1 = new FilteredElementCollector(doc)
+                .OfClass(typeof(FamilyInstance))
+                .Cast<FamilyInstance>()
+                .Where(fi => fi.Symbol.Id == e.Id);
+
+            //take first element out of elementtype
+            List<Element> collectorEF = new FilteredElementCollector(doc)
+                .WhereElementIsNotElementType()
+                .ToList<Element>();
+            List<Element> listEI = collectorEF.Where(q => q.GetTypeId() == e.Id).ToList<Element>();
+            Element instances = listEI[0];
+            CompoundStructure compoundStructure = null;
+
+            // #Is elem Profile
             if (
-                hostObject != null ||
-                hostObject.Category.Name == "OST_Ceilings" ||
-                hostObject.Category.Name == "OST_Roofs" ||
-                hostObject.Category.Name == "Walls" ||
-                hostObject.Category.Name == "Floors"
+                e != null ||
+                e.Category.Name == "Ceiling" ||
+                e.Category.Name == "Roofs" ||
+                e.Category.Name == "Walls" ||
+                e.Category.Name == "Floors"
+                )
+            { }
+                //code
+
+
+
+
+
+                if (mat.Count > 0)
+            {
+                return mat;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public static IfcMaterialLayerSet GetElementMaterialsLayerset(ElementType e, Document doc)
+        {
+            //Make materila list
+            List<IfcMaterialLayer> matLayerSet = new List<IfcMaterialLayer>();
+
+            //Get HostObject by query existing FamilyInstances with the same ElementType
+            var instances1 = new FilteredElementCollector(doc)
+                .OfClass(typeof(FamilyInstance))
+                .Cast<FamilyInstance>()
+                .Where(fi => fi.Symbol.Id == e.Id);
+
+            //take first element out of elementtype
+            List<Element> collectorEF = new FilteredElementCollector(doc)
+                .WhereElementIsNotElementType()
+                .ToList<Element>();
+            List<Element> listEI = collectorEF.Where(q => q.GetTypeId() == e.Id).ToList<Element>();
+            Element instances = listEI[0];
+            CompoundStructure compoundStructure = null;
+
+            // #Is elem with compound structure
+            if (
+                e != null ||
+                e.Category.Name == "Ceilings" ||
+                e.Category.Name == "Roofs" ||
+                e.Category.Name == "Walls" ||
+                e.Category.Name == "Floors"
                 )
             {
-                if (hostObject.Category.Name == "Walls")
+                if (e.Category.Name == "Walls")
                 {
-                    Wall wall = hostObject as Wall;
+                    Wall wall = instances as Wall;
                     compoundStructure = wall.WallType.GetCompoundStructure();
                 }
-                else if (hostObject.Category.Name == "Floors")
+                else if (e.Category.Name == "Floors")
                 {
-                    Wall wall = hostObject as Wall;
-                    compoundStructure = wall.WallType.GetCompoundStructure();
+                    Floor floor = instances as Floor;
+                    compoundStructure = floor.FloorType.GetCompoundStructure();
                 }
-                else if (hostObject.Category.Name == "OST_Ceilings")
+                else if (e.Category.Name == "Ceilings")
                 {
-                    Wall wall = hostObject as Wall;
-                    compoundStructure = wall.WallType.GetCompoundStructure();
+                    try
+                    {
+                        Ceiling ceiling = instances as Ceiling;
+                        CeilingType CT = doc.GetElement(ceiling.GetTypeId()) as CeilingType;
+                        compoundStructure = CT.GetCompoundStructure();
+                    }
+                    catch { }
                 }
-                else if (hostObject.Category.Name == "OST_Roofs")
+                else if (e.Category.Name == "Roofs")
                 {
-                    Wall wall = hostObject as Wall;
-                    compoundStructure = wall.WallType.GetCompoundStructure();
+                    RoofBase roof = instances as RoofBase;
+                    compoundStructure = roof.RoofType.GetCompoundStructure();
                 }
-                if (compoundStructure != null) 
+                
+                if (compoundStructure != null)
                 {
                     var layers = compoundStructure.GetLayers();
-                    if(layers == null)
+                    if (layers == null)
                     {
                         //find category and subcategory corresponding to the compoundstructure layer
                     }
                     foreach (var layer in layers)
                     {
-                        ElementId matId = layer.MaterialId;
                         Material material = doc.GetElement(layer.MaterialId) as Material;
-                        mat.Add(material);
+                        
+                        if (material != null)
+                        {
+                            //get the description value
+                            BuiltInParameter desiredBIP = BuiltInParameter.ALL_MODEL_DESCRIPTION;
+                            string descriptionValue = "N/A";
+
+                            Parameter description = material.get_Parameter(desiredBIP);
+                            if (description != null)
+                            {
+                                descriptionValue = description.AsString();
+                            }
+
+                            //Convert Revit material to IfcMaterial
+                            IfcMaterial ifcMaterial = new IfcMaterial();
+                            ifcMaterial.Name = material.Name;
+                            ifcMaterial.Description = descriptionValue;
+                            ifcMaterial.Category = material.Category.Name;
+                            /*
+                            ifcMaterial.HasRepresentation = ;
+                            ifcMaterial.IsRelatedWith = ;
+                            ifcMaterial.RelatesTo = ;
+                            */
+                            ifcMaterial.Name = material.Name;
+                            ifcMaterial.Type = "IfcMaterial";
+
+                            //Make IfcMaterialLayer
+                            IfcMaterialLayer ifcMaterialLayer = new IfcMaterialLayer();
+                            ifcMaterialLayer.Material = ifcMaterial;
+                            ifcMaterialLayer.LayerThickness = layer.Width * 304.8;
+                            //ifcMaterialLayer.IsVentilated = ;
+                            ifcMaterialLayer.Name = material.Name;
+                            ifcMaterialLayer.Description = "N/A";
+                            ifcMaterialLayer.Category = layer.Function.ToString();
+                            ifcMaterialLayer.Priority = 0;
+                            matLayerSet.Add(ifcMaterialLayer);
+                        }
                     }
                 }
             }
 
-            // Find elements included in the element
+            if(matLayerSet.Count > 0)
+            {
+                IfcMaterialLayerSet ifcMaterialLayerSet = new IfcMaterialLayerSet();
+                ifcMaterialLayerSet.IfcMaterialLayer = matLayerSet;
+                ifcMaterialLayerSet.LayerSetName = "N/A";
+                ifcMaterialLayerSet.Description = "N/A";
+                //calculate total length
+                double thickness = 0;
+                foreach (IfcMaterialLayer layer in ifcMaterialLayerSet.IfcMaterialLayer)
+                {
+                    thickness = thickness + layer.LayerThickness;
+                }
+                ifcMaterialLayerSet.TotalThickness = thickness;
+                ifcMaterialLayerSet.Name = e.Name;
+                ifcMaterialLayerSet.Type = "IfcMaterialLayerSet";
+
+                return ifcMaterialLayerSet;
+            }
+            else
+            {
+                return null;
+            }
             
 
             
-            // else if material profile
-
-            // else material
-
-
-
-           
-            
-            return mat[0].Name.ToString();
         }
         public static Uri GetLocationParam(string domain, Element element)
         {
