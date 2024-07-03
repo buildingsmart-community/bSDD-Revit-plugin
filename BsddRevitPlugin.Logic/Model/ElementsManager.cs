@@ -34,6 +34,7 @@ using System.Collections;
 using Autodesk.Revit.DB.Visual;
 using Revit.IFC.Export.Utility;
 using System.Reflection;
+using System.Windows.Input;
 
 
 namespace BsddRevitPlugin.Logic.Model
@@ -1033,46 +1034,12 @@ namespace BsddRevitPlugin.Logic.Model
             var associationsMatLayerset = new Dictionary<ElementId, IfcMaterialLayerSet>();
             var associationsMatProfileset = new Dictionary<ElementId, IfcMaterialProfileSet>();
             var associationsMatProfile = new IfcMaterialProfile();
-            
+            var associationsMatConstituentSet = new Dictionary<ElementId, IfcMaterialConstituentSet>();
+
             if (GetElementMaterialsProfileset(elementType, doc) != null)
             {
                 ElementId elemId = elementType.Id;
-                associationsMatLayerset[elemId] = GetElementMaterialsLayerset(elementType, doc);
-
-
-
-
-
-
-
-                foreach (Material mat in GetElementMaterialsProfileset(elementType, doc))
-                {
-
-                    ElementId elemId = mat.Id;
-                    if (!associationsMatProfileset.TryGetValue(elemId, out var association))
-                    {
-                        // add new IfcMaterial to the dictionary based on dictionaryUri, Identification and Name
-                        associationsMatProfileset[elemId] = new IfcMaterialProfileSet
-                        {
-                            Type = "IfcMaterialProfileSet",
-                            Name = mat.Name,
-                            IfcMaterialProfile = new IfcMaterialProfile
-                            {
-                                IfcMaterial = new IfcMaterial
-                                {
-                                    Name = mat.Name,
-                                }
-                            }
-                        };
-                    }
-                    else
-                    {
-                        //update the existing IfcClassificationReference with the new values from the revit typeEntity
-                        var ifcMaterialProfileset = (IfcMaterialProfileSet)association;
-                        ifcMaterialProfileset.Type = mat.GetType().ToString();
-                        ifcMaterialProfileset.Name = mat.Name;
-                    }
-                }
+                associationsMatProfileset[elemId] = GetElementMaterialsProfileset(elementType, doc);
             }
 
             if (GetElementMaterialsLayerset(elementType, doc) != null)
@@ -1081,7 +1048,12 @@ namespace BsddRevitPlugin.Logic.Model
                 associationsMatLayerset[elemId] = GetElementMaterialsLayerset(elementType, doc);
             }
 
-            if (GetElementMaterials(elementType, doc) != null)
+            if(GetElementMatConstituentSet(elementType, doc) != null)
+            {
+                ElementId elemId = elementType.Id;
+                associationsMatConstituentSet[elemId] = GetElementMatConstituentSet(elementType, doc);
+            }
+            else if (GetElementMaterials(elementType, doc) != null)
             {
                 foreach (Material mat in GetElementMaterials(elementType, doc))
                 {
@@ -1141,6 +1113,13 @@ namespace BsddRevitPlugin.Logic.Model
             {
                 Association association = new Association();
                 association = (IfcMaterialLayerSet)pair.Value;
+                associations.Add(association);
+            }
+
+            foreach (KeyValuePair<ElementId, IfcMaterialConstituentSet> pair in associationsMatConstituentSet)
+            {
+                Association association = new Association();
+                association = (IfcMaterialConstituentSet)pair.Value;
                 associations.Add(association);
             }
 
@@ -1207,7 +1186,7 @@ namespace BsddRevitPlugin.Logic.Model
             List<Material> materials = new List<Material>();
             materials = GetElementMaterials(element, doc);
 
-            if(materials != null)
+            if (materials != null)
             {
                 foreach (Material mat in materials)
                 {
@@ -2287,70 +2266,44 @@ namespace BsddRevitPlugin.Logic.Model
             //      |
             //      | --IfcMaterial
 
-            // IfcWall
-            //  |
-            //  | --IfcRelAssociatesMaterial
-            //      |
-            //      | --IfcMaterialLayerSet
-            //          |
-            //          | --IfcMaterial(Baksteen)
-            //          | --IfcMaterial(Isolatie)
-            //          | --IfcMaterial(Gipsplaat)
-
-
-            // IfcElement(bijv.IfcBeam, IfcColumn)
-            //  |
-            //  | --IfcRelAssociatesMaterial
-            //      |
-            //      | --IfcMaterialProfileSet
-            //          |
-            //          | --IfcMaterialProfile(1..n)
-            //              |
-            //              | --IfcProfileDef(bijv.IfcRectangleProfileDef, IfcCircleProfileDef)
-            //              | --IfcMaterial
-
-            //material constituent set???
-
-            // Wall->WallType->GetCompoundStructure->GetLayers->MaterialId
-
-
-            //Make materila list
+            //Make material list
             List<Material> mat = new List<Material>();
 
-            // Find out or there are any material parameters
-            foreach (Parameter parameter in e.Parameters)
+            if (
+                e != null &&
+                e.Category.Name != "Structural Beam Systems" &&
+                e.Category.Name != "Structural Columns" &&
+                e.Category.Name != "Structural Framing" &&
+                e.Category.Name != "Structural Trusses"
+                )
             {
-                // Check if the parameter is related to materials
-                if (parameter.Definition.GetDataType() == SpecTypeId.Reference.Material)
+
+                // Find out or there are any material parameters
+                foreach (Parameter parameter in e.Parameters)
                 {
-                    Material Pmat = null;
-                    ElementId materialId = parameter.AsElementId();
-                    if (-1 == materialId.IntegerValue)
+                    // Check if the parameter is related to materials
+                    if (parameter.Definition.GetDataType() == SpecTypeId.Reference.Material)
                     {
-                        //Invalid ElementId, assume the material is "By Category"
-                        if (null != e.Category)
+                        Material Pmat = null;
+                        ElementId materialId = parameter.AsElementId();
+                        if (-1 == materialId.IntegerValue)
                         {
-                            Pmat = e.Category.Material;
-                            if (Pmat != null)
+                            //Invalid ElementId, assume the material is "By Category"
+                            if (null != e.Category)
                             {
-                                mat.Add(Pmat);
+                                Pmat = e.Category.Material;
+                                if (Pmat != null)
+                                {
+                                    mat.Add(Pmat);
+                                }
                             }
                         }
+                        else
+                        {
+                            Pmat = doc.GetElement(materialId) as Material;
+                            mat.Add(Pmat);
+                        }
                     }
-                    else
-                    {
-                        Pmat = doc.GetElement(materialId) as Material;
-                        mat.Add(Pmat);
-                    }
-                }
-            }
-
-            for (int i = 0; i < mat.Count; i++)
-            {
-                if (mat[i] == null)
-                {
-                    mat.RemoveAt(mat.IndexOf(mat[i]));
-                    i--;
                 }
             }
 
@@ -2364,43 +2317,253 @@ namespace BsddRevitPlugin.Logic.Model
             }
         }
 
+        public static IfcMaterialConstituentSet GetElementMatConstituentSet(Element e, Document doc)
+        {
+            //schema
+            //https://help.autodesk.com/view/RVT/2022/ENU/?guid=Revit_API_Revit_API_Developers_Guide_Revit_Geometric_Elements_Material_Element_Material_html
+
+            // koppeling materialen via IfcRelAssociatesMaterial
+            // verbindt een IfcElement met een IfcMaterial, IfcMaterialLayerSet (layered element zoals wall), of IfcMaterialProfileSet (profielen).
+
+            // IfcElement(bijv.IfcWall, IfcBeam, IfcColumn)
+            //  |
+            //  | --IfcRelAssociatesMaterial
+            //      |
+            //      | --IfcMaterialConstituentSet
+            //          |
+            //          | -- IfcMaterialConstituent
+            //              |
+            //              | -- IfcMaterial
+            //          | -- IfcMaterialConstituent
+            //              |
+            //              | -- IfcMaterial
+
+            //Make material list
+            Dictionary<Material, String> matDict = new Dictionary<Material, String>();
+
+            if (
+                e != null &&
+                e.Category.Name != "Structural Beam Systems" &&
+                e.Category.Name != "Structural Columns" &&
+                e.Category.Name != "Structural Framing" &&
+                e.Category.Name != "Structural Trusses"
+                )
+            {
+
+                // Find out or there are any material parameters
+                foreach (Parameter parameter in e.Parameters)
+                {
+                    // Check if the parameter is related to materials
+                    if (parameter.Definition.GetDataType() == SpecTypeId.Reference.Material)
+                    {
+                        Material Pmat = null;
+                        ElementId materialId = parameter.AsElementId();
+                        if (-1 == materialId.IntegerValue)
+                        {
+                            //Invalid ElementId, assume the material is "By Category"
+                            if (null != e.Category)
+                            {
+                                Pmat = e.Category.Material;
+                                if (Pmat != null)
+                                {
+                                    matDict.Add(Pmat, parameter.Definition.Name);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Pmat = doc.GetElement(materialId) as Material;
+                            matDict.Add(Pmat, "");
+                        }
+                    }
+                }
+            }
+            
+            if (matDict.Count > 1)
+            {
+                //Define IfcMaterialConstituentSet
+                IfcMaterialConstituentSet ifcMaterialConstituentSet = new IfcMaterialConstituentSet();
+
+                List<IfcMaterialConstituent> ifcMaterialConstituentList = new List<IfcMaterialConstituent>();
+                foreach (KeyValuePair<Material, String> entry in matDict)
+                {
+                    //get the description value
+                    BuiltInParameter desiredBIP = BuiltInParameter.ALL_MODEL_DESCRIPTION;
+                    string descriptionValue = "N/A";
+
+                    Parameter description = entry.Key.get_Parameter(desiredBIP);
+                    if (description != null)
+                    {
+                        descriptionValue = description.AsString();
+                    }
+
+                    //Convert Revit material to IfcMaterial
+                    IfcMaterial ifcMaterial = new IfcMaterial();
+                    ifcMaterial.Name = entry.Key.Name;
+                    ifcMaterial.Description = descriptionValue;
+                    ifcMaterial.Category = entry.Key.Category.Name;
+                    //ifcMaterial.HasRepresentation = ;
+                    //ifcMaterial.IsRelatedWith = ;
+                    //ifcMaterial.RelatesTo = ;
+                    ifcMaterial.Type = "IfcMaterial";
+
+                    //Make IfcMaterialConstituent
+                    IfcMaterialConstituent ifcMaterialConstituent = new IfcMaterialConstituent();
+                    ifcMaterialConstituent.Name = entry.Value;
+                    ifcMaterialConstituent.Description = "N/A";
+                    ifcMaterialConstituent.Material = ifcMaterial;
+                    //ifcMaterialConstituent.Fraction = ;
+                    //ifcMaterialConstituent.Category = ;
+                    //ifcMaterialConstituent.ToMaterialConstituentSet = ifcMaterialConstituentSet;
+                    ifcMaterialConstituentList.Add(ifcMaterialConstituent);
+                }
+
+
+                ifcMaterialConstituentSet.Name = e.Name;
+                ifcMaterialConstituentSet.Description = "N/A";
+                ifcMaterialConstituentSet.MaterialConstituents = ifcMaterialConstituentList;
+   
+                return ifcMaterialConstituentSet;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         public static IfcMaterialProfileSet GetElementMaterialsProfileset(ElementType e, Document doc)
         {
+            // IfcElement(bijv.IfcBeam, IfcColumn)
+            //  |
+            //  | --IfcRelAssociatesMaterial
+            //      |
+            //      | --IfcMaterialProfileSet
+            //          |
+            //          | --IfcMaterialProfile(1..n)
+            //              |
+            //              | --IfcProfileDef(bijv.IfcRectangleProfileDef, IfcCircleProfileDef)
+            //              | --IfcMaterial
+
+            //Make materila list
+            List<IfcMaterialProfile> matProfileSet = new List<IfcMaterialProfile>();
+
             //Make material list
-            List<IfcMaterialProfile> mat = new List<IfcMaterialProfile>();
-
-            //Get HostObject by query existing FamilyInstances with the same ElementType
-            var instances1 = new FilteredElementCollector(doc)
-                .OfClass(typeof(FamilyInstance))
-                .Cast<FamilyInstance>()
-                .Where(fi => fi.Symbol.Id == e.Id);
-
-            //take first element out of elementtype
-            List<Element> collectorEF = new FilteredElementCollector(doc)
-                .WhereElementIsNotElementType()
-                .ToList<Element>();
-            List<Element> listEI = collectorEF.Where(q => q.GetTypeId() == e.Id).ToList<Element>();
-            Element instances = listEI[0];
-            CompoundStructure compoundStructure = null;
+            List<Material> mat = new List<Material>();
 
             // #Is elem Profile
             if (
-                e != null ||
-                e.Category.Name == "Ceiling" ||
-                e.Category.Name == "Roofs" ||
-                e.Category.Name == "Walls" ||
-                e.Category.Name == "Floors"
+                e != null &&
+                    (
+                    e.Category.Name == "Structural Beam Systems" ||
+                    e.Category.Name == "Structural Columns" ||
+                    e.Category.Name == "Structural Framing" ||
+                    e.Category.Name == "Structural Trusses"
+                    )
                 )
-            { }
-                //code
-
-
-
-
-
-                if (mat.Count > 0)
             {
-                return mat;
+                // Find out or there are any material parameters
+                foreach (Parameter parameter in e.Parameters)
+                {
+                    // Check if the parameter is related to materials
+                    if (parameter.Definition.GetDataType() == SpecTypeId.Reference.Material)
+                    {
+                        Material Pmat = null;
+                        ElementId materialId = parameter.AsElementId();
+                        if (-1 == materialId.IntegerValue)
+                        {
+                            //Invalid ElementId, assume the material is "By Category"
+                            if (null != e.Category)
+                            {
+                                Pmat = e.Category.Material;
+                                if (Pmat != null)
+                                {
+                                    mat.Add(Pmat);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Pmat = doc.GetElement(materialId) as Material;
+                            mat.Add(Pmat);
+                        }
+                    }
+                }
+
+            }
+
+            for (int i = 0; i < mat.Count; i++)
+            {
+                if (mat[i] == null)
+                {
+                    mat.RemoveAt(mat.IndexOf(mat[i]));
+                    i--;
+                }
+            }
+
+            foreach (Material material in mat)
+            {
+                if (material != null)
+                {
+                    //get the description value
+                    BuiltInParameter desiredBIP = BuiltInParameter.ALL_MODEL_DESCRIPTION;
+                    string descriptionValue = "N/A";
+
+                    Parameter description = material.get_Parameter(desiredBIP);
+                    if (description != null)
+                    {
+                        descriptionValue = description.AsString();
+                    }
+
+                    //Convert Revit material to IfcMaterial
+                    IfcMaterial ifcMaterial = new IfcMaterial();
+                    ifcMaterial.Name = material.Name;
+                    ifcMaterial.Description = descriptionValue;
+                    ifcMaterial.Category = material.Category.Name;
+                    /*
+                    ifcMaterial.HasRepresentation = ;
+                    ifcMaterial.IsRelatedWith = ;
+                    ifcMaterial.RelatesTo = ;
+                    */
+                    ifcMaterial.Name = material.Name;
+                    ifcMaterial.Type = "IfcMaterial";
+
+                    //Make IfcMaterialProfile
+                    IfcMaterialProfile ifcMaterialProfile = new IfcMaterialProfile();
+                    ifcMaterialProfile.Name = material.Name;
+                    ifcMaterialProfile.Description = "N/A";
+                    ifcMaterialProfile.Material = ifcMaterial;
+                    //ifcMaterialProfile.Profile = ;
+                    ifcMaterialProfile.Priority = 0;
+                    //ifcMaterialProfile.Category = ;
+                    matProfileSet.Add(ifcMaterialProfile);
+                }
+            }
+
+            if (matProfileSet.Count > 0)
+            {
+                //Define IfcProfileDef
+                IfcProfileDef ifcProfileDef = new IfcProfileDef();
+                //ifcProfileDef.ProfileType = ;
+                ifcProfileDef.ProfileName = e.Name;
+                //ifcProfileDef.HasExternalReference = ;
+                //ifcProfileDef.HasProperties = ;
+
+                //Define IfcCompositeProfileDef
+                IfcCompositeProfileDef ifcCompositeProfileDef = new IfcCompositeProfileDef();
+                ifcProfileDef.ProfileName = e.Name;
+                ifcProfileDef.ProfileName = e.Name;
+                ifcCompositeProfileDef.Profiles = ifcProfileDef;
+                ifcCompositeProfileDef.Label = "ifcCompositeProfileDef";
+
+                //Define IfcMaterialProfileSet
+                IfcMaterialProfileSet ifcMaterialProfileSet = new IfcMaterialProfileSet();
+                ifcMaterialProfileSet.Name = e.Name;
+                ifcMaterialProfileSet.Description = "N/A";
+                ifcMaterialProfileSet.MaterialProfiles = matProfileSet;
+                ifcMaterialProfileSet.CompositeProfile = ifcCompositeProfileDef;
+                ifcMaterialProfileSet.Type = "IfcMaterialProfileSet";
+
+                return ifcMaterialProfileSet;
             }
             else
             {
@@ -2410,6 +2573,16 @@ namespace BsddRevitPlugin.Logic.Model
 
         public static IfcMaterialLayerSet GetElementMaterialsLayerset(ElementType e, Document doc)
         {
+            // IfcWall
+            //  |
+            //  | --IfcRelAssociatesMaterial
+            //      |
+            //      | --IfcMaterialLayerSet
+            //          |
+            //          | --IfcMaterial(Baksteen)
+            //          | --IfcMaterial(Isolatie)
+            //          | --IfcMaterial(Gipsplaat)
+
             //Make materila list
             List<IfcMaterialLayer> matLayerSet = new List<IfcMaterialLayer>();
 
@@ -2535,10 +2708,8 @@ namespace BsddRevitPlugin.Logic.Model
             {
                 return null;
             }
-            
-
-            
         }
+
         public static Uri GetLocationParam(string domain, Element element)
         {
             Uri paramValue = new Uri(domain);

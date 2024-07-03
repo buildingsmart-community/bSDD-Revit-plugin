@@ -206,7 +206,7 @@ namespace BsddRevitPlugin.Logic.IfcJson
         [JsonProperty("material")]
         public IfcMaterial Material { get; set; }
 
-        [JsonProperty("Profile")]
+        [JsonProperty("profile")]
         public IfcProfileDef Profile { get; set; }
 
         [JsonProperty("priority")]
@@ -219,17 +219,65 @@ namespace BsddRevitPlugin.Logic.IfcJson
         public IfcMaterialProfileSet ToMaterialProfileSet { get; set; }
     }
 
+    public class IfcMaterialConstituentSet : Association
+    {
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        [JsonProperty("description")]
+        public string Description { get; set; }
+
+        [JsonProperty("materialConstituents")]
+        public List<IfcMaterialConstituent> MaterialConstituents { get; set; }
+    }
+
+    public class IfcMaterialConstituent
+    {
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        [JsonProperty("description")]
+        public string Description { get; set; }
+
+        [JsonProperty("material")]
+        public IfcMaterial Material { get; set; }
+
+        [JsonProperty("fraction")]
+        public IfcNormalisedRatioMeasure Fraction { get; set; }
+
+        [JsonProperty("category")]
+        public string Category { get; set; }
+
+        [JsonProperty("toMaterialConstituentSet")]
+        public IfcMaterialConstituentSet ToMaterialConstituentSet { get; set; }
+    }
+
+    public class IfcNormalisedRatioMeasure
+    {
+        
+    }
+
     public class IfcCompositeProfileDef
     {
-        //Profiles
-        //Label
+        [JsonProperty("profiles")]
+        public IfcProfileDef Profiles { get; set; }
+
+        [JsonProperty("label")]
+        public string Label { get; set; }
     }
     public class IfcProfileDef
     {
-        //ProfileType
-        //ProfileName
-        //HasExternalReference
-        //HasProperties
+        //[JsonProperty("profileType")]
+        //public IfcProfileTypeEnum ProfileType { get; set; }
+
+        [JsonProperty("profileName")]
+        public string ProfileName { get; set; }
+
+        //[JsonProperty("hasExternalReference")]
+        //public IfcExternalReferenceRelationship HasExternalReference { get; set; }
+
+        //[JsonProperty("hasProperties")]
+        //public IfcProfileProperties HasProperties { get; set; }
     }
 
     /// <summary>
