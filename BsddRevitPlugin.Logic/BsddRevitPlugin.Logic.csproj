@@ -167,9 +167,6 @@
     <None Include="packages.config" />
     <None Include="Resources\ifcDataFromBsddExample.json" />
     <None Include="Resources\ifcDataFromRevitExample.json" />
-    <None Include="Resources\ifcParametersBsdd.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="UI\Settings\BsddSettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
