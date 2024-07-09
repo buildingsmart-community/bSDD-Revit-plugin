@@ -290,7 +290,7 @@ namespace BsddRevitPlugin.Logic.Model
                     bool success = Uri.TryCreate(classification.ClassificationLocation, UriKind.Absolute, out locationUri);
                     if (success)
                     {
-                        string parameterNameFromUri = ElementsManager.CreateParameterNameFromUri(locationUri);
+                        string parameterNameFromUri = ElementsManagerLogic.CreateParameterNameFromUri(locationUri);
                         if (!string.IsNullOrEmpty(parameterNameFromUri))
                         {
                             fieldNames.Add(parameterNameFromUri);
