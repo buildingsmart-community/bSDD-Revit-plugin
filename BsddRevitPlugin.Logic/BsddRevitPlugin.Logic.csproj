@@ -160,6 +160,7 @@
     <Compile Include="UI\Wrappers\RevitEventWrapper.cs" />
     <Compile Include="Utilities\FileHandling.cs" />
     <Compile Include="Utilities\IfcProperties.cs" />
+    <Compile Include="Utilities\ParameterDataManagement.cs" />
     <Compile Include="Utilities\Parameters.cs" />
     <Compile Include="Utilities\UuidFromUri.cs" />
   </ItemGroup>
