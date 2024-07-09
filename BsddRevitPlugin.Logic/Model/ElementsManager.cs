@@ -1,16 +1,13 @@
 ﻿using ASRR.Core.Persistence;
 using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.ExtensibleStorage;
 using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
-using BsddRevitPlugin.Logic.UI.BsddBridge;
 using BsddRevitPlugin.Logic.Utilities;
 using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.IO;
 using static BsddRevitPlugin.Logic.Model.ElementsManagerLogic;
 
 
@@ -60,256 +57,49 @@ namespace BsddRevitPlugin.Logic.Model
 
             logger.Info($"Element json {JsonConvert.SerializeObject(ifcEntity)}");
 
-            //TODO: rework this method to do the following:
-            //Dictionary<string, ParameterCreation> parametersToCreate = new Dictionary<string, ParameterCreation>();
-            //Dictionary<string, string> parametersToSet = new Dictionary<string, string>();
-            // Read IFC data from the entity
-            // Get Attributes
-            // Get classifications / materials
-            // Get properties
-            // and add to parametersToCreate and parametersToSet
-            // Create parameters for all parameters in parametersToCreate
-            // Set parameters for all parameters in parametersToSet
 
             try
             {
+                // Create a classification set in which every dictionary will be collected
+                HashSet<IfcClassification> dictionaryCollection = new HashSet<IfcClassification>();
+
+                //Get the elementType
+                int idInt = Convert.ToInt32(ifcEntity.Tag);
+                ElementId typeId = new ElementId(idInt);
+                ElementType elementType = doc.GetElement(typeId) as ElementType;
+
+                //Set IfcEntity to the Elements DataStorage
+                SetIfcEntityToElementDataStorage(ifcEntity, elementType);
+
+                ForgeTypeId groupType = GroupTypeId.Ifc;
+
+                List<ParameterCreation> parametersToCreate = new List<ParameterCreation>();
+                Dictionary<string, object> parametersToSet = new Dictionary<string, object>();
+
+                ParameterDataManagement parameterDataManagement = new ParameterDataManagement();
+                parameterDataManagement.GetParametersToCreateAndSet(doc, ifcEntity, dictionaryCollection, out parametersToCreate, out parametersToSet);
+
+
                 using (Transaction tx = new Transaction(doc))
                 {
-                    tx.Start("Save bsdd data to element");
-
-                    // Create a classification set in which every dictionary will be collected
-                    HashSet<IfcClassification> dictionaryCollection = new HashSet<IfcClassification>();
-
-                    //Get the elementType
-                    int idInt = Convert.ToInt32(ifcEntity.Tag);
-                    ElementId typeId = new ElementId(idInt);
-                    ElementType elementType = doc.GetElement(typeId) as ElementType;
-
-                    //Initialize parameters
-                    string bsddParameterName = "";
-                    string parameterMappedName = "";
-
-                    //Set parameter type and group for the bsdd classification parameters
-                    ForgeTypeId specType = SpecTypeId.String.Text;
-                    ForgeTypeId groupType = GroupTypeId.Ifc;
-
-                    //Add all associations to the element in element entity storage
-                    Schema schema = GetBsddDataSchema();
-                    var field = schema.GetField(s_IfcClassificationData);
-                    try
-                    {
-                        Entity entity = new Entity(schema);
-                        entity.Set(field, JsonConvert.SerializeObject(ifcEntity.HasAssociations));
-                        elementType.SetEntity(entity);
-                    }
-                    catch
-                    {
-                        Console.WriteLine("error");
-                    }
-
-                    //Get all classifications and properties from the ifcEntity
-                    var associations = ifcEntity.HasAssociations;
-                    var isDefinedBy = ifcEntity.IsDefinedBy;
-
-                    //Create a list of parameters to create
-                    List<ParameterCreation> parametersToCreate = new List<ParameterCreation>();
-
-                    //Add classification parameters to the list
-                    //Set Revit parameters for each association
-                    if (associations != null)
-                    {
-                        foreach (var association in associations)
-                        {
-                            switch (association)
-                            {
-                                case IfcClassificationReference ifcClassificationReference:
-                                    // do something with ifcClassificationReference
-
-                                    //Create parameter name for each unique the bsdd classificationReference
-                                    bsddParameterName = CreateParameterNameFromIFCClassificationReferenceSourceLocation(ifcClassificationReference);
-                                    parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType, Parameters.ExistingProjectParameter(doc, bsddParameterName)));
-
-                                    break;
-
-                                case IfcMaterial ifcMaterial:
-                                    // do something with ifcMaterial
-                                    break;
-                            }
-                        }
-                    }
-
-                    //Add property parameters to the list
-                    if (isDefinedBy != null)
-                    {
-                        foreach (var propertySet in isDefinedBy)
-                        {
-                            foreach (var property in propertySet.HasProperties)
-                            {
-                                if (property.Type == null)
-                                {
-                                    continue;
-                                }
-
-                                if (property.Type == "IfcPropertySingleValue")
-                                {
-                                    var propertySingleValue = property as IfcPropertySingleValue;
-                                    if (propertySingleValue.NominalValue == null)
-                                    {
-                                        continue;
-                                    }
-                                    specType = GetParameterTypeFromProperty(propertySingleValue.NominalValue);
-                                }
-                                else if (property.Type == "IfcPropertyEnumeratedValue")
-                                {
-                                    var propertyEnumeratedValue = property as IfcPropertyEnumeratedValue;
-                                    if (propertyEnumeratedValue.EnumerationValues == null || propertyEnumeratedValue.EnumerationValues.Count == 0)
-                                    {
-                                        continue;
-                                    }
-                                    var enumerationValue = propertyEnumeratedValue.EnumerationValues.First();
-                                    specType = GetParameterTypeFromProperty(enumerationValue);
-                                }
-                                bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property);
-                                parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType, Parameters.ExistingProjectParameter(doc, bsddParameterName)));
-                            }
-                        }
-                    }
-
-                    string objectTypeParamName = "IfcObjectType[Type]";
-                    if (ifcEntity.ObjectType != null)
-                    {
-                        parametersToCreate.Add(new ParameterCreation(objectTypeParamName, SpecTypeId.String.Text, Parameters.ExistingProjectParameter(doc, objectTypeParamName)));
-                    }
+                    tx.Start("Create or edit parameters");
 
                     //First create all parameters at once (in Release creating parameters seperately sometimes fails)
                     List<Category> currentCategoryLst = new List<Category>() { elementType.Category };
                     Parameters.CreateProjectParameters(doc, parametersToCreate, "tempGroupName", groupType, false, currentCategoryLst);
 
-                    //Set Revit parameters for each association
-                    if (associations != null)
-                    {
-                        foreach (var association in associations)
-                        {
-                            switch (association)
-                            {
-                                case IfcClassificationReference ifcClassificationReference:
-                                    // do something with ifcClassificationReference
-
-                                    dictionaryCollection.Add(ifcClassificationReference.ReferencedSource);
-
-                                    //Create parameter name for each unique the bsdd classificationReference
-                                    bsddParameterName = CreateParameterNameFromIFCClassificationReferenceSourceLocation(ifcClassificationReference);
-
-                                    //Get mapped parametername (stored in the documents DataStorage)
-                                    parameterMappedName = GetMappedParameterName(ifcClassificationReference);
-
-                                    //Check each type parameter from the object
-                                    foreach (Parameter typeparameter in elementType.Parameters)
-                                    {
-                                        string typeParameterName = typeparameter.Definition.Name;
-
-                                        switch (typeParameterName)
-                                        {
-                                            //Add the bsdd value to the parameter
-                                            case var name when name == bsddParameterName:
-                                                try
-                                                {
-                                                    logger.Info($"Setting parameter {typeparameter.Definition.Name} with value {ifcClassificationReference.Identification + ":" + ifcClassificationReference.Name}");
-                                                    typeparameter.Set(ifcClassificationReference.Identification + ":" + ifcClassificationReference.Name);
-                                                }
-                                                catch (Exception)
-                                                {
-
-                                                    throw;
-                                                }
-                                                break;
-
-                                            //Add the bsdd value to the mapped parameter
-                                            case var name when name == parameterMappedName:
-                                                typeparameter.Set(ifcClassificationReference.Identification);
-                                                break;
-
-                                            //Allways add a type
-                                            case "Export Type to IFC As":
-                                                if (ifcEntity.Type != null)
-                                                {
-                                                    typeparameter.Set(ifcEntity.Type);
-                                                }
-                                                break;
-
-                                            //Allways add a predifined type
-                                            case "Type IFC Predefined Type":
-                                                //add check if Type even exists
-                                                if (ifcEntity.PredefinedType != null)
-                                                {
-                                                    typeparameter.Set(ifcEntity.PredefinedType);
-                                                }
-                                                else if (ifcEntity.Type != null && ifcEntity.PredefinedType == null)
-                                                {
-                                                    typeparameter.Set("");
-                                                }
-                                                break;
-
-                                            //Allways add a object type
-                                            case var name when name == objectTypeParamName:
-                                                if (ifcEntity.ObjectType != null)
-                                                {
-                                                    typeparameter.Set(ifcEntity.ObjectType);
-                                                }
-                                                break;
-
-                                            default:
-                                                break;
-                                        }
-                                    }
-
-                                    break;
-
-                                case IfcMaterial ifcMaterial:
-                                    // do something with ifcMaterial
-                                    break;
-                            }
-                        }
-                    }
-
-                    //Set Revit parameters for each property
-                    if (isDefinedBy != null)
-                    {
-                        foreach (var propertySet in isDefinedBy)
-                        {
-                            foreach (var property in propertySet.HasProperties)
-                            {
-                                if (property.Type == null)
-                                {
-                                    continue;
-                                }
-
-                                if (property.Type == "IfcPropertySingleValue")
-                                {
-                                    var propertySingleValue = property as IfcPropertySingleValue;
-                                    if (propertySingleValue.NominalValue == null)
-                                    {
-                                        continue;
-                                    }
-                                    createAndSetTypeProperty(elementType, propertySet, property, propertySingleValue.NominalValue);
-                                }
-                                else if (property.Type == "IfcPropertyEnumeratedValue")
-                                {
-                                    var propertyEnumeratedValue = property as IfcPropertyEnumeratedValue;
-                                    if (propertyEnumeratedValue.EnumerationValues == null || propertyEnumeratedValue.EnumerationValues.Count == 0)
-                                    {
-                                        continue;
-                                    }
-                                    var enumerationValue = propertyEnumeratedValue.EnumerationValues.First();
-                                    createAndSetTypeProperty(elementType, propertySet, property, enumerationValue);
-                                }
-                            }
-                        }
-                    }
-
                     tx.Commit();
                 }
 
+                using (Transaction tx = new Transaction(doc))
+                {
+                    tx.Start("Set parameters");
+
+                    //Set all parameters
+                    Parameters.SetElementTypeParameters(elementType, parametersToSet);
+
+                    tx.Commit();
+                }
             }
             catch (Exception e)
             {

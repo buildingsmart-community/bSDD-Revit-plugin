@@ -481,5 +481,34 @@ namespace BsddRevitPlugin.Logic.Utilities
             return null;
         }
 
+
+        public static void SetElementTypeParameters(ElementType elementType, Dictionary<string, object> parametersToSet)
+        {
+            Logger logger = LogManager.GetCurrentClassLogger();
+
+            foreach (Parameter typeparameter in elementType.Parameters)
+            {
+                if (parametersToSet.ContainsKey(typeparameter.Definition.Name))
+                {
+
+                    dynamic param = null;
+
+                    parametersToSet.TryGetValue(typeparameter.Definition.Name, out param);
+
+                    logger.Info($"Setting parameter {typeparameter.Definition.Name} with value {param}");
+
+                    if (param != null)
+                    {
+                        typeparameter.Set(param);
+                    }
+                    else
+                    {
+                        logger.Info($"Failed to set parameter {typeparameter.Definition.Name}, value {param} was null.");
+                    }
+
+                }
+            }
+        }
+
     }
 }
