@@ -1,4 +1,7 @@
-﻿using Autodesk.Revit.DB.ExtensibleStorage;
+﻿//TODO comments
+
+#region ================== References ===================
+using Autodesk.Revit.DB.ExtensibleStorage;
 using Autodesk.Revit.DB;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
 using NLog;
@@ -9,7 +12,9 @@ using System.Reflection;
 using ASRR.Core.Persistence;
 using System.IO;
 using Newtonsoft.Json;
+#endregion
 
+#region ============ Namespace Declaration ============
 namespace BsddRevitPlugin.Logic.Model
 {
     public static class SettingsManager
@@ -223,3 +228,4 @@ namespace BsddRevitPlugin.Logic.Model
     }
     
 }
+#endregion

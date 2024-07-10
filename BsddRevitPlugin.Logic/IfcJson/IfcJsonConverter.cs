@@ -1,8 +1,13 @@
+//TODO comments
+
+#region ================== References ===================
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+#endregion
 
+#region ============ Namespace Declaration ============
 namespace BsddRevitPlugin.Logic.IfcJson
 {
     public class IfcJsonConverter : JsonConverter
@@ -95,3 +100,4 @@ namespace BsddRevitPlugin.Logic.IfcJson
         }
     }
 }
+#endregion

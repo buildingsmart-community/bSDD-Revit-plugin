@@ -1,4 +1,7 @@
-﻿using Autodesk.Revit.DB;
+﻿//TODO comments
+
+#region ================== References ===================
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExtensibleStorage;
 using BIM.IFC.Export.UI;
 using System.Collections.Generic;
@@ -6,7 +9,9 @@ using System.Linq;
 using System;
 using System.Web.Script.Serialization;
 using System.IO;
+#endregion
 
+#region ============ Namespace Declaration ============
 namespace BsddRevitPlugin.Logic.UI.Services
 {
     public abstract class IfcExportService : IIfcExportService
@@ -329,3 +334,4 @@ namespace BsddRevitPlugin.Logic.UI.Services
         }
     }
 }
+#endregion

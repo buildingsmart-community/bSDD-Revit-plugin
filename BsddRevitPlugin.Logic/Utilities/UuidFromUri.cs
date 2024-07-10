@@ -1,9 +1,13 @@
-﻿
+﻿//TODO comments
+
+#region ================== References ===================
 using System;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+#endregion
 
+#region ============ Namespace Declaration ============
 namespace BsddRevitPlugin.Logic.Utilities
 {
     public class UuidFromUri
@@ -79,4 +83,4 @@ namespace BsddRevitPlugin.Logic.Utilities
         }
     }
 }
- 
+#endregion
