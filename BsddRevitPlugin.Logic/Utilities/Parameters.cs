@@ -1,4 +1,7 @@
-﻿using Autodesk.Revit.DB;
+﻿//TODO comments
+
+#region ================== References ===================
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Mechanical;
 using NLog;
 using System;
@@ -6,7 +9,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+#endregion
 
+#region ============ Namespace Declaration ============
 namespace BsddRevitPlugin.Logic.Utilities
 {
     public class ParameterCreation
@@ -405,3 +410,4 @@ namespace BsddRevitPlugin.Logic.Utilities
 
     }
 }
+#endregion

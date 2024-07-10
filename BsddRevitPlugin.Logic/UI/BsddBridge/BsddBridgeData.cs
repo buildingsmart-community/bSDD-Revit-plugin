@@ -1,8 +1,14 @@
-﻿using Autodesk.Revit.DB;
+﻿//TODO comments
+
+#region ================== References ===================
+using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+#endregion
 
+#region ============ Namespace Declaration ============
 namespace BsddRevitPlugin.Logic.UI.BsddBridge
 {
     public static class GlobalSelection
@@ -16,6 +22,12 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
     {
         public static Document currentDocument;
     }
+
+    public static class GlobalUIDocument
+    {
+        public static Autodesk.Revit.UI.UIDocument currentUIDocument;
+    }
+
     public static class GlobalBsddSettings
     {
         public static BsddSettings bsddsettings = new BsddSettings();
@@ -59,3 +71,4 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         public List<IfcEntity> IfcData { get; set; }
     }
 }
+#endregion

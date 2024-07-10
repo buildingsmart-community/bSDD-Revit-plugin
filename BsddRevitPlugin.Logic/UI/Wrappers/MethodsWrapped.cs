@@ -1,3 +1,6 @@
+//TODO comments
+
+#region ================== References ===================
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.IFC;
 using Autodesk.Revit.UI;
@@ -18,7 +21,9 @@ using System.Windows.Controls;
 using System.Windows.Interop;
 using static BsddRevitPlugin.Logic.Model.ElementsManager;
 using Document = Autodesk.Revit.DB.Document;
+#endregion
 
+#region ============ Namespace Declaration ============
 /// <summary>
 /// Represents an abstract base class for handling Revit selection events.
 /// </summary>
@@ -49,10 +54,15 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
         public void UpdateBsddLastSelection()
         {
-            List<Element> lastSelection = new List<Element>();
+            ElementSet lastSelection = new ElementSet();
+            List<Element> ListlastSelection = new List<Element>();
             try
             {
-                lastSelection = GlobalSelection.LastSelectedElementsWithDocs[GlobalDocument.currentDocument.PathName];
+                ListlastSelection = GlobalSelection.LastSelectedElementsWithDocs[GlobalDocument.currentDocument.PathName];
+                foreach(Element element in ListlastSelection)
+                {
+                    lastSelection.Insert(element);
+                }
             }
             catch (Exception)
             {
@@ -102,7 +112,12 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             }
 
             // Pack data into json format
-            List<IfcEntity> selectionData = SelectionToIfcJson(doc, GlobalSelection.LastSelectedElementsWithDocs[doc.PathName]);
+            ElementSet elemSet = new ElementSet();
+            foreach(Element elem in GlobalSelection.LastSelectedElementsWithDocs[doc.PathName])
+            {
+                elemSet.Insert(elem);
+            }
+            List<IfcEntity> selectionData = SelectionToIfcJson(doc, elemSet);
             
             // Send MainData to BsddSelection html
             UpdateBsddSelection(selectionData);
@@ -276,3 +291,4 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
     }
 
 }
+#endregion

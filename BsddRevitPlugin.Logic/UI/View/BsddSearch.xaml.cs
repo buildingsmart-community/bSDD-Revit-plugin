@@ -1,4 +1,7 @@
-﻿using Autodesk.Revit.DB;
+﻿//TODO comments
+
+#region ================== References ===================
+using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using System;
 using System.Collections.Generic;
@@ -19,7 +22,9 @@ using BsddRevitPlugin.Logic.UI.Wrappers;
 using System.Reflection;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
 using BsddRevitPlugin.Logic.UI.Services;
+#endregion
 
+#region ============ Namespace Declaration ============
 namespace BsddRevitPlugin.Logic.UI.View
 {
     /// <summary>
@@ -114,3 +119,4 @@ namespace BsddRevitPlugin.Logic.UI.View
         }
     }
 }
+#endregion

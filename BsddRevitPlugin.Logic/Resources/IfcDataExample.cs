@@ -1,6 +1,11 @@
-﻿using BsddRevitPlugin.Logic.IfcJson;
-using Newtonsoft.Json;
+﻿//TODO comments
 
+#region ================== References ===================
+using BsddRevitPlugin.Logic.IfcJson;
+using Newtonsoft.Json;
+#endregion
+
+#region ============ Namespace Declaration ============
 namespace BsddRevitPlugin.Logic.Resources
 {
     internal class IfcDataExample
@@ -22,3 +27,4 @@ namespace BsddRevitPlugin.Logic.Resources
         }
     }
 }
+#endregion

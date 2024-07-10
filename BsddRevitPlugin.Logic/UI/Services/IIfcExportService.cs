@@ -1,7 +1,12 @@
-﻿using Autodesk.Revit.DB;
+﻿//TODO comments
+
+#region ================== References ===================
+using Autodesk.Revit.DB;
 using BIM.IFC.Export.UI;
 using System.Collections.Generic;
+#endregion
 
+#region ============ Namespace Declaration ============
 namespace BsddRevitPlugin.Logic.UI.Services
 {
     public interface IIfcExportService
@@ -13,3 +18,4 @@ namespace BsddRevitPlugin.Logic.UI.Services
         string GetBsddPropertiesAsParameterfile(Document document, string mappingParameterFilePath);
     }
 }
+#endregion

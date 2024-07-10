@@ -1,4 +1,7 @@
-﻿using Autodesk.Revit.DB.Events;
+﻿//TODO comments
+
+#region ================== References ===================
+using Autodesk.Revit.DB.Events;
 using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.UI.View;
@@ -8,7 +11,9 @@ using NLog;
 using System.Collections.Generic;
 using System.Windows;
 using static BsddRevitPlugin.Logic.UI.View.BsddSearch;
+#endregion
 
+#region ============ Namespace Declaration ============
 namespace BsddRevitPlugin.Logic.UI.BsddBridge
 {
 
@@ -78,3 +83,4 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
     }
 
 }
+#endregion

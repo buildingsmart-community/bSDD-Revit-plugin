@@ -1,4 +1,7 @@
-﻿using Autodesk.Revit.Attributes;
+﻿//TODO comments
+
+#region ================== References ===================
+using Autodesk.Revit.Attributes;
 using Autodesk.Revit.Creation;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
@@ -7,7 +10,9 @@ using Autodesk.Revit.UI.Selection;
 using System.Collections;
 using System.Collections.Generic;
 using System.Xml.Linq;
+#endregion
 
+#region ============ Namespace Declaration ============
 namespace BsddRevitPlugin.Logic.UI.DockablePanel
 {
     public class Select
@@ -60,3 +65,4 @@ namespace BsddRevitPlugin.Logic.UI.DockablePanel
         }
     }
 }
+#endregion

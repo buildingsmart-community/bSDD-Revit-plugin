@@ -1,4 +1,7 @@
-﻿using System;
+﻿//TODO comments
+
+#region ================== References ===================
+using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +12,9 @@ using BsddRevitPlugin.Logic.Model;
 using BsddRevitPlugin.Logic.IfcJson;
 using NLog;
 using System.Diagnostics;
+#endregion
 
+#region ============ Namespace Declaration ============
 namespace BsddRevitPlugin.Logic.IfcExport
 {
     /// <summary>
@@ -176,3 +181,4 @@ namespace BsddRevitPlugin.Logic.IfcExport
         }
     }
 }
+#endregion
