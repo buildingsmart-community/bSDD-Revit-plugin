@@ -34,6 +34,10 @@ namespace BsddRevitPlugin.Logic.IfcJson
             {
                 ifcData.Description = (string)jsonObject["description"];
             }
+            if (jsonObject["objectType"] != null)
+            {
+                ifcData.ObjectType = (string)jsonObject["objectType"];
+            }
             if (jsonObject["tag"] != null)
             {
                 ifcData.Tag = (string)jsonObject["tag"];

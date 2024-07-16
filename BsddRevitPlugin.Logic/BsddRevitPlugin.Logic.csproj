@@ -167,6 +167,7 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="Resources\IFC Shared Parameters - bSDD Revit Plugin.xlsx" />
     <None Include="Resources\ifcDataFromBsddExample.json" />
     <None Include="Resources\ifcDataFromRevitExample.json" />
     <None Include="UI\Settings\BsddSettings.json">
@@ -195,6 +196,9 @@
       <Project>{60ac09bd-db0e-40a9-b8a7-b0d40e7042e6}</Project>
       <Name>ASRR.Revit.Core</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\IFC Shared Parameters - bSDD Revit Plugin.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
