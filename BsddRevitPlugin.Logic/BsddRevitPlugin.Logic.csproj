@@ -133,6 +133,7 @@
     <Compile Include="IfcJson\IfcJson.cs" />
     <Compile Include="IfcJson\IfcJsonConverter.cs" />
     <Compile Include="Model\ElementsManager.cs" />
+    <Compile Include="Model\ElementsManager.Logic.cs" />
     <Compile Include="Utilities\IfcParameterMappings.cs" />
     <Compile Include="Model\SettingsManager.cs" />
     <Compile Include="Model\IfcClassificationManager.cs" />
@@ -159,12 +160,14 @@
     <Compile Include="UI\Wrappers\RevitEventWrapper.cs" />
     <Compile Include="Utilities\FileHandling.cs" />
     <Compile Include="Utilities\IfcProperties.cs" />
+    <Compile Include="Utilities\ParameterDataManagement.cs" />
     <Compile Include="Utilities\Parameters.cs" />
     <Compile Include="Utilities\UuidFromUri.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="Resources\IFC Shared Parameters - bSDD Revit Plugin.xlsx" />
     <None Include="Resources\ifcDataFromBsddExample.json" />
     <None Include="Resources\ifcDataFromRevitExample.json" />
     <None Include="UI\Settings\BsddSettings.json">
@@ -193,6 +196,9 @@
       <Project>{60ac09bd-db0e-40a9-b8a7-b0d40e7042e6}</Project>
       <Name>ASRR.Revit.Core</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\IFC Shared Parameters - bSDD Revit Plugin.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

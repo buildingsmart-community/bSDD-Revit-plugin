@@ -1,17 +1,7 @@
 ﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Autodesk.Revit.Attributes;
-using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
 using NLog;
-using BIM.IFC.Export.UI;
-using Autodesk.Revit.DB.IFC;
-using NLog.Fluent;
 
 namespace BsddRevitPlugin.Common.Commands
 {
@@ -72,9 +62,11 @@ namespace BsddRevitPlugin.Common.Commands
             }
             else
             {
-               
+
             }
-            
+
+
+
 
             return Result.Succeeded;
         }

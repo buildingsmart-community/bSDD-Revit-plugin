@@ -115,14 +115,17 @@ namespace BsddRevitPlugin.Common
         // Reload the settings and selection for the document when a RevitAPIPostDoc event occurs.
         private void ReloadSettings(object sender, RevitAPIPostDocEventArgs e)
         {
+            if (!e.Document.IsFamilyDocument)
+            {
 
-            // Create an Instance of the IFC Export Manager
-            IIfcExportService ifcExportService = GlobalServiceFactory.Factory.CreateIfcExportService();
+                // Create an Instance of the IFC Export Manager
+                IIfcExportService ifcExportService = GlobalServiceFactory.Factory.CreateIfcExportService();
 
-            // Set the bsdd confguration from document or create a new one
-            ifcExportService.GetOrSetBsddConfiguration(e.Document);
+                // Set the bsdd confguration from document or create a new one
+                ifcExportService.GetOrSetBsddConfiguration(e.Document);
 
-            RefreshSettingsAndSelection(e.Document);
+                RefreshSettingsAndSelection(e.Document);
+            }
         }
 
 
