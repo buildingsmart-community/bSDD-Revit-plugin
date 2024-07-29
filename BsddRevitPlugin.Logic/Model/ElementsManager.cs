@@ -56,6 +56,7 @@ namespace BsddRevitPlugin.Logic.Model
                         item.Category.Name != "Location Data" &&
                         item.Category.Name != "Model Groups" &&
                         item.Category.Name != "RVT Links" &&
+                        item.Category.Name != "Stacked Walls" &&
                         item.Category.Name.Substring(System.Math.Max(0, item.Category.Name.Length - 4)) != ".dwg" &&
                         item.Category.Name.Substring(System.Math.Max(0, item.Category.Name.Length - 4)) != ".pdf"
                         )
