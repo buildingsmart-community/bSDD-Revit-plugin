@@ -55,22 +55,26 @@ namespace BsddRevitPlugin.Logic.UI.DockablePanel
             IList elementsAll = (IList)allElements.ToElements();
             foreach (Element elem in elementsAll)
             {
-                if (elem.Category.Name == "Stacked Walls")
+                if (elem.Category !=  null)
                 {
-                    Wall stackedWall = elem as Wall;
-                    foreach (var instanceWallId in stackedWall.GetStackedWallMemberIds())
+                    if (elem.Category.Name == "Stacked Walls")
                     {
-                        Element stackedWallMember = doc.GetElement(instanceWallId);
-                        if (stackedWallMember != null)
+                        Wall stackedWall = elem as Wall;
+                        foreach (var instanceWallId in stackedWall.GetStackedWallMemberIds())
                         {
-                            list.Add(doc.GetElement(stackedWallMember.GetTypeId()) as ElementType);
+                            Element stackedWallMember = doc.GetElement(instanceWallId);
+                            if (stackedWallMember != null)
+                            {
+                                list.Add(doc.GetElement(stackedWallMember.GetTypeId()) as ElementType);
+                            }
                         }
                     }
+                    else
+                    {
+                        list.Add(doc.GetElement(elem.GetTypeId()) as ElementType);
+                    }
                 }
-                else
-                {
-                    list.Add(doc.GetElement(elem.GetTypeId()) as ElementType);
-                }
+
             }
             return list;
         }
