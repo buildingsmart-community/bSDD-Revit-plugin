@@ -190,27 +190,31 @@ namespace BsddRevitPlugin.Logic.Utilities
         {
             dynamic value = propertyValue.Value;
 
-            // Parse value to correct datatype
-            switch (propertyValue.Type)
+            if (value != null)
             {
-                case "IfcBoolean":
-                    value = TryConvertValue(value, new Func<dynamic, dynamic>(v => (bool)v ? 1 : 0), 0);
-                    break;
-                case "IfcInteger":
-                    value = TryConvertValue(value, new Func<dynamic, dynamic>(v => Convert.ToInt32(v)), 0);
-                    break;
-                case "IfcReal":
-                    value = TryConvertValue(value, new Func<dynamic, dynamic>(v => Convert.ToDouble(v)), 0);
-                    break;
-                case "IfcDate":
-                case "IfcDateTime":
-                    //TODO: Check what seems to be a valid DateTime to get and convert
-                    value = TryConvertValue(value, new Func<dynamic, dynamic>(v => Convert.ToDateTime(v).ToString()), "");
-                    break;
-                default:
-                    // IfcText, IfcLabel, IfcIdentifier or Default
-                    value = TryConvertValue(value, new Func<dynamic, dynamic>(v => v.ToString()), "");
-                    break;
+
+                // Parse value to correct datatype
+                switch (propertyValue.Type)
+                {
+                    case "IfcBoolean":
+                        value = TryConvertValue(value, new Func<dynamic, dynamic>(v => (bool)v ? 1 : 0), 0);
+                        break;
+                    case "IfcInteger":
+                        value = TryConvertValue(value, new Func<dynamic, dynamic>(v => Convert.ToInt32(v)), 0);
+                        break;
+                    case "IfcReal":
+                        value = TryConvertValue(value, new Func<dynamic, dynamic>(v => Convert.ToDouble(v)), 0);
+                        break;
+                    case "IfcDate":
+                    case "IfcDateTime":
+                        //TODO: Check what seems to be a valid DateTime to get and convert
+                        value = TryConvertValue(value, new Func<dynamic, dynamic>(v => Convert.ToDateTime(v).ToString()), "");
+                        break;
+                    default:
+                        // IfcText, IfcLabel, IfcIdentifier or Default
+                        value = TryConvertValue(value, new Func<dynamic, dynamic>(v => v.ToString()), "");
+                        break;
+                }
             }
 
             return value;
