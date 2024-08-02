@@ -72,7 +72,7 @@ namespace BsddRevitPlugin.Logic.UI.View
             SelectEULS = ExternalEvent.Create(eventUseLastSelection);
 
             // Set the address of the CefSharp browser component to the index.html file of the plugin
-            //_browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/main/bsdd_selection/";
+            //W_browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/main/bsdd_selection/";
             //_browserService.Address = "http://localhost:4173/bsdd_selection";
             //_browserService.Address = "http://localhost:3001/bsdd_selection";
             _browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/v1.3.2/bsdd_selection/";
