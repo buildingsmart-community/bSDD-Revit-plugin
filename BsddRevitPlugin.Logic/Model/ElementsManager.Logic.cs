@@ -559,8 +559,18 @@ namespace BsddRevitPlugin.Logic.Model
             {
 
             };
+            string result;
+            try
+            {
+                //Needed due to mappingtable not containing certain categories such as "Runs".
+                result = mappingTable[cat + "\t"];
+            }
+            catch (Exception e)
+            {
+                result = "";
+            }
 
-            return mappingTable[cat + "\t"];
+            return result;
         }
     }
 }
