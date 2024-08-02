@@ -24,7 +24,7 @@ namespace BsddRevitPlugin.Logic.Utilities
             {
                 case var _ when paramTypeId == SpecTypeId.Boolean.YesNo:
                     nominalValue.Type = "IfcBoolean"; //BOOLEAN
-                    nominalValue.Value = parameter.AsInteger(); //0 or 1
+                    nominalValue.Value = parameter.AsInteger() != 0;
                     break;
                 case var _ when paramTypeId == SpecTypeId.Int.Integer:
                     nominalValue.Type = "IfcInteger"; //INTEGER
