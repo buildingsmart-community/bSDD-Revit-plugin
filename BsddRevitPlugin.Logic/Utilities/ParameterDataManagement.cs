@@ -61,7 +61,7 @@ namespace BsddRevitPlugin.Logic.Utilities
             parametersToCreate = new List<ParameterCreation>();
             parametersToSet = new Dictionary<string, object>();
             string bsddParameterName = "";
-            string parameterMappedName = "";
+            string parameterMappedName = null;
 
             //Add classification parameters to the list
             //Set Revit parameters for each association
@@ -83,11 +83,11 @@ namespace BsddRevitPlugin.Logic.Utilities
 
                             //Get mapped parametername (stored in the documents DataStorage)
                             parameterMappedName = GetMappedParameterName(ifcClassificationReference);
-                            if (parameterMappedName != "" || parameterMappedName != null)
+
+                            if (parameterMappedName != "" && parameterMappedName != null)
                             {
                                 parametersToSet.Add(parameterMappedName, ifcClassificationReference.Identification);
                             }
-
                             break;
 
                         case IfcMaterial ifcMaterial:
@@ -360,7 +360,16 @@ namespace BsddRevitPlugin.Logic.Utilities
 
             if (GlobalBsddSettings.bsddsettings.MainDictionary.IfcClassification.Location == refSourceLocation)
             {
-                return GlobalBsddSettings.bsddsettings.MainDictionary.ParameterMapping;
+                var paramMapping = GlobalBsddSettings.bsddsettings.MainDictionary.ParameterMapping;
+                if (paramMapping == "")
+                {
+                    return null;
+
+                }
+                else
+                {
+                    return GlobalBsddSettings.bsddsettings.MainDictionary.ParameterMapping;
+                }
             }
             else
             {
@@ -372,7 +381,7 @@ namespace BsddRevitPlugin.Logic.Utilities
                     }
                 }
             }
-            return "";
+            return null;
         }
 
     }
