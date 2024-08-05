@@ -46,6 +46,21 @@ UninstallFilesDir={userappdata}\{#PluginShortName}
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "dutch"; MessagesFile: "compiler:Languages\Dutch.isl"
+Name: "czech"; MessagesFile: "compiler:Languages\Czech.isl"
+Name: "danish"; MessagesFile: "compiler:Languages\Danish.isl"
+Name: "finnish"; MessagesFile: "compiler:Languages\Finnish.isl"
+Name: "french"; MessagesFile: "compiler:Languages\French.isl"
+Name: "german"; MessagesFile: "compiler:Languages\German.isl"
+Name: "icelandic"; MessagesFile: "compiler:Languages\Icelandic.isl"
+Name: "italian"; MessagesFile: "compiler:Languages\Italian.isl"
+Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
+Name: "norwegian"; MessagesFile: "compiler:Languages\Norwegian.isl"
+Name: "polish"; MessagesFile: "compiler:Languages\Polish.isl"
+Name: "portuguese"; MessagesFile: "compiler:Languages\Portuguese.isl"
+Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
+Name: "slovenian"; MessagesFile: "compiler:Languages\Slovenian.isl"
+Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
+Name: "turkish"; MessagesFile: "compiler:Languages\Turkish.isl"
 
 [Files]
 Source: "..\{#PluginShortName}.2023\bin\Release\Images\Icons\BsddLabel.ico"; DestDir: {userappdata}\{#PluginShortName}; Flags: ignoreversion recursesubdirs createallsubdirs; Check: IsVersionSelected('2023')
