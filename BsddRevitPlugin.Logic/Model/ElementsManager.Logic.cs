@@ -259,6 +259,7 @@ namespace BsddRevitPlugin.Logic.Model
             string typeDescription = GetTypeParameterValueByElementType(elem, "Description");
             string ifcType = IFCMappingValue(doc, elem);
             string ifcPredefinedType = elem.get_Parameter(BuiltInParameter.IFC_EXPORT_PREDEFINEDTYPE_TYPE)?.AsString();
+            string objectType = GetTypeParameterValueByElementType(elem, "IfcObjectType[Type]");
 
             var ifcEntity = new IfcEntity
             {
@@ -267,6 +268,7 @@ namespace BsddRevitPlugin.Logic.Model
                 Tag = ifcTag,
                 Description = string.IsNullOrWhiteSpace(typeDescription) ? null : typeDescription,
                 PredefinedType = ifcPredefinedType,
+                ObjectType = objectType,
             };
 
             //embed propertysets bsdd/prop/ in Ifc Defenition
