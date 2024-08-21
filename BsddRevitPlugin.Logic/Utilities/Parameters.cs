@@ -499,7 +499,16 @@ namespace BsddRevitPlugin.Logic.Utilities
 
                     if (param != null)
                     {
-                        typeparameter.Set(param);
+                        try
+                        {
+                            typeparameter.Set(param);
+
+                        }
+                        catch (Exception e)
+                        {
+
+                            logger.Error($"Parameter {typeparameter.Definition.Name} could not be set. Message: {e}");
+                        }
                     }
                     else
                     {
