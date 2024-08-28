@@ -1,4 +1,5 @@
-﻿using Autodesk.Revit.DB;
+﻿using ASRR.Revit.Core.Utilities;
+using Autodesk.Revit.DB;
 using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.Model;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
@@ -203,7 +204,7 @@ namespace BsddRevitPlugin.Logic.Utilities
                         value = TryConvertValue(value, new Func<dynamic, dynamic>(v => Convert.ToInt32(v)), 0);
                         break;
                     case "IfcReal":
-                        value = TryConvertValue(value, new Func<dynamic, dynamic>(v => Convert.ToDouble(v)), 0);
+                        value = CoordinateUtilities.ConvertMmToFeet(TryConvertValue(value, new Func<dynamic, dynamic>(v => Convert.ToDouble(v)), 0));
                         break;
                     case "IfcDate":
                     case "IfcDateTime":

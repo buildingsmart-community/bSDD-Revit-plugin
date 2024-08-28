@@ -1,5 +1,7 @@
-﻿using Autodesk.Revit.DB;
+﻿using ASRR.Revit.Core.Utilities;
+using Autodesk.Revit.DB;
 using BsddRevitPlugin.Logic.IfcJson;
+using NLog;
 
 namespace BsddRevitPlugin.Logic.Utilities
 {
@@ -368,7 +370,7 @@ namespace BsddRevitPlugin.Logic.Utilities
                     break;
                 case var _ when paramTypeId == SpecTypeId.Length:
                     nominalValue.Type = "IfcLengthMeasure"; //REAL
-                    nominalValue.Value = parameter.AsDouble();
+                    nominalValue.Value = CoordinateUtilities.ConvertFeetToMm(parameter.AsDouble());
                     break;
                 case var _ when paramTypeId == SpecTypeId.LinearForce:
                     nominalValue.Type = "IfcLinearForceMeasure"; //REAL
