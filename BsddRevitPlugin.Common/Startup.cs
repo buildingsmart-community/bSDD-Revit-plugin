@@ -197,13 +197,13 @@ namespace BsddRevitPlugin.Common
 
 
             List<Element> elem = new List<Element>();
-            ElementSet elemSet = new ElementSet();
+            List<ElementId> elemSet = new List<ElementId>();
             try
             {
                 elem.AddRange(GlobalSelection.LastSelectedElementsWithDocs[doc.PathName]);
                 foreach (Element e in elem)
                 {
-                    elemSet.Insert(e);
+                    elemSet.Add(e.Id);
                 }
             }
             catch (System.Exception)

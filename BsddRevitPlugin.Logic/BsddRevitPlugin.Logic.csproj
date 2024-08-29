@@ -159,6 +159,7 @@
     <Compile Include="IfcJson\IfcJson.cs" />
     <Compile Include="IfcJson\IfcJsonConverter.cs" />
     <Compile Include="Model\ElementsManager.cs" />
+    <Compile Include="Model\MaterialRelAssociatesBuilder.cs" />
     <Compile Include="Model\SettingsManager.cs" />
     <Compile Include="Model\IfcClassificationManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
