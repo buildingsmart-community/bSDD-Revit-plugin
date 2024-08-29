@@ -4,11 +4,11 @@
     "ifcClassification": {
       "type": "IfcClassification",
       "source": "volkerwesselsbvgo",
-      "edition": "0.8.0",
-      "editionDate": "2024-03-07T00:00:00Z",
-      "name": "Basis bouwproducten",
+      "edition": "0.1",
+      "editionDate": "2024-07-31T00:00:00Z",
+      "name": "Basis bouwproducten O&E",
       "description": "",
-      "location": "https://identifier.buildingsmart.org/uri/volkerwesselsbvgo/basisbouwproducten/0.8.0"
+      "location": "https://identifier.buildingsmart.org/uri/volkerwesselsbvgo/basis_bouwproducten_oene/0.1"
     },
     "parameterMapping": "Description"
   },
