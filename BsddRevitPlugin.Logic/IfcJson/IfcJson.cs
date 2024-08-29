@@ -603,6 +603,60 @@ namespace BsddRevitPlugin.Logic.IfcJson
         
     }
 
+
+
+   
+
+
+    /// <summary>
+    /// Builder of IfcMaterial
+    /// </summary>
+    public class IfcMaterialBuilder
+    {
+        private readonly IfcMaterial _entity = new IfcMaterial();
+
+        public IfcMaterialBuilder AddName(string name)
+        {
+            _entity.Name = name;
+            return this;
+        }
+
+        public IfcMaterialBuilder AddDescription(string description)
+        {
+            _entity.Description = description;
+            return this;
+        }
+        
+        public IfcMaterialBuilder AddCategory(string category)
+        {
+            _entity.Category = category;
+            return this;
+        }
+
+        public IfcMaterialBuilder AddHasRepresentation(IfcMaterialDefinitionRepresentation hasRepresentation)
+        {
+            _entity.HasRepresentation = hasRepresentation;
+            return this;
+        }
+
+        public IfcMaterialBuilder AddIsRelatedWith(IfcMaterialRelationship isRelatedWith)
+        {
+            _entity.IsRelatedWith = isRelatedWith;
+            return this;
+        }
+
+        public IfcMaterialBuilder AddRelatesTo(IfcMaterialRelationship relatesTo)
+        {
+            _entity.RelatesTo = relatesTo;
+            return this;
+        }
+
+        public IfcMaterial Build()
+        {
+            return _entity;
+        }
+    }
+
     /// <summary>
     /// IfcMaterial is a homogeneous or inhomogeneous substance that can be used to form elements (physical products or their components).
     /// </summary>
@@ -645,7 +699,11 @@ namespace BsddRevitPlugin.Logic.IfcJson
         public IfcMaterialRelationship RelatesTo { get; set; }
     }
 
+    public class IfcRelAssociatesMaterial : Association
+    {
+    }
 
+    
     /// <summary>
     /// IfcMaterialDefinitionRepresentation defines presentation information relating to IfcMaterial. It allows for multiple presentations of the same material for different geometric representation contexts.
     /// </summary>

@@ -54,14 +54,14 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
         public void UpdateBsddLastSelection()
         {
-            ElementSet lastSelection = new ElementSet();
+            List<ElementId> lastSelection = new List<ElementId>();
             List<Element> ListlastSelection = new List<Element>();
             try
             {
                 ListlastSelection = GlobalSelection.LastSelectedElementsWithDocs[GlobalDocument.currentDocument.PathName];
                 foreach(Element element in ListlastSelection)
                 {
-                    lastSelection.Insert(element);
+                    lastSelection.Add(element.Id);
                 }
             }
             catch (Exception)
@@ -112,10 +112,10 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             }
 
             // Pack data into json format
-            ElementSet elemSet = new ElementSet();
+            List<ElementId> elemSet = new List<ElementId>();
             foreach(Element elem in GlobalSelection.LastSelectedElementsWithDocs[doc.PathName])
             {
-                elemSet.Insert(elem);
+                elemSet.Add(elem.Id);
             }
             List<IfcEntity> selectionData = SelectionToIfcJson(doc, elemSet);
             

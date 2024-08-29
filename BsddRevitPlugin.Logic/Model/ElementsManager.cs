@@ -1,5 +1,7 @@
 ﻿//TODO comments
 
+//!!!!!!!!!!!!!!!!!!!!!!!!Element en ElementType omgezet in ElementSet. Nu wordt ElementType overal overgeslagen.
+
 /**
  * File summary:
  * - File name: 
@@ -53,6 +55,10 @@ using NLog;
 using Autodesk.Revit.DB.Events;
 using BsddRevitPlugin.Logic.UI;
 using System.Security.Principal;
+using Autodesk.Internal.InfoCenter;
+using System.ComponentModel;
+using static BsddRevitPlugin.Logic.Model.MaterialRelAssociatesBuilder;
+using System.Windows.Documents;
 #endregion
 
 #region ============ Namespace Declaration ============
@@ -72,96 +78,53 @@ namespace BsddRevitPlugin.Logic.Model
         // Element IFCClassification schema
         private static Guid s_schemaId = new Guid("79717CB2-D47B-4EC0-8E74-83A43E7D9F0A");
         private const string s_IfcClassificationData = "IfcClassificationData";
-        #endregion
+        #endregion //Class Variables
 
         #region ================= Constructor =================
-        #endregion
+        #endregion //Constructor
 
         #region ================ Class methods ================
-        /// <summary>
-        /// #elements and elementTypes: Filters a list with element types to only types with geometry (no camera's)
-        /// ID string generated is M: BsddRevitPlugin.Logic.Model.ElementManager.#
-        /// </summary>
-        /// <param name="elemSet">List of elements to be filtered.</param>
-        /// <returns>Filtered list of geometrical elements (types or instances)</returns>
-        public static ElementSet ListGeoFilter(ElementSet elemSet)
-        {
-            Logger logger = LogManager.GetCurrentClassLogger();
-            
-            //Make output class solids with as result only Geometry elements
-            ElementSet solids = new ElementSet();
-            //Go trough all elements
-            foreach (Element element in elemSet)
-            {
-                //Check if element is geometry and no camera
-                if (element.get_Geometry(new Options()) != null && element.Category.Name != "Cameras")
-                {
-                    //Put element in the result solids
-                    solids.Insert(element);
-                }
-            }
-
-            logger.Info($"ListGeoFilter: Number of Geometrical elements: {solids.Size}");
-
-            return solids;
-        }
-
-        /// <summary>
-        /// #IfcEntities: Get the IfcSchema or build one if not set
-        /// </summary>
-        /// <returns>IfcSchema</returns>
+        // Element IFCClassification schema
         private static Schema GetBsddDataSchema()
         {
-            //Set schema and fill with existing
             Schema schema = Schema.Lookup(s_schemaId);
-            //If no schema exist, build schema
             if (schema == null)
             {
-                //Make new schema builder to store the schema
                 SchemaBuilder classificationBuilder = new SchemaBuilder(s_schemaId);
-                //Set schema name to "BsddData"
                 classificationBuilder.SetSchemaName("BsddData");
-                //Add classification data to builder
                 classificationBuilder.AddSimpleField(s_IfcClassificationData, typeof(string));
-                //Finish and set in schema parameter
                 schema = classificationBuilder.Finish();
             }
             return schema;
         }
 
         /// <summary>
-        /// Transforms a Revit element type into an IFC entity.
+        /// #elements and elementTypes: Filters a list with element types to only types with geometry (no camera's)
+        /// ID string generated is M: BsddRevitPlugin.Logic.Model.ElementManager.#
         /// </summary>
-        /// /// <param name="elem">Element'Type</param>
-        /// <param name="doc">Currently open document</param>
-        /// <returns>Fully filled IfcEntity</returns>
-        private static IfcEntity CreateIfcEntity(ElementType elem, Document doc)
+        /// <param name="elemSet">List of elements to be filtered.</param>
+        /// <returns>Filtered list of geometrical elements (types or instances)</returns>
+        public static List<ElementId> ListGeoFilter(Document doc, List<ElementId> elemSet)
         {
-            //Collect input for IfcEntity defenition
-            bool instance = false;
-            string familyName = GetElementName(elem, GetParameterValueByElement(elem, "IfcName"));
-            string typeName = GetElementName(elem, GetParameterValueByElement(elem, "IfcType"));
-            string ifcTag = elem.Id.ToString();
-            string typeDescription = GetParameterValueByElement(elem, "Description");
-            string ifcType = IFCMappingValue(doc, elem);
-            string ifcPredefinedType = elem.get_Parameter(BuiltInParameter.IFC_EXPORT_PREDEFINEDTYPE_TYPE)?.AsString();
-            //string materials = GetElementMaterials(elem, doc);
-            var associations = GetElementTypeAssociations(elem, doc, out Dictionary<Uri, IfcClassificationReference> a);
+            Logger logger = LogManager.GetCurrentClassLogger();
 
-            //Create IfcEntity by IfcEntityBuilder
-            IfcEntity ifcEntity = new IfcEntityBuilder()
-                .AddInstance(instance)
-                .AddType(ifcType)
-                .AddName($"T: {typeName} - {familyName}")
-                //.AddMaterial()
-                .AddTag(ifcTag)
-                .AddDescription(string.IsNullOrWhiteSpace(typeDescription) ? null : typeDescription)
-                .AddPredefinedType(ifcPredefinedType)
-                .AddIsDefinedBy(IfcDefinition(doc, elem))
-                .AddHasAssociations(associations)
-                .Build();
+            //Make output class solids with as result only Geometry elements
+            List<ElementId> solids = new List<ElementId>();
 
-            return ifcEntity;
+
+            Element elem;
+            foreach (ElementId id in elemSet)
+            {
+                elem = doc.GetElement(id);
+                if (IsGeometrical(elem))
+                {
+                    solids.Add(elem.Id);
+                }
+            }
+            
+            logger.Info($"ListGeoFilter: Number of Geometrical elements: {solids.Count}");
+
+            return solids;
         }
 
         /// <summary>
@@ -170,86 +133,90 @@ namespace BsddRevitPlugin.Logic.Model
         /// <param name="elem">Element instance</param>
         /// <param name="doc">Currently open document</param>
         /// <returns>Fully filled IfcEntity</returns>
-        private static IfcEntity CreateIfcEntity(Element elem, Document doc)
+        private static IfcEntity CreateIfcEntity(List<ElementId> elemSet, Document doc)
         {
-            ElementId elemTypeId = elem.GetTypeId();
-            ElementType elemType = doc.GetElement(elemTypeId) as ElementType;
-
-            //Collect input for IfcEntity defenition
-            bool instance = true;
-            string familyName = GetElementName(elemType ?? elem, GetParameterValueByElement(elemType ?? elem, "IfcName"));
-            string typeName = GetElementName(elemType ?? elem, GetParameterValueByElement(elemType ?? elem, "IfcType"));
-            string ifcTag = elem.Id.ToString();
-            string typeDescription = GetParameterValueByElement(elemType ?? elem, "Description");
-//!!!!!!!!!!!!!!!!!!!!!!!!Hier ben ik gebleven IFCMappingValue moet verplaatst worden
-            string ifcType = IFCMappingValue(doc, elem);
-            string ifcPredefinedType = elem.get_Parameter(BuiltInParameter.IFC_EXPORT_PREDEFINEDTYPE_TYPE)?.AsString();
-            //string materials = GetElementMaterials(elem, doc);
-            var associations = GetElementAssociations(elem, doc);
-
-            //Create IfcEntity by IfcEntityBuilder
-            IfcEntity ifcEntity = new IfcEntityBuilder()
-                .AddInstance(instance)
-                .AddType(ifcType)
-                .AddName($"I: {typeName} - {familyName}")
-                //.AddMaterial()
-                .AddTag(ifcTag)
-                .AddDescription(string.IsNullOrWhiteSpace(typeDescription) ? null : typeDescription)
-                .AddPredefinedType(ifcPredefinedType)
-                .AddIsDefinedBy(IfcDefinition(doc, elem))
-                .AddHasAssociations(associations)
-                .Build();
-
-            return ifcEntity;
-        }
-
-        #region input for IfcEntity defenition
-        /// <summary>
-        /// Retrieves the family name of the given element instance.
-        /// </summary>
-        /// <param name="element">The element type.</param>
-        /// <param name="ifcName">The IFC name, returned if not null or empty.</param>
-        /// <returns>The family name or an empty string if unavailable.</returns>
-        public static string GetElementName(Element element, string ifcName)
-        {
-            if (!string.IsNullOrEmpty(ifcName))
-            {
-                return ifcName;
-            }
-
+            Element element = null;
+            ElementType elementType = null;
             try
             {
-                return element.Name;
+                foreach (ElementId id in elemSet)
+                {
+                    if(doc.GetElement(id) is ElementType)
+                    {
+                        elementType = doc.GetElement(id) as ElementType;
+                        break; // Exit the loop after the first element    
+                    } 
+                    else if (doc.GetElement(id) is Element)
+                    {
+                        element = doc.GetElement(id);
+                        break; // Exit the loop after the first element
+                    }
+                }
             }
-            catch
+            catch { }
+           
+
+            if (element != null)
             {
-                return string.Empty;
+                ElementId elemTypeId = element.GetTypeId();
+                ElementType elemType = doc.GetElement(elemTypeId) as ElementType;
+
+                //Collect input for IfcEntity defenition
+                string familyName = GetParameterValueByElement(elemType ?? element, "IfcName") ?? element.Name ?? "n/a";
+                string typeName = GetParameterValueByElement(elemType ?? element, "IfcType") ?? element.Name ?? "n/a";
+                string ifcTag = element.Id.ToString();
+                string typeDescription = GetParameterValueByElement(elemType ?? element, "Description") ?? "n/a";
+                string ifcType = IFCMappingValue(doc, element);
+                string ifcPredefinedType = element.get_Parameter(BuiltInParameter.IFC_EXPORT_PREDEFINEDTYPE_TYPE)?.AsString();
+                //string materials = GetElementMaterials(elem, doc);
+                var associations = GetElementAssociations(elemSet, doc);
+
+                //Create IfcEntity by IfcEntityBuilder
+                IfcEntity ifcEntity = new IfcEntityBuilder()
+                    .AddInstance(true)
+                    .AddType(ifcType)
+                    .AddName($"I: {typeName} - {familyName}")
+                    //.AddMaterial()
+                    .AddTag(ifcTag)
+                    .AddDescription(string.IsNullOrWhiteSpace(typeDescription) ? null : typeDescription)
+                    .AddPredefinedType(ifcPredefinedType)
+                    .AddIsDefinedBy(IfcDefinition(doc, element))
+                    .AddHasAssociations(associations)
+                    .Build();
+
+                return ifcEntity;
+            } else if (elementType != null)
+            {
+                //Collect input for IfcEntity defenition
+                string familyName = GetParameterValueByElement(elementType, "IfcName") ?? elementType.Name ?? "n/a";
+                string typeName = GetParameterValueByElement(elementType, "IfcType") ?? elementType.Name ?? "n/a";
+                string ifcTag = elementType.Id.ToString();
+                string typeDescription = GetParameterValueByElement(elementType, "Description") ?? "n/a";
+                string ifcType = IFCMappingValue(doc, elementType);
+                string ifcPredefinedType = elementType.get_Parameter(BuiltInParameter.IFC_EXPORT_PREDEFINEDTYPE_TYPE)?.AsString();
+                //string materials = GetElementMaterials(elem, doc);
+                var associations = GetElementTypeAssociations(elemSet, doc, out Dictionary<Uri, IfcClassificationReference> a);
+
+                //Create IfcEntity by IfcEntityBuilder
+                IfcEntity ifcEntity = new IfcEntityBuilder()
+                    .AddInstance(false)
+                    .AddType(ifcType)
+                    .AddName($"T: {typeName} - {familyName}")
+                    //.AddMaterial()
+                    .AddTag(ifcTag)
+                    .AddDescription(string.IsNullOrWhiteSpace(typeDescription) ? null : typeDescription)
+                    .AddPredefinedType(ifcPredefinedType)
+                    .AddIsDefinedBy(IfcDefinition(doc, elementType))
+                    .AddHasAssociations(associations)
+                    .Build();
+
+                return ifcEntity;
             }
+
+            return null;            
         }
 
-        /// <summary>
-        /// Retrieves the name of the given element type.
-        /// </summary>
-        /// <param name="elementType">The element type.</param>
-        /// <param name="ifcType">The IFC type, returned if not null or empty.</param>
-        /// <returns>The element type name or an empty string if unavailable.</returns>
-        public static string GetElementName(ElementType elementType, string ifcType)
-        {
-            if (!string.IsNullOrEmpty(ifcType))
-            {
-                return ifcType;
-            }
-
-            try
-            {
-                return elementType.Name;
-            }
-            catch
-            {
-                return string.Empty;
-            }
-        }
-
+        #region =========== CM: Collect parameters ===========
         /// <summary>
         /// Try to find a parameter of a element type based on the parameter name
         /// </summary>
@@ -321,10 +288,1148 @@ namespace BsddRevitPlugin.Logic.Model
             };
         }
 
+        /// <summary>
+        /// Checks the IFC_EXPORT_ELEMENT_TYPE_AS parameter. If not filled it looks to the IfcExport categorie defined in the Ifc Export Classes of the Revit Ifc Export Options
+        /// </summary>
+        /// <param name="doc">Open document</param>
+        /// <param name="elem">Selected element</param>
+        /// <returns>The Ifc category defined to the Revit Category in the table</returns>
+        public static String IFCMappingValue(Document doc, Element elem)
+        {
+            Logger logger = LogManager.GetCurrentClassLogger();
 
-        #endregion
+            //If the override value Ifc_Export_Element_Type_As is filled, return this value
+            if (!string.IsNullOrEmpty(elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS)?.AsString()))
+            {
+                return elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS)?.AsString();
+            }
 
-        #endregion
+            //Get the category name of the element
+            Category elemCategory = elem.Category;
+            String cat = elemCategory.Name.ToString();
+
+            //Get the file path of the Ifc Export Classes of the Revit Ifc Export Options
+            //txt construction by line: Category<tab> Subcategory<tab> Layer name <tab> Color number<tab>
+            String exportCategoryTableFilePath = doc.Application.ExportIFCCategoryTable;
+
+            if (string.IsNullOrEmpty(exportCategoryTableFilePath))
+            {
+                logger.Error($"IFCMappingValue: exportCategoryTableFilePath not found");
+            }
+
+            // Dictionary to store the mapping between Revit categories and IFC class names
+            Dictionary<string, string> mappingTable = new Dictionary<string, string>();
+
+            String line;
+            try
+            {
+                //Pass the file path and file name to the StreamReader constructor
+                StreamReader sr = new StreamReader(exportCategoryTableFilePath);
+                line = sr.ReadLine();
+                String sep = "\t";
+                while (line != null)
+                {
+                    if (!line.StartsWith("#") && line != "")
+                    {
+                        string[] splitContent = line.Split(sep.ToCharArray());
+                        if (
+                            !string.IsNullOrEmpty(splitContent[0]) && 
+                            !string.IsNullOrEmpty(splitContent[2])
+                        )
+                        {
+                            // Add to dictionary (category, subcategory and layer name)
+                            // #TODO streamliner: how this interacts with subcategorie? splitContent[1]
+                            mappingTable.Add(splitContent[0] + "\t" + splitContent[1], splitContent[2]);
+                        }
+                    }
+                    ////Read the next line
+                    line = sr.ReadLine();
+                }
+                //close the file
+                sr.Close();
+            }
+            catch (Exception e)
+            {
+                logger.Error($"Exception IFCMappingValue: Streamreader failed: {e}");
+            };
+
+            try
+            {
+                // #TODO streamliner: part if todo streamliner: logger.Error($"Mapping table: {mappingTable[cat + "\t"]}");
+                return mappingTable[cat + "\t"];
+            }
+            catch (Exception e)
+            {
+                logger.Error($"Exception IFCMappingValue: mappingTable[cat + \"\\t\"] didnt work: {e}");
+                mappingTable.Add(cat + "\t", "Not Exported");
+                return mappingTable[cat + "\t"];
+            }
+        }
+
+        #region ========== CM: Material association ==========
+        /// <summary>
+        /// Retrieves the associations from the extended storage for an entity.
+        /// </summary>
+        /// <param name="entity">The entity from which to retrieve the associations.</param>
+        /// <returns>A dictionary of associations with the location as the key.</returns>        
+        public static List<Association> GetElementTypeAssociations(List<ElementId> elemSet, Document doc, out Dictionary<Uri, IfcClassificationReference> associationsRef)
+        {
+            Logger logger = LogManager.GetCurrentClassLogger();
+
+            ElementType elementType = null;
+            try
+            {
+                foreach (ElementId id in elemSet)
+                {
+                    elementType = (ElementType)doc.GetElement(id);
+                    break; // Exit the loop after the first element
+                }
+            }
+            catch { }
+
+
+            //Make list of assosiations to return
+            var associations = new List<Association>();
+
+            //make new dictionary to store the Associations
+            associationsRef = new Dictionary<Uri, IfcClassificationReference>();
+            
+            //Get the classification data mapped to the current settings
+            var activeDictionaryData = GetClassificationDataFromSettings(elementType);
+
+            //Get associations from storrage
+            foreach (var association in getElemClassRefFromExtensibleStorage(elementType))
+            {
+                if (association is IfcClassificationReference ifcClassificationReference)
+                {
+                    associationsRef[ifcClassificationReference.ReferencedSource.Location] = ifcClassificationReference;
+                }
+            }
+
+            foreach (var entry in activeDictionaryData)
+            {
+                //store the keys of the dictionary
+                Uri dictionaryUri = entry.Key;
+                //store the values of the dictionary
+                (string Identification, string Name) value = entry.Value;
+
+                if (!associationsRef.TryGetValue(dictionaryUri, out var association))
+                {
+                    // add new IfcClassificationReference to the dictionary based on dictionaryUri, Identification and Name
+                    associationsRef[dictionaryUri] = new IfcClassificationReference
+                    {
+                        Type = "IfcClassificationReference",
+                        Identification = value.Identification,
+                        Name = value.Name,
+                        ReferencedSource = new IfcClassification
+                        {
+                            Type = "IfcClassification",
+                            Location = dictionaryUri,
+                        }
+                    };
+
+                }
+                else
+                {
+                    //update the existing IfcClassificationReference with the new values from the revit typeEntity
+                    var ifcClassificationReference = (IfcClassificationReference)association;
+                    ifcClassificationReference.Identification = value.Identification;
+                    ifcClassificationReference.Name = value.Name;
+                }
+            }
+
+
+            //Material associations make dictionaries of all possible material references
+            var associationsMat = new Dictionary<ElementId, IfcMaterial>();
+            var associationsMatLayerset = new Dictionary<ElementId, IfcMaterialLayerSet>();
+            var associationsMatProfileset = new Dictionary<ElementId, IfcMaterialProfileSet>();
+            var associationsMatProfile = new IfcMaterialProfile();
+            var associationsMatConstituentSet = new Dictionary<ElementId, IfcMaterialConstituentSet>();
+
+            //If element is profile store the material(s) in the related dictionary
+            if (GetElementMaterialsProfileset(elementType, doc) != null)
+            {
+                ElementId elemId = elementType.Id;
+                associationsMatProfileset[elemId] = GetElementMaterialsProfileset(elementType, doc);
+            }
+
+            if (GetElementMaterialsLayerset(elementType, doc) != null)
+            {
+                ElementId elemId = elementType.Id;
+                associationsMatLayerset[elemId] = GetElementMaterialsLayerset(elementType, doc);
+            }
+
+            //if (GetElementMatConstituentSet(elementType, doc) != null)
+            //{
+            //    ElementId elemId = elementType.Id;
+            //    associationsMatConstituentSet[elemId] = GetElementMatConstituentSet(elementType, doc);
+            //}
+            //else
+            //if (GetElementMaterials(elementType, doc) != null)
+            //{
+            //    foreach (Material mat in GetElementMaterials(elementType, doc))
+            //    {
+
+            //        ElementId elemId = mat.Id;
+            //        if (!associationsMat.TryGetValue(elemId, out var association))
+            //        {
+            //get the description value
+            //            BuiltInParameter desiredBIP = BuiltInParameter.ALL_MODEL_DESCRIPTION;
+            //            string descriptionValue = "";
+
+            //            Parameter description = mat.get_Parameter(desiredBIP);
+            //            if (description != null)
+            //            {
+            //                descriptionValue = description.AsString();
+            //            }
+
+            // add new IfcMaterial to the dictionary based on dictionaryUri, Identification and Name
+            //            associationsMat[elemId] = new IfcMaterial
+            //            {
+            //                Name = mat.Name,
+            //                Description = descriptionValue,
+            //                Category = mat.Category.Name,
+            //HasRepresentation = mat.,
+            //IsRelatedWith = mat.,
+            //RelatesTo = mat.,
+            //                Type = "IfcMaterial",
+            //            };
+            //        }
+            //        else
+            //        {
+            //update the existing IfcClassificationReference with the new values from the revit typeEntity
+            //            var ifcMaterial = (IfcMaterial)association;
+            //            ifcMaterial.Name = mat.Name;
+            //        }
+            //    }
+            //}
+
+            // The client code creates a builder object, passes it to the
+            // director and then initiates the construction process. The end
+            // result is retrieved from the builder object.
+            var director = new Director();
+            var builder = new MatRelAssociatesBuilder();
+            director.Builder = builder;
+
+
+            //If Element or ElementType is not Profile based and schema = Ifc2x3
+            if (
+                elementType != null &&
+                elementType.Category.Name != "Structural Beam Systems" &&
+                elementType.Category.Name != "Structural Columns" &&
+                elementType.Category.Name != "Structural Framing" &&
+                elementType.Category.Name != "Structural Trusses"
+                )
+            {
+                director.BuildMaterial(elemSet, doc);
+            }
+
+
+            //If Element or ElementType is not Profile based and schema = Ifc4
+            // #TODO Ifc4 out of scope: director.BuildMaterialConstituentSet();
+
+            //If ElementType is Profile
+            if (
+                elementType != null &&
+                elementType.Category.Name == "Structural Beam Systems" ||
+                elementType.Category.Name == "Structural Columns" ||
+                elementType.Category.Name == "Structural Framing" ||
+                elementType.Category.Name == "Structural Trusses"
+                )
+            {
+                director.BuildMaterialProfileSet();
+            }
+
+            //If ElementType has layers
+            if (
+                elementType != null ||
+                elementType.Category.Name == "Ceilings" ||
+                elementType.Category.Name == "Roofs" ||
+                elementType.Category.Name == "Walls" ||
+                elementType.Category.Name == "Floors"
+                )
+            {
+                director.BuildMaterialLayerSet(elemSet, doc);
+            }
+
+            associations = builder.GetAssociation().ListAssociations();
+
+            //combine associations
+            foreach (KeyValuePair<Uri, IfcClassificationReference> pair in associationsRef)
+            {
+                Association association = new Association();
+                association = (IfcClassificationReference)pair.Value;
+                associations.Add(association);
+            }
+
+            //foreach (KeyValuePair<ElementId, IfcMaterial> pair in associationsMat)
+            //{
+            //    Association association = new Association();
+            //    association = (IfcMaterial)pair.Value;
+            //    associations.Add(association);
+            //}
+
+            foreach (KeyValuePair<ElementId, IfcMaterialLayerSet> pair in associationsMatLayerset)
+            {
+                Association association = new Association();
+                association = (IfcMaterialLayerSet)pair.Value;
+                associations.Add(association);
+            }
+
+            //foreach (KeyValuePair<ElementId, IfcMaterialConstituentSet> pair in associationsMatConstituentSet)
+            //{
+            //    Association association = new Association();
+            //    association = (IfcMaterialConstituentSet)pair.Value;
+            //    associations.Add(association);
+            //}
+
+            foreach (KeyValuePair<ElementId, IfcMaterialProfileSet> pair in associationsMatProfileset)
+            {
+                Association association = new Association();
+                association = (IfcMaterialProfileSet)pair.Value;
+                associations.Add(association);
+            }
+
+            return associations;
+        }
+
+        public static List<Association> GetElementAssociations(List<ElementId> elemSet, Document doc)
+        {
+            Element element = null;
+            try
+            {
+                foreach (ElementId id in elemSet)
+                {
+                    element = doc.GetElement(id);
+                    break; // Exit the loop after the first element
+                }
+            }
+            catch { }
+            
+            
+            var associations = new List<Association>();
+
+
+            Logger logger = LogManager.GetCurrentClassLogger();
+            var associationsRef = new Dictionary<Uri, IfcClassificationReference>();
+            var activeDictionaryData = GetClassificationDataFromSettings(element);
+
+
+            foreach (var associationR in getElemClassRefFromExtensibleStorage(element))
+            {
+                if (associationR is IfcClassificationReference ifcClassificationReference)
+                {
+                    associationsRef[ifcClassificationReference.ReferencedSource.Location] = ifcClassificationReference;
+                }
+            }
+
+            foreach (var entry in activeDictionaryData)
+            {
+                Uri dictionaryUri = entry.Key;
+                (string Identification, string Name) value = entry.Value;
+
+                if (!associationsRef.TryGetValue(dictionaryUri, out var associationR))
+                {
+                    // add new IfcClassificationReference to the dictionary based on dictionaryUri, Identification and Name
+                    associationsRef[dictionaryUri] = new IfcClassificationReference
+                    {
+                        Type = "IfcClassificationReference",
+                        Identification = value.Identification,
+                        Name = value.Name,
+                        ReferencedSource = new IfcClassification
+                        {
+                            Type = "IfcClassification",
+                            Location = dictionaryUri,
+                        }
+                    };
+                }
+                else
+                {
+                    //update the existing IfcClassificationReference with the new values from the revit typeEntity
+                    var ifcClassificationReference = (IfcClassificationReference)associationR;
+                    ifcClassificationReference.Identification = value.Identification;
+                    ifcClassificationReference.Name = value.Name;
+                }
+            }
+
+            // Creates a builder object, passes it to the director and then initiates the construction process.
+            // The end result is retrieved from the builder object.
+            var director = new Director();
+            var builder = new MatRelAssociatesBuilder();
+            director.Builder = builder;
+
+            
+            //If Element or ElementType is not Profile based and schema = Ifc2x3
+            if (
+                element != null &&
+                element.Category.Name != "Structural Beam Systems" &&
+                element.Category.Name != "Structural Columns" &&
+                element.Category.Name != "Structural Framing" &&
+                element.Category.Name != "Structural Trusses"
+                )
+            {
+                director.BuildMaterial(elemSet, doc);
+            }
+
+
+            //If Element or ElementType is not Profile based and schema = Ifc4
+            // #TODO Ifc4 out of scope: director.BuildMaterialConstituentSet();
+
+            //If ElementType is Profile
+            if (
+                element != null &&
+                element.Category.Name == "Structural Beam Systems" ||
+                element.Category.Name == "Structural Columns" ||
+                element.Category.Name == "Structural Framing" ||
+                element.Category.Name == "Structural Trusses"
+                )
+            {
+                director.BuildMaterialProfileSet();
+            }
+                
+            associations = builder.GetAssociation().ListAssociations();
+
+
+//            //Material associations
+//            var MaterialRelAssociatesDictionart = new Dictionary<ElementId, IfcMaterial>();
+
+//            List<Material> materials = new List<Material>();
+//            materials = GetElementMaterials(element, doc);
+
+//            if (materials != null)
+//            {
+//                foreach (Material mat in materials)
+//                {
+
+//                    ElementId elemId = mat.Id;
+//                    if (!MaterialRelAssociatesDictionart.TryGetValue(elemId, out var associationM))
+//                    {
+//                        // add new IfcMaterial to the dictionary based on elementId and IfcMaterial
+//                        MaterialRelAssociatesDictionart[elemId] = new IfcMaterial
+//                        {
+//                            Type = "IfcMaterial",
+//                            Name = mat.Name,
+//                        };
+//                    }
+//                    else
+//                    {
+                        //update the existing IfcClassificationReference with the new values from the revit typeEntity
+//                        var ifcMaterial = (IfcMaterial)associationM;
+//                        ifcMaterial.Type = mat.GetType().ToString();
+//                        ifcMaterial.Name = mat.Name;
+//                    }
+//                }
+//            }
+
+//            foreach (KeyValuePair<ElementId, IfcMaterial> pair in MaterialRelAssociatesDictionart)
+//            {
+//                Association association = new Association();
+//                association = (IfcMaterial)pair.Value;
+//                associations.Add(association);
+//            }
+
+
+
+
+
+
+            //add associationsRef to MaterialRelAssociatesDictionart associations
+            foreach (KeyValuePair<Uri, IfcClassificationReference> pair in associationsRef)
+            {
+                Association association = new Association();
+                association = (IfcClassificationReference)pair.Value;
+                associations.Add(association);
+            }
+
+            return associations;
+        }
+
+        /// <summary>
+        /// Retrieves the classification data mapped to the current settings for a given element type.
+        /// </summary>
+        /// <param name="elementType">The element type.</param>
+        /// <returns>A dictionary containing the classification data, where the key is the dictionary URI and the value is a tuple of the identification and name.</returns>
+        public static Dictionary<Uri, (string Identification, string Name)> GetClassificationDataFromSettings(ElementType elementType)
+        {
+            Logger logger = LogManager.GetCurrentClassLogger();
+            
+            //Make new dictionary to return the classification data settings
+            var classificationData = new Dictionary<Uri, (string Identification, string Name)>();
+            //Get active dictionaries and leave empty if there is non
+            var activeDictionaries = GetActiveDictionaries();
+
+            //fill dictionary if valid name and Id is found
+            foreach (var dictionary in activeDictionaries)
+            {
+                string bsddParameterValue = "";
+                string mappedParameterValue = "";
+                // #TODO: sometimes values come back as null, how does this look in the IFC?
+                try
+                {
+                    bsddParameterValue = GetParameterValueByElement(elementType, CreateParameterNameFromUri(dictionary.IfcClassification.Location));
+                }
+                catch (Exception e)
+                {
+                    logger.Error($"GetElementAssociations elemType: bsddParameterValue could not be set: {e}");
+                }
+                try
+                {
+
+                    mappedParameterValue = GetParameterValueByElement(elementType, dictionary.ParameterMapping);
+                }
+                catch (Exception e)
+                {
+
+                    logger.Error($"GetElementAssociations elemType: mappedParameterValue could not be set: {e}");
+                }
+
+                string identification = null;
+                string name = null;
+
+                if (!string.IsNullOrEmpty(bsddParameterValue))
+                {
+                    //Get Id and name out of location value
+                    var splitValue = bsddParameterValue.Split(':');
+                    identification = splitValue[0];
+                    name = splitValue.Length > 1 ? splitValue[1] : splitValue[0];
+                }
+                if (!string.IsNullOrEmpty(mappedParameterValue))
+                {
+                    //Get Id and name out of Parameter mapping value
+                    var splitValue = mappedParameterValue.Split(':');
+                    identification = splitValue[0];
+                    //Do if name is not already filled by location value 
+                    if (string.IsNullOrEmpty(name))
+                    {
+                        name = splitValue.Length > 1 ? splitValue[1] : splitValue[0];
+                    }
+                    else
+                    {
+                        if (splitValue.Length > 1)
+                        {
+                            name = splitValue[1];
+                        }
+                    }
+                }
+
+                //If both Id and Name are defined fill classificationdata dictionary with uri and location dictionary
+                if (!string.IsNullOrEmpty(identification) || !string.IsNullOrEmpty(name))
+                {
+                    classificationData[dictionary.IfcClassification.Location] = (identification, name);
+                }
+            }
+
+            //If there is no active dictionary it is left empty
+            return classificationData;
+        }
+
+        /// <summary>
+        /// Retrieves the classification data mapped to the current settings for a given element.
+        /// </summary>
+        /// <param name="element">The element</param>
+        /// <returns>A dictionary containing the classification data, where the key is the dictionary URI and the value is a tuple of the identification and name.</returns>
+        public static Dictionary<Uri, (string Identification, string Name)> GetClassificationDataFromSettings(Element element)
+        {
+            Logger logger = LogManager.GetCurrentClassLogger();
+
+            //Make new dictionary to return the classification data settings
+            var classificationData = new Dictionary<Uri, (string Identification, string Name)>();
+            //Get active dictionaries and leave empty if there is non
+            var activeDictionaries = GetActiveDictionaries();
+
+            //fill dictionary if valid name and Id is found
+            foreach (var dictionary in activeDictionaries)
+            {
+                string bsddParameterValue = "";
+                string mappedParameterValue = "";
+                string bsddParameterName = CreateParameterNameFromUri(dictionary.IfcClassification.Location);
+                // #TODO: sometimes values come back as null, how does this look in the IFC?
+                try
+                {
+                    bsddParameterValue = GetParameterValueByElement(element, CreateParameterNameFromUri(dictionary.IfcClassification.Location));
+                }
+                catch (Exception e)
+                {
+                    logger.Error($"GetElementAssociations elem: bsddParameterValue could not be set: {e}");
+                }
+                try
+                {
+
+                    mappedParameterValue = GetParameterValueByElement(element, dictionary.ParameterMapping);
+                }
+                catch (Exception e)
+                {
+
+                    logger.Error($"GetElementAssociations elem: mappedParameterValue could not be set: {e}");
+                }
+
+                string identification = null;
+                string name = null;
+
+                if (!string.IsNullOrEmpty(bsddParameterValue))
+                {
+                    //Get Id and name out of location value
+                    var splitValue = bsddParameterValue.Split(':');
+                    identification = splitValue[0];
+                    name = splitValue.Length > 1 ? splitValue[1] : splitValue[0];
+                }
+                if (!string.IsNullOrEmpty(mappedParameterValue))
+                {
+                    //Get Id and name out of Parameter mapping value
+                    var splitValue = mappedParameterValue.Split(':');
+                    identification = splitValue[0];
+                    //Do if name is not already filled by location value
+                    if (string.IsNullOrEmpty(name))
+                    {
+                        name = splitValue.Length > 1 ? splitValue[1] : splitValue[0];
+                    }
+                    else
+                    {
+                        if (splitValue.Length > 1)
+                        {
+                            name = splitValue[1];
+                        }
+                    }
+                }
+
+                //If both Id and Name are defined fill classificationdata dictionary with uri and location dictionary
+                if (!string.IsNullOrEmpty(identification) || !string.IsNullOrEmpty(name))
+                {
+                    classificationData[dictionary.IfcClassification.Location] = (identification, name);
+                }
+            }
+
+            //If there is no active dictionary it is left empty
+            return classificationData;
+        }
+
+        /// <summary>
+        /// Retrieves the combined list of main and filter dictionaries from the global settings.
+        /// If the MainDictionary is null, it is left out.
+        /// </summary>
+        public static IEnumerable<BsddDictionary> GetActiveDictionaries()
+        {
+            // Create a list of BsDD Dictionaries to return as Enum
+            var activeDictionaries = new List<BsddDictionary>();
+
+            //If settings found in main dictionary of the global BsDD settings return this
+            if (GlobalBsddSettings.bsddsettings.MainDictionary != null)
+            {
+                activeDictionaries.Add(GlobalBsddSettings.bsddsettings.MainDictionary);
+            }
+
+            //Remove double dictionaries
+            if (GlobalBsddSettings.bsddsettings.FilterDictionaries != null)
+            {
+                activeDictionaries = activeDictionaries.Concat(GlobalBsddSettings.bsddsettings.FilterDictionaries).ToList();
+            }
+
+            return activeDictionaries;
+        }
+
+        /// <summary>
+        /// Creates a Revit bSDD parameter name for the from the given URI.
+        /// </summary>
+        /// <param name="uri">The URI to create the parameter name from.</param>
+        /// <returns>The parameter name created from the URI.</returns>
+        public static string CreateParameterNameFromUri(Uri uri)
+        {
+            string parameterName = $"bsdd/class/{uri.Host}{uri.PathAndQuery}";
+            return parameterName;
+        }
+
+        /// <summary>
+        /// get the element classification reference from extensible storage
+        /// </summary>
+        /// <param name="element">Element</param>
+        /// <returns>Deserialized object from the JSON string</returns>
+        private static IEnumerable<Association> getElemClassRefFromExtensibleStorage(Element element)
+        {
+            //Get the current IfcSchema
+            Schema schema = GetBsddDataSchema();
+            var storageEntity = element.GetEntity(schema);
+
+            if (storageEntity.Schema != null)
+            {
+                var field = schema.GetField(s_IfcClassificationData);
+                var jsonString = storageEntity.Get<string>(field);
+
+                if (!string.IsNullOrEmpty(jsonString))
+                {
+                    return JsonConvert.DeserializeObject<List<IfcClassificationReference>>(jsonString);
+                }
+            }
+
+            return Enumerable.Empty<IfcClassificationReference>();
+        }
+
+        #region =========== CM: Material relations ===========
+        /*
+        public static List<Material> GetElementMaterials(Element e, Document doc)
+        {
+            // reference to materials by IfcRelAssociatesMaterial
+            // connects an IfcElement with an IfcMaterial, IfcMaterialLayerSet (layered element like wall), or IfcMaterialProfileSet (profiles).
+
+            // IfcElement (IfcWall, IfcBeam, IfcColumn)
+            //  |
+            //  | --IfcRelAssociatesMaterial
+            //      |
+            //      | --IfcMaterial
+
+            //Make material list
+            List<Material> mat = new List<Material>();
+
+            if (
+                e != null &&
+                e.Category.Name != "Structural Beam Systems" &&
+                e.Category.Name != "Structural Columns" &&
+                e.Category.Name != "Structural Framing" &&
+                e.Category.Name != "Structural Trusses"
+                )
+            {
+
+                // Find out or there are any material parameters
+                foreach (Parameter parameter in e.Parameters)
+                {
+                    // Check if the parameter is related to materials
+                    if (parameter.Definition.GetDataType() == SpecTypeId.Reference.Material)
+                    {
+                        Material Pmat = null;
+                        ElementId materialId = parameter.AsElementId();
+                        if (-1 == materialId.IntegerValue)
+                        {
+                            //Invalid ElementId, assume the material is "By Category"
+                            if (null != e.Category)
+                            {
+                                Pmat = e.Category.Material;
+                                if (Pmat != null)
+                                {
+                                    mat.Add(Pmat);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Pmat = doc.GetElement(materialId) as Material;
+                            mat.Add(Pmat);
+                        }
+                    }
+                }
+            }
+
+            if (mat.Count > 0)
+            {
+                return mat;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        */
+        public static IfcMaterialProfileSet GetElementMaterialsProfileset(ElementType e, Document doc)
+        {
+            // IfcElement(bijv.IfcBeam, IfcColumn)
+            //  |
+            //  | --IfcRelAssociatesMaterial
+            //      |
+            //      | --IfcMaterialProfileSet
+            //          |
+            //          | --IfcMaterialProfile(1..n)
+            //              |
+            //              | --IfcProfileDef(bijv.IfcRectangleProfileDef, IfcCircleProfileDef)
+            //              | --IfcMaterial
+
+            //Make materila list
+            List<IfcMaterialProfile> matProfileSet = new List<IfcMaterialProfile>();
+
+            //Make material list
+            List<Material> mat = new List<Material>();
+
+            // #Is elem Profile
+            if (
+                e != null &&
+                    (
+                    e.Category.Name == "Structural Beam Systems" ||
+                    e.Category.Name == "Structural Columns" ||
+                    e.Category.Name == "Structural Framing" ||
+                    e.Category.Name == "Structural Trusses"
+                    )
+                )
+            {
+                // Find out or there are any material parameters
+                foreach (Parameter parameter in e.Parameters)
+                {
+                    // Check if the parameter is related to materials
+                    if (parameter.Definition.GetDataType() == SpecTypeId.Reference.Material)
+                    {
+                        Material Pmat = null;
+                        ElementId materialId = parameter.AsElementId();
+                        if (-1 == materialId.IntegerValue)
+                        {
+                            //Invalid ElementId, assume the material is "By Category"
+                            if (null != e.Category)
+                            {
+                                Pmat = e.Category.Material;
+                                if (Pmat != null)
+                                {
+                                    mat.Add(Pmat);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Pmat = doc.GetElement(materialId) as Material;
+                            mat.Add(Pmat);
+                        }
+                    }
+                }
+
+            }
+
+            for (int i = 0; i < mat.Count; i++)
+            {
+                if (mat[i] == null)
+                {
+                    mat.RemoveAt(mat.IndexOf(mat[i]));
+                    i--;
+                }
+            }
+
+            foreach (Material material in mat)
+            {
+                if (material != null)
+                {
+                    //get the description value
+                    BuiltInParameter desiredBIP = BuiltInParameter.ALL_MODEL_DESCRIPTION;
+                    string descriptionValue = "N/A";
+
+                    Parameter description = material.get_Parameter(desiredBIP);
+                    if (description != null)
+                    {
+                        descriptionValue = description.AsString();
+                    }
+
+                    //Convert Revit material to IfcMaterial by IfcMaterialBuilder
+                    IfcMaterial ifcMaterial = new IfcMaterialBuilder()
+                        .AddName(material.Name)
+                        .AddDescription(descriptionValue)
+                        .AddCategory(material.Category.Name)
+                        //.AddHasRepresentation()
+                        //.AddIsRelatedWith()
+                        //.AddRelatesTo()
+                        .Build();
+
+ //!!!!!!!!!!!!!!!!!!!Add assosiation inherrit builder??
+
+                    ifcMaterial.Name = material.Name;
+                    ifcMaterial.Type = "IfcMaterial";
+
+                    //Make IfcMaterialProfile
+                    IfcMaterialProfile ifcMaterialProfile = new IfcMaterialProfile();
+                    ifcMaterialProfile.Name = material.Name;
+                    ifcMaterialProfile.Description = "N/A";
+                    ifcMaterialProfile.Material = ifcMaterial;
+                    //ifcMaterialProfile.Profile = ;
+                    ifcMaterialProfile.Priority = 0;
+                    //ifcMaterialProfile.Category = ;
+                    matProfileSet.Add(ifcMaterialProfile);
+                }
+            }
+
+            if (matProfileSet.Count > 0)
+            {
+                //Define IfcProfileDef
+                IfcProfileDef ifcProfileDef = new IfcProfileDef();
+                //ifcProfileDef.ProfileType = ;
+                ifcProfileDef.ProfileName = e.Name;
+                //ifcProfileDef.HasExternalReference = ;
+                //ifcProfileDef.HasProperties = ;
+
+                //Define IfcCompositeProfileDef
+                IfcCompositeProfileDef ifcCompositeProfileDef = new IfcCompositeProfileDef();
+                ifcProfileDef.ProfileName = e.Name;
+                ifcProfileDef.ProfileName = e.Name;
+                ifcCompositeProfileDef.Profiles = ifcProfileDef;
+                ifcCompositeProfileDef.Label = "ifcCompositeProfileDef";
+
+                //Define IfcMaterialProfileSet
+                IfcMaterialProfileSet ifcMaterialProfileSet = new IfcMaterialProfileSet();
+                ifcMaterialProfileSet.Name = e.Name;
+                ifcMaterialProfileSet.Description = "N/A";
+                ifcMaterialProfileSet.MaterialProfiles = matProfileSet;
+                ifcMaterialProfileSet.CompositeProfile = ifcCompositeProfileDef;
+                ifcMaterialProfileSet.Type = "IfcMaterialProfileSet";
+
+                return ifcMaterialProfileSet;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public static IfcMaterialLayerSet GetElementMaterialsLayerset(ElementType e, Document doc)
+        {
+            // IfcWall
+            //  |
+            //  | --IfcRelAssociatesMaterial
+            //      |
+            //      | --IfcMaterialLayerSet
+            //          |
+            //          | --IfcMaterial(Baksteen)
+            //          | --IfcMaterial(Isolatie)
+            //          | --IfcMaterial(Gipsplaat)
+
+            //Make material list
+            List<IfcMaterialLayer> matLayerSet = new List<IfcMaterialLayer>();
+
+            //Get HostObject by query existing FamilyInstances with the same ElementType
+            var instances1 = new FilteredElementCollector(doc)
+                .OfClass(typeof(FamilyInstance))
+                .Cast<FamilyInstance>()
+                .Where(fi => fi.Symbol.Id == e.Id);
+
+            //take first element out of elementtype
+            List<Element> collectorEF = new FilteredElementCollector(doc)
+                .WhereElementIsNotElementType()
+                .ToList<Element>();
+            List<Element> listEI = collectorEF.Where(q => q.GetTypeId() == e.Id).ToList<Element>();
+            Element instances = listEI[0];
+            CompoundStructure compoundStructure = null;
+
+            // #Is elem with compound structure
+            if (
+                e != null ||
+                e.Category.Name == "Ceilings" ||
+                e.Category.Name == "Roofs" ||
+                e.Category.Name == "Walls" ||
+                e.Category.Name == "Floors"
+                )
+            {
+                switch (e.Category.Name)
+                {
+                    case "Walls":
+                        Wall wall = instances as Wall;
+                        compoundStructure = wall.WallType.GetCompoundStructure();
+                        break;
+                    case "Floors":
+                        Floor floor = instances as Floor;
+                        compoundStructure = floor.FloorType.GetCompoundStructure();
+                        break;
+                    case "Ceilings":
+                        try
+                        {
+                            Ceiling ceiling = instances as Ceiling;
+                            CeilingType CT = doc.GetElement(ceiling.GetTypeId()) as CeilingType;
+                            compoundStructure = CT.GetCompoundStructure();
+                        }
+                        catch { }
+                        break;
+                    case "Roofs":
+                        RoofBase roof = instances as RoofBase;
+                        compoundStructure = roof.RoofType.GetCompoundStructure();
+                        break;                        
+                }
+                
+
+                if (compoundStructure != null)
+                {
+                    var layers = compoundStructure.GetLayers();
+                    if (layers == null)
+                    {
+                        //find category and subcategory corresponding to the compoundstructure layer
+                    }
+                    foreach (var layer in layers)
+                    {
+                        Material material = doc.GetElement(layer.MaterialId) as Material;
+
+                        if (material != null)
+                        {
+                            //get the description value
+                            BuiltInParameter desiredBIP = BuiltInParameter.ALL_MODEL_DESCRIPTION;
+                            string descriptionValue = "N/A";
+
+                            Parameter description = material.get_Parameter(desiredBIP);
+                            if (description != null)
+                            {
+                                descriptionValue = description.AsString();
+                            }
+
+                            //Convert Revit material to IfcMaterial
+                            IfcMaterial ifcMaterial = new IfcMaterial();
+                            ifcMaterial.Name = material.Name;
+                            ifcMaterial.Description = descriptionValue;
+                            ifcMaterial.Category = material.Category.Name;
+                            /*
+                            ifcMaterial.HasRepresentation = ;
+                            ifcMaterial.IsRelatedWith = ;
+                            ifcMaterial.RelatesTo = ;
+                            */
+                            ifcMaterial.Name = material.Name;
+                            ifcMaterial.Type = "IfcMaterial";
+
+                            //Make IfcMaterialLayer
+                            IfcMaterialLayer ifcMaterialLayer = new IfcMaterialLayer();
+                            ifcMaterialLayer.Material = ifcMaterial;
+                            ifcMaterialLayer.LayerThickness = layer.Width * 304.8;
+                            //ifcMaterialLayer.IsVentilated = ;
+                            ifcMaterialLayer.Name = material.Name;
+                            ifcMaterialLayer.Description = "N/A";
+                            ifcMaterialLayer.Category = layer.Function.ToString();
+                            ifcMaterialLayer.Priority = 0;
+                            matLayerSet.Add(ifcMaterialLayer);
+                        }
+                    }
+                }
+            }
+
+            if (matLayerSet.Count > 0)
+            {
+                IfcMaterialLayerSet ifcMaterialLayerSet = new IfcMaterialLayerSet();
+                ifcMaterialLayerSet.IfcMaterialLayer = matLayerSet;
+                ifcMaterialLayerSet.LayerSetName = "N/A";
+                ifcMaterialLayerSet.Description = "N/A";
+                //calculate total length
+                double thickness = 0;
+                foreach (IfcMaterialLayer layer in ifcMaterialLayerSet.IfcMaterialLayer)
+                {
+                    thickness = thickness + layer.LayerThickness;
+                }
+                ifcMaterialLayerSet.TotalThickness = thickness;
+                ifcMaterialLayerSet.Name = e.Name;
+                ifcMaterialLayerSet.Type = "IfcMaterialLayerSet";
+
+                return ifcMaterialLayerSet;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /*
+        public static IfcMaterialConstituentSet GetElementMatConstituentSet(Element e, Document doc)
+        {
+            //schema
+            //https://help.autodesk.com/view/RVT/2022/ENU/?guid=Revit_API_Revit_API_Developers_Guide_Revit_Geometric_Elements_Material_Element_Material_html
+
+            // koppeling materialen via IfcRelAssociatesMaterial
+            // verbindt een IfcElement met een IfcMaterial, IfcMaterialLayerSet (layered element zoals wall), of IfcMaterialProfileSet (profielen).
+
+            // IfcElement(bijv.IfcWall, IfcBeam, IfcColumn)
+            //  |
+            //  | --IfcRelAssociatesMaterial
+            //      |
+            //      | --IfcMaterialConstituentSet
+            //          |
+            //          | -- IfcMaterialConstituent
+            //              |
+            //              | -- IfcMaterial
+            //          | -- IfcMaterialConstituent
+            //              |
+            //              | -- IfcMaterial
+
+            //Make material list
+            Dictionary<Material, String> matDict = new Dictionary<Material, String>();
+
+            if (
+                e != null &&
+                e.Category.Name != "Structural Beam Systems" &&
+                e.Category.Name != "Structural Columns" &&
+                e.Category.Name != "Structural Framing" &&
+                e.Category.Name != "Structural Trusses"
+                )
+            {
+
+                // Find out or there are any material parameters
+                foreach (Parameter parameter in e.Parameters)
+                {
+                    // Check if the parameter is related to materials
+                    if (parameter.Definition.GetDataType() == SpecTypeId.Reference.Material)
+                    {
+                        Material Pmat = null;
+                        ElementId materialId = parameter.AsElementId();
+                        if (-1 == materialId.IntegerValue)
+                        {
+                            //Invalid ElementId, assume the material is "By Category"
+                            if (null != e.Category)
+                            {
+                                Pmat = e.Category.Material;
+                                if (Pmat != null)
+                                {
+                                    matDict.Add(Pmat, parameter.Definition.Name);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Pmat = doc.GetElement(materialId) as Material;
+                            matDict.Add(Pmat, "");
+                        }
+                    }
+                }
+            }
+
+
+
+            if (matDict.Count > 1)
+            {
+                //Define IfcMaterialConstituentSet
+                IfcMaterialConstituentSet ifcMaterialConstituentSet = new IfcMaterialConstituentSet();
+
+                List<IfcMaterialConstituent> ifcMaterialConstituentList = new List<IfcMaterialConstituent>();
+                foreach (KeyValuePair<Material, String> entry in matDict)
+                {
+                    //get the description value
+                    BuiltInParameter desiredBIP = BuiltInParameter.ALL_MODEL_DESCRIPTION;
+                    string descriptionValue = "N/A";
+
+                    Parameter description = entry.Key.get_Parameter(desiredBIP);
+                    if (description != null)
+                    {
+                        descriptionValue = description.AsString();
+                    }
+
+                    //Convert Revit material to IfcMaterial
+                    IfcMaterial ifcMaterial = new IfcMaterial();
+                    ifcMaterial.Name = entry.Key.Name;
+                    ifcMaterial.Description = descriptionValue;
+                    ifcMaterial.Category = entry.Key.Category.Name;
+                    //ifcMaterial.HasRepresentation = ;
+                    //ifcMaterial.IsRelatedWith = ;
+                    //ifcMaterial.RelatesTo = ;
+                    ifcMaterial.Type = "IfcMaterial";
+
+                    //Make IfcMaterialConstituent
+                    IfcMaterialConstituent ifcMaterialConstituent = new IfcMaterialConstituent();
+                    ifcMaterialConstituent.Name = entry.Value;
+                    ifcMaterialConstituent.Description = "N/A";
+                    ifcMaterialConstituent.Material = ifcMaterial;
+                    //ifcMaterialConstituent.Fraction = ;
+                    //ifcMaterialConstituent.Category = ;
+                    //ifcMaterialConstituent.ToMaterialConstituentSet = ifcMaterialConstituentSet;
+                    ifcMaterialConstituentList.Add(ifcMaterialConstituent);
+                }
+
+
+                ifcMaterialConstituentSet.Name = e.Name;
+                ifcMaterialConstituentSet.Description = "N/A";
+                ifcMaterialConstituentSet.MaterialConstituents = ifcMaterialConstituentList;
+
+                return ifcMaterialConstituentSet;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        */
+        #endregion //CM: Material relations
+        #endregion //CM: Material association
+        #endregion //CM: Collect parameters
+        #endregion //Class methods
+        #endregion //Class: ElementManager
 
 
 
@@ -830,17 +1935,7 @@ namespace BsddRevitPlugin.Logic.Model
             return parameterName;
         }
 
-        /// <summary>
-        /// Creates a Revit bSDD parameter name for the from the given URI.
-        /// </summary>
-        /// <param name="uri">The URI to create the parameter name from.</param>
-        /// <returns>The parameter name created from the URI.</returns>
-        public static string CreateParameterNameFromUri(Uri uri)
-        {
-            string parameterName = $"bsdd/class/{uri.Host}{uri.PathAndQuery}";
-            return parameterName;
-        }
-
+        
         /// <summary>
         /// Creates a parameter name from the IFC classification reference source location.
         /// </summary>
@@ -898,443 +1993,10 @@ namespace BsddRevitPlugin.Logic.Model
             return Enumerable.Empty<IfcMaterial>();
         }
 
-        private static IEnumerable<Association> getElementClassificationsReferencesFromExtensibleStorage(Element element)
-        {
-            Schema schema = GetBsddDataSchema();
-            var storageEntity = element.GetEntity(schema);
+        
+        
 
 
-            if (storageEntity.Schema != null)
-            {
-                var field = schema.GetField(s_IfcClassificationData);
-                var jsonString = storageEntity.Get<string>(field);
-
-                if (!string.IsNullOrEmpty(jsonString))
-                {
-                    return JsonConvert.DeserializeObject<List<IfcClassificationReference>>(jsonString);
-                }
-            }
-
-            return Enumerable.Empty<IfcClassificationReference>();
-        }
-
-        /// <summary>
-        /// Retrieves the classification data mapped to the current settings for a given element type.
-        /// </summary>
-        /// <param name="elementType">The element type.</param>
-        /// <returns>A dictionary containing the classification data, where the key is the dictionary URI and the value is a tuple of the identification and name.</returns>
-        public static Dictionary<Uri, (string Identification, string Name)> GetClassificationDataFromSettings(ElementType elementType)
-        {
-            Logger logger = LogManager.GetCurrentClassLogger();
-            var classificationData = new Dictionary<Uri, (string Identification, string Name)>();
-            var activeDictionaries = GetActiveDictionaries();
-
-            foreach (var dictionary in activeDictionaries)
-            {
-                string bsddParameterValue = "";
-                string mappedParameterValue = "";
-                // TODO: sometimes values come back as null, how does this look in the IFC?
-                try
-                {
-                    bsddParameterValue = GetParameterValueByElement(elementType, CreateParameterNameFromUri(dictionary.IfcClassification.Location));
-
-                }
-                catch (Exception e)
-                {
-                    logger.Error(e);
-                }
-                try
-                {
-
-                    mappedParameterValue = GetParameterValueByElement(elementType, dictionary.ParameterMapping);
-                }
-                catch (Exception e)
-                {
-
-                    logger.Error(e);
-                }
-
-                string identification = null;
-                string name = null;
-
-                if (!string.IsNullOrEmpty(bsddParameterValue))
-                {
-                    var splitValue = bsddParameterValue.Split(':');
-                    identification = splitValue[0];
-                    name = splitValue.Length > 1 ? splitValue[1] : splitValue[0];
-                }
-                if (!string.IsNullOrEmpty(mappedParameterValue))
-                {
-                    var splitValue = mappedParameterValue.Split(':');
-                    identification = splitValue[0];
-                    if (string.IsNullOrEmpty(name))
-                    {
-                        name = splitValue.Length > 1 ? splitValue[1] : splitValue[0];
-                    }
-                    else
-                    {
-                        if (splitValue.Length > 1)
-                        {
-                            name = splitValue[1];
-                        }
-                    }
-                }
-
-                if (!string.IsNullOrEmpty(identification) || !string.IsNullOrEmpty(name))
-                {
-                    classificationData[dictionary.IfcClassification.Location] = (identification, name);
-                }
-            }
-
-            return classificationData;
-        }
-
-        public static Dictionary<Uri, (string Identification, string Name)> GetClassificationDataFromSettings(Element element)
-        {
-            Logger logger = LogManager.GetCurrentClassLogger();
-            var classificationData = new Dictionary<Uri, (string Identification, string Name)>();
-            var activeDictionaries = GetActiveDictionaries();
-
-            foreach (var dictionary in activeDictionaries)
-            {
-                string bsddParameterValue = "";
-                string mappedParameterValue = "";
-                string bsddParameterName = CreateParameterNameFromUri(dictionary.IfcClassification.Location);
-                // TODO: sometimes values come back as null, how does this look in the IFC?
-                try
-                {
-                    bsddParameterValue = GetParameterValueByElement(element, CreateParameterNameFromUri(dictionary.IfcClassification.Location));
-
-                }
-                catch (Exception e)
-                {
-                    logger.Error(e);
-                }
-                try
-                {
-
-                    mappedParameterValue = GetParameterValueByElement(element, dictionary.ParameterMapping);
-                }
-                catch (Exception e)
-                {
-
-                    logger.Error(e);
-                }
-
-                string identification = null;
-                string name = null;
-
-                if (!string.IsNullOrEmpty(bsddParameterValue))
-                {
-                    var splitValue = bsddParameterValue.Split(':');
-                    identification = splitValue[0];
-                    name = splitValue.Length > 1 ? splitValue[1] : splitValue[0];
-                }
-                if (!string.IsNullOrEmpty(mappedParameterValue))
-                {
-                    var splitValue = mappedParameterValue.Split(':');
-                    identification = splitValue[0];
-                    if (string.IsNullOrEmpty(name))
-                    {
-                        name = splitValue.Length > 1 ? splitValue[1] : splitValue[0];
-                    }
-                    else
-                    {
-                        if (splitValue.Length > 1)
-                        {
-                            name = splitValue[1];
-                        }
-                    }
-                }
-
-                if (!string.IsNullOrEmpty(identification) || !string.IsNullOrEmpty(name))
-                {
-                    classificationData[dictionary.IfcClassification.Location] = (identification, name);
-                }
-            }
-
-            return classificationData;
-        }
-
-        /// <summary>
-        /// Retrieves the associations from the extended storage for an entity.
-        /// </summary>
-        /// <param name="entity">The entity from which to retrieve the associations.</param>
-        /// <returns>A dictionary of associations with the location as the key.</returns>        
-        public static List<Association> GetElementTypeAssociations(ElementType elementType, Document doc, out Dictionary<Uri, IfcClassificationReference> associationsRef)
-        {
-
-            var associations = new List<Association>();
-
-            Logger logger = LogManager.GetCurrentClassLogger();
-            //make new dictionary
-            associationsRef = new Dictionary<Uri, IfcClassificationReference>();
-            //
-            var activeDictionaryData = GetClassificationDataFromSettings(elementType);
-                        
-            foreach (var association in getElementClassificationsReferencesFromExtensibleStorage(elementType))
-            {
-                if (association is IfcClassificationReference ifcClassificationReference)
-                {
-                    associationsRef[ifcClassificationReference.ReferencedSource.Location] = ifcClassificationReference;
-                }
-            }
-
-            foreach (var entry in activeDictionaryData)
-            {
-                Uri dictionaryUri = entry.Key;
-                (string Identification, string Name) value = entry.Value;
-
-                if (!associationsRef.TryGetValue(dictionaryUri, out var association))
-                {
-                    // add new IfcClassificationReference to the dictionary based on dictionaryUri, Identification and Name
-                    associationsRef[dictionaryUri] = new IfcClassificationReference
-                    {
-                        Type = "IfcClassificationReference",
-                        Identification = value.Identification,
-                        Name = value.Name,
-                        ReferencedSource = new IfcClassification
-                        {
-                            Type = "IfcClassification",
-                            Location = dictionaryUri,
-                        }
-                    };
-                    
-                }
-                else
-                {
-                    //update the existing IfcClassificationReference with the new values from the revit typeEntity
-                    var ifcClassificationReference = (IfcClassificationReference)association;
-                    ifcClassificationReference.Identification = value.Identification;
-                    ifcClassificationReference.Name = value.Name;
-                }
-            }
-
-
-            //Material associations
-            var associationsMat = new Dictionary<ElementId, IfcMaterial>();
-            var associationsMatLayerset = new Dictionary<ElementId, IfcMaterialLayerSet>();
-            var associationsMatProfileset = new Dictionary<ElementId, IfcMaterialProfileSet>();
-            var associationsMatProfile = new IfcMaterialProfile();
-            var associationsMatConstituentSet = new Dictionary<ElementId, IfcMaterialConstituentSet>();
-
-            if (GetElementMaterialsProfileset(elementType, doc) != null)
-            {
-                ElementId elemId = elementType.Id;
-                associationsMatProfileset[elemId] = GetElementMaterialsProfileset(elementType, doc);
-            }
-
-            if (GetElementMaterialsLayerset(elementType, doc) != null)
-            {
-                ElementId elemId = elementType.Id;
-                associationsMatLayerset[elemId] = GetElementMaterialsLayerset(elementType, doc);
-            }
-
-            if(GetElementMatConstituentSet(elementType, doc) != null)
-            {
-                ElementId elemId = elementType.Id;
-                associationsMatConstituentSet[elemId] = GetElementMatConstituentSet(elementType, doc);
-            }
-            else if (GetElementMaterials(elementType, doc) != null)
-            {
-                foreach (Material mat in GetElementMaterials(elementType, doc))
-                {
-
-                    ElementId elemId = mat.Id;
-                    if (!associationsMat.TryGetValue(elemId, out var association))
-                    {
-                        //get the description value
-                        BuiltInParameter desiredBIP = BuiltInParameter.ALL_MODEL_DESCRIPTION;
-                        string descriptionValue = "";
-
-                        Parameter description = mat.get_Parameter(desiredBIP);
-                        if (description != null)
-                        {
-                            descriptionValue = description.AsString();
-                        }
-
-                        // add new IfcMaterial to the dictionary based on dictionaryUri, Identification and Name
-                        associationsMat[elemId] = new IfcMaterial
-                        {
-                            Name = mat.Name,
-                            Description = descriptionValue,
-                            Category = mat.Category.Name,
-                            //HasRepresentation = mat.,
-                            //IsRelatedWith = mat.,
-                            //RelatesTo = mat.,
-                            Type = "IfcMaterial",
-                        };
-                    }
-                    else
-                    {
-                        //update the existing IfcClassificationReference with the new values from the revit typeEntity
-                        var ifcMaterial = (IfcMaterial)association;
-                        ifcMaterial.Name = mat.Name;
-                    }
-                }
-            }
-
-
-
-            //combine associations
-            foreach (KeyValuePair<Uri, IfcClassificationReference> pair in associationsRef)
-            {
-                Association association = new Association();
-                association = (IfcClassificationReference)pair.Value;
-                associations.Add(association);
-            }
-
-            foreach (KeyValuePair<ElementId, IfcMaterial> pair in associationsMat)
-            {
-                Association association = new Association();
-                association = (IfcMaterial)pair.Value;
-                associations.Add(association);
-            }
-
-            foreach (KeyValuePair<ElementId, IfcMaterialLayerSet> pair in associationsMatLayerset)
-            {
-                Association association = new Association();
-                association = (IfcMaterialLayerSet)pair.Value;
-                associations.Add(association);
-            }
-
-            foreach (KeyValuePair<ElementId, IfcMaterialConstituentSet> pair in associationsMatConstituentSet)
-            {
-                Association association = new Association();
-                association = (IfcMaterialConstituentSet)pair.Value;
-                associations.Add(association);
-            }
-
-            foreach (KeyValuePair<ElementId, IfcMaterialProfileSet> pair in associationsMatProfileset)
-            {
-                Association association = new Association();
-                association = (IfcMaterialProfileSet)pair.Value;
-                associations.Add(association);
-            }
-
-            return associations;
-        }
-
-        public static List<Association> GetElementAssociations(Element element, Document doc)
-        {
-            var associations = new List<Association>();
-
-
-            Logger logger = LogManager.GetCurrentClassLogger();
-            var associationsRef = new Dictionary<Uri, IfcClassificationReference>();
-            var activeDictionaryData = GetClassificationDataFromSettings(element);
-
-
-            foreach (var associationR in getElementClassificationsReferencesFromExtensibleStorage(element))
-            {
-                if (associationR is IfcClassificationReference ifcClassificationReference)
-                {
-                    associationsRef[ifcClassificationReference.ReferencedSource.Location] = ifcClassificationReference;
-                }
-            }
-
-            foreach (var entry in activeDictionaryData)
-            {
-                Uri dictionaryUri = entry.Key;
-                (string Identification, string Name) value = entry.Value;
-
-                if (!associationsRef.TryGetValue(dictionaryUri, out var associationR))
-                {
-                    // add new IfcClassificationReference to the dictionary based on dictionaryUri, Identification and Name
-                    associationsRef[dictionaryUri] = new IfcClassificationReference
-                    {
-                        Type = "IfcClassificationReference",
-                        Identification = value.Identification,
-                        Name = value.Name,
-                        ReferencedSource = new IfcClassification
-                        {
-                            Type = "IfcClassification",
-                            Location = dictionaryUri,
-                        }
-                    };
-                }
-                else
-                {
-                    //update the existing IfcClassificationReference with the new values from the revit typeEntity
-                    var ifcClassificationReference = (IfcClassificationReference)associationR;
-                    ifcClassificationReference.Identification = value.Identification;
-                    ifcClassificationReference.Name = value.Name;
-                }
-            }
-
-            //Material associations
-            var associationsMat = new Dictionary<ElementId, IfcMaterial>();
-            
-            List<Material> materials = new List<Material>();
-            materials = GetElementMaterials(element, doc);
-
-            if (materials != null)
-            {
-                foreach (Material mat in materials)
-                {
-
-                    ElementId elemId = mat.Id;
-                    if (!associationsMat.TryGetValue(elemId, out var associationM))
-                    {
-                        // add new IfcMaterial to the dictionary based on elementId and IfcMaterial
-                        associationsMat[elemId] = new IfcMaterial
-                        {
-                            Type = "IfcMaterial",
-                            Name = mat.Name,
-                        };
-                    }
-                    else
-                    {
-                        //update the existing IfcClassificationReference with the new values from the revit typeEntity
-                        var ifcMaterial = (IfcMaterial)associationM;
-                        ifcMaterial.Type = mat.GetType().ToString();
-                        ifcMaterial.Name = mat.Name;
-                    }
-                }
-            }
-            
-
-
-            
-            //combine associations
-            foreach (KeyValuePair < Uri, IfcClassificationReference > pair in associationsRef)
-            {
-                Association association = new Association();
-                association = (IfcClassificationReference)pair.Value;
-                associations.Add(association);
-            }
-            
-            foreach (KeyValuePair<ElementId, IfcMaterial> pair in associationsMat)
-            {
-                Association association = new Association();
-                association = (IfcMaterial)pair.Value;
-                associations.Add(association);
-            }
-
-            return associations;
-        }
-
-
-        /// <summary>
-        /// Retrieves the combined list of main and filter dictionaries from the global settings.
-        /// If the MainDictionary is null, it is left out.
-        /// </summary>
-        public static IEnumerable<BsddDictionary> GetActiveDictionaries()
-        {
-            var activeDictionaries = new List<BsddDictionary>();
-
-            if (GlobalBsddSettings.bsddsettings.MainDictionary != null)
-            {
-                activeDictionaries.Add(GlobalBsddSettings.bsddsettings.MainDictionary);
-            }
-
-            if (GlobalBsddSettings.bsddsettings.FilterDictionaries != null)
-            {
-                activeDictionaries = activeDictionaries.Concat(GlobalBsddSettings.bsddsettings.FilterDictionaries).ToList();
-            }
-
-            return activeDictionaries;
-        }
 
         /// Transforms selected Revit types into a bSDD-compatible ifcJSON structure.
         /// </summary>
@@ -1342,7 +2004,7 @@ namespace BsddRevitPlugin.Logic.Model
         /// <param name="elemList">The list of selected Revit element types.</param>
         /// <returns>A IfcData object representing the ifcJSON structure.</returns>
         ///
-        public static List<IfcEntity> SelectionToIfcJson(Document doc, ElementSet elemSet)
+        public static List<IfcEntity> SelectionToIfcJson(Document doc, List<ElementId> elemSet)
         {
             if (doc == null || elemSet == null)
             {
@@ -1350,43 +2012,44 @@ namespace BsddRevitPlugin.Logic.Model
             }
 
             var ifcEntities = new List<IfcEntity>();
-            ElementSet elemSetType = new ElementSet();
-            ElementId id;
-            ElementType type;
-            foreach (Element elem in elemSet)
+            List<ElementId> elemSetType = new List<ElementId>();
+            Element type;
+            ElementId typeId;
+            foreach (ElementId id in elemSet)
             {
-                id = elem.GetTypeId();
-                type = doc.GetElement(id) as ElementType;
-                elemSetType.Insert(type);
+                type = doc.GetElement(id);
+                typeId = type.GetTypeId();
+                
+                if (elemSetType == null || elemSetType.Contains(typeId) == false)
+                {
+                    elemSetType.Add(typeId);
+                }
             }
-            elemSet = ListGeoFilter(elemSet);
-            elemSetType = ListGeoFilter(elemSetType);
+            //elemSet.AddRange(elemSetType);
+            //Check or is Geometrie
+            elemSet = ListGeoFilter(doc, elemSet);
+            elemSetType = ListGeoFilter(doc, elemSetType);
 
+            List<ElementId> listItem = new List<ElementId>();
             if (elemSet != null)
             {
-                foreach (Element elem in elemSet)
+                foreach (ElementId id in elemSet)
                 {
-                    if (elem == null)
-                    {
-                        continue;
-                    }
-
-                    var ifcData = CreateIfcEntity(elem, doc);
+                    listItem.Add(id);
+                    var ifcData = CreateIfcEntity(listItem , doc);
                     ifcEntities.Add(ifcData);
+                    listItem.Clear();
                 }
             }
 
             if (elemSetType != null)
             {
-                foreach (ElementType elem in elemSetType)
+                foreach (ElementId idType in elemSetType)
                 {
-                    if (elem == null)
-                    {
-                        continue;
-                    }
-
-                    var ifcData = CreateIfcEntity(elem, doc);
+                    listItem.Add(idType);
+                    var ifcData = CreateIfcEntity(listItem, doc);
                     ifcEntities.Add(ifcData);
+                    listItem.Clear();
                 }
             }
 
@@ -2149,527 +2812,267 @@ namespace BsddRevitPlugin.Logic.Model
         }
 
         
-        
-        public static List<Material> GetElementMaterials(Element e, Document doc)
+        public static bool IsGeometrical(Element elem)
         {
-            //schema
-            //https://help.autodesk.com/view/RVT/2022/ENU/?guid=Revit_API_Revit_API_Developers_Guide_Revit_Geometric_Elements_Material_Element_Material_html
-
-            // koppeling materialen via IfcRelAssociatesMaterial
-            // verbindt een IfcElement met een IfcMaterial, IfcMaterialLayerSet (layered element zoals wall), of IfcMaterialProfileSet (profielen).
-
-            // IfcElement(bijv.IfcWall, IfcBeam, IfcColumn)
-            //  |
-            //  | --IfcRelAssociatesMaterial
-            //      |
-            //      | --IfcMaterial
-
-            //Make material list
-            List<Material> mat = new List<Material>();
-
-            if (
-                e != null &&
-                e.Category.Name != "Structural Beam Systems" &&
-                e.Category.Name != "Structural Columns" &&
-                e.Category.Name != "Structural Framing" &&
-                e.Category.Name != "Structural Trusses"
-                )
-            {
-
-                // Find out or there are any material parameters
-                foreach (Parameter parameter in e.Parameters)
-                {
-                    // Check if the parameter is related to materials
-                    if (parameter.Definition.GetDataType() == SpecTypeId.Reference.Material)
-                    {
-                        Material Pmat = null;
-                        ElementId materialId = parameter.AsElementId();
-                        if (-1 == materialId.IntegerValue)
-                        {
-                            //Invalid ElementId, assume the material is "By Category"
-                            if (null != e.Category)
-                            {
-                                Pmat = e.Category.Material;
-                                if (Pmat != null)
-                                {
-                                    mat.Add(Pmat);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            Pmat = doc.GetElement(materialId) as Material;
-                            mat.Add(Pmat);
-                        }
-                    }
-                }
-            }
-
-            if (mat.Count > 0)
-            {
-                return mat;
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        public static IfcMaterialConstituentSet GetElementMatConstituentSet(Element e, Document doc)
-        {
-            //schema
-            //https://help.autodesk.com/view/RVT/2022/ENU/?guid=Revit_API_Revit_API_Developers_Guide_Revit_Geometric_Elements_Material_Element_Material_html
-
-            // koppeling materialen via IfcRelAssociatesMaterial
-            // verbindt een IfcElement met een IfcMaterial, IfcMaterialLayerSet (layered element zoals wall), of IfcMaterialProfileSet (profielen).
-
-            // IfcElement(bijv.IfcWall, IfcBeam, IfcColumn)
-            //  |
-            //  | --IfcRelAssociatesMaterial
-            //      |
-            //      | --IfcMaterialConstituentSet
-            //          |
-            //          | -- IfcMaterialConstituent
-            //              |
-            //              | -- IfcMaterial
-            //          | -- IfcMaterialConstituent
-            //              |
-            //              | -- IfcMaterial
-
-            //Make material list
-            Dictionary<Material, String> matDict = new Dictionary<Material, String>();
-
-            if (
-                e != null &&
-                e.Category.Name != "Structural Beam Systems" &&
-                e.Category.Name != "Structural Columns" &&
-                e.Category.Name != "Structural Framing" &&
-                e.Category.Name != "Structural Trusses"
-                )
-            {
-
-                // Find out or there are any material parameters
-                foreach (Parameter parameter in e.Parameters)
-                {
-                    // Check if the parameter is related to materials
-                    if (parameter.Definition.GetDataType() == SpecTypeId.Reference.Material)
-                    {
-                        Material Pmat = null;
-                        ElementId materialId = parameter.AsElementId();
-                        if (-1 == materialId.IntegerValue)
-                        {
-                            //Invalid ElementId, assume the material is "By Category"
-                            if (null != e.Category)
-                            {
-                                Pmat = e.Category.Material;
-                                if (Pmat != null)
-                                {
-                                    matDict.Add(Pmat, parameter.Definition.Name);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            Pmat = doc.GetElement(materialId) as Material;
-                            matDict.Add(Pmat, "");
-                        }
-                    }
-                }
-            }
+            if (elem.get_Geometry(new Options()) != null && elem.Category.Name != "Cameras") return true;
             
-            
-            
-            if (matDict.Count > 1)
-            {
-                //Define IfcMaterialConstituentSet
-                IfcMaterialConstituentSet ifcMaterialConstituentSet = new IfcMaterialConstituentSet();
-
-                List<IfcMaterialConstituent> ifcMaterialConstituentList = new List<IfcMaterialConstituent>();
-                foreach (KeyValuePair<Material, String> entry in matDict)
-                {
-                    //get the description value
-                    BuiltInParameter desiredBIP = BuiltInParameter.ALL_MODEL_DESCRIPTION;
-                    string descriptionValue = "N/A";
-
-                    Parameter description = entry.Key.get_Parameter(desiredBIP);
-                    if (description != null)
-                    {
-                        descriptionValue = description.AsString();
-                    }
-
-                    //Convert Revit material to IfcMaterial
-                    IfcMaterial ifcMaterial = new IfcMaterial();
-                    ifcMaterial.Name = entry.Key.Name;
-                    ifcMaterial.Description = descriptionValue;
-                    ifcMaterial.Category = entry.Key.Category.Name;
-                    //ifcMaterial.HasRepresentation = ;
-                    //ifcMaterial.IsRelatedWith = ;
-                    //ifcMaterial.RelatesTo = ;
-                    ifcMaterial.Type = "IfcMaterial";
-
-                    //Make IfcMaterialConstituent
-                    IfcMaterialConstituent ifcMaterialConstituent = new IfcMaterialConstituent();
-                    ifcMaterialConstituent.Name = entry.Value;
-                    ifcMaterialConstituent.Description = "N/A";
-                    ifcMaterialConstituent.Material = ifcMaterial;
-                    //ifcMaterialConstituent.Fraction = ;
-                    //ifcMaterialConstituent.Category = ;
-                    //ifcMaterialConstituent.ToMaterialConstituentSet = ifcMaterialConstituentSet;
-                    ifcMaterialConstituentList.Add(ifcMaterialConstituent);
-                }
-
-
-                ifcMaterialConstituentSet.Name = e.Name;
-                ifcMaterialConstituentSet.Description = "N/A";
-                ifcMaterialConstituentSet.MaterialConstituents = ifcMaterialConstituentList;
-   
-                return ifcMaterialConstituentSet;
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        public static IfcMaterialProfileSet GetElementMaterialsProfileset(ElementType e, Document doc)
-        {
-            // IfcElement(bijv.IfcBeam, IfcColumn)
-            //  |
-            //  | --IfcRelAssociatesMaterial
-            //      |
-            //      | --IfcMaterialProfileSet
-            //          |
-            //          | --IfcMaterialProfile(1..n)
-            //              |
-            //              | --IfcProfileDef(bijv.IfcRectangleProfileDef, IfcCircleProfileDef)
-            //              | --IfcMaterial
-
-            //Make materila list
-            List<IfcMaterialProfile> matProfileSet = new List<IfcMaterialProfile>();
-
-            //Make material list
-            List<Material> mat = new List<Material>();
-
-            // #Is elem Profile
-            if (
-                e != null &&
-                    (
-                    e.Category.Name == "Structural Beam Systems" ||
-                    e.Category.Name == "Structural Columns" ||
-                    e.Category.Name == "Structural Framing" ||
-                    e.Category.Name == "Structural Trusses"
-                    )
-                )
-            {
-                // Find out or there are any material parameters
-                foreach (Parameter parameter in e.Parameters)
-                {
-                    // Check if the parameter is related to materials
-                    if (parameter.Definition.GetDataType() == SpecTypeId.Reference.Material)
-                    {
-                        Material Pmat = null;
-                        ElementId materialId = parameter.AsElementId();
-                        if (-1 == materialId.IntegerValue)
-                        {
-                            //Invalid ElementId, assume the material is "By Category"
-                            if (null != e.Category)
-                            {
-                                Pmat = e.Category.Material;
-                                if (Pmat != null)
-                                {
-                                    mat.Add(Pmat);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            Pmat = doc.GetElement(materialId) as Material;
-                            mat.Add(Pmat);
-                        }
-                    }
-                }
-
-            }
-
-            for (int i = 0; i < mat.Count; i++)
-            {
-                if (mat[i] == null)
-                {
-                    mat.RemoveAt(mat.IndexOf(mat[i]));
-                    i--;
-                }
-            }
-
-            foreach (Material material in mat)
-            {
-                if (material != null)
-                {
-                    //get the description value
-                    BuiltInParameter desiredBIP = BuiltInParameter.ALL_MODEL_DESCRIPTION;
-                    string descriptionValue = "N/A";
-
-                    Parameter description = material.get_Parameter(desiredBIP);
-                    if (description != null)
-                    {
-                        descriptionValue = description.AsString();
-                    }
-
-                    //Convert Revit material to IfcMaterial
-                    IfcMaterial ifcMaterial = new IfcMaterial();
-                    ifcMaterial.Name = material.Name;
-                    ifcMaterial.Description = descriptionValue;
-                    ifcMaterial.Category = material.Category.Name;
-                    /*
-                    ifcMaterial.HasRepresentation = ;
-                    ifcMaterial.IsRelatedWith = ;
-                    ifcMaterial.RelatesTo = ;
-                    */
-                    ifcMaterial.Name = material.Name;
-                    ifcMaterial.Type = "IfcMaterial";
-
-                    //Make IfcMaterialProfile
-                    IfcMaterialProfile ifcMaterialProfile = new IfcMaterialProfile();
-                    ifcMaterialProfile.Name = material.Name;
-                    ifcMaterialProfile.Description = "N/A";
-                    ifcMaterialProfile.Material = ifcMaterial;
-                    //ifcMaterialProfile.Profile = ;
-                    ifcMaterialProfile.Priority = 0;
-                    //ifcMaterialProfile.Category = ;
-                    matProfileSet.Add(ifcMaterialProfile);
-                }
-            }
-
-            if (matProfileSet.Count > 0)
-            {
-                //Define IfcProfileDef
-                IfcProfileDef ifcProfileDef = new IfcProfileDef();
-                //ifcProfileDef.ProfileType = ;
-                ifcProfileDef.ProfileName = e.Name;
-                //ifcProfileDef.HasExternalReference = ;
-                //ifcProfileDef.HasProperties = ;
-
-                //Define IfcCompositeProfileDef
-                IfcCompositeProfileDef ifcCompositeProfileDef = new IfcCompositeProfileDef();
-                ifcProfileDef.ProfileName = e.Name;
-                ifcProfileDef.ProfileName = e.Name;
-                ifcCompositeProfileDef.Profiles = ifcProfileDef;
-                ifcCompositeProfileDef.Label = "ifcCompositeProfileDef";
-
-                //Define IfcMaterialProfileSet
-                IfcMaterialProfileSet ifcMaterialProfileSet = new IfcMaterialProfileSet();
-                ifcMaterialProfileSet.Name = e.Name;
-                ifcMaterialProfileSet.Description = "N/A";
-                ifcMaterialProfileSet.MaterialProfiles = matProfileSet;
-                ifcMaterialProfileSet.CompositeProfile = ifcCompositeProfileDef;
-                ifcMaterialProfileSet.Type = "IfcMaterialProfileSet";
-
-                return ifcMaterialProfileSet;
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        public static IfcMaterialLayerSet GetElementMaterialsLayerset(ElementType e, Document doc)
-        {
-            // IfcWall
-            //  |
-            //  | --IfcRelAssociatesMaterial
-            //      |
-            //      | --IfcMaterialLayerSet
-            //          |
-            //          | --IfcMaterial(Baksteen)
-            //          | --IfcMaterial(Isolatie)
-            //          | --IfcMaterial(Gipsplaat)
-
-            //Make materila list
-            List<IfcMaterialLayer> matLayerSet = new List<IfcMaterialLayer>();
-
-            //Get HostObject by query existing FamilyInstances with the same ElementType
-            var instances1 = new FilteredElementCollector(doc)
-                .OfClass(typeof(FamilyInstance))
-                .Cast<FamilyInstance>()
-                .Where(fi => fi.Symbol.Id == e.Id);
-
-            //take first element out of elementtype
-            List<Element> collectorEF = new FilteredElementCollector(doc)
-                .WhereElementIsNotElementType()
-                .ToList<Element>();
-            List<Element> listEI = collectorEF.Where(q => q.GetTypeId() == e.Id).ToList<Element>();
-            Element instances = listEI[0];
-            CompoundStructure compoundStructure = null;
-
-            // #Is elem with compound structure
-            if (
-                e != null ||
-                e.Category.Name == "Ceilings" ||
-                e.Category.Name == "Roofs" ||
-                e.Category.Name == "Walls" ||
-                e.Category.Name == "Floors"
-                )
-            {
-                if (e.Category.Name == "Walls")
-                {
-                    Wall wall = instances as Wall;
-                    compoundStructure = wall.WallType.GetCompoundStructure();
-                }
-                else if (e.Category.Name == "Floors")
-                {
-                    Floor floor = instances as Floor;
-                    compoundStructure = floor.FloorType.GetCompoundStructure();
-                }
-                else if (e.Category.Name == "Ceilings")
-                {
-                    try
-                    {
-                        Ceiling ceiling = instances as Ceiling;
-                        CeilingType CT = doc.GetElement(ceiling.GetTypeId()) as CeilingType;
-                        compoundStructure = CT.GetCompoundStructure();
-                    }
-                    catch { }
-                }
-                else if (e.Category.Name == "Roofs")
-                {
-                    RoofBase roof = instances as RoofBase;
-                    compoundStructure = roof.RoofType.GetCompoundStructure();
-                }
-                
-                if (compoundStructure != null)
-                {
-                    var layers = compoundStructure.GetLayers();
-                    if (layers == null)
-                    {
-                        //find category and subcategory corresponding to the compoundstructure layer
-                    }
-                    foreach (var layer in layers)
-                    {
-                        Material material = doc.GetElement(layer.MaterialId) as Material;
-                        
-                        if (material != null)
-                        {
-                            //get the description value
-                            BuiltInParameter desiredBIP = BuiltInParameter.ALL_MODEL_DESCRIPTION;
-                            string descriptionValue = "N/A";
-
-                            Parameter description = material.get_Parameter(desiredBIP);
-                            if (description != null)
-                            {
-                                descriptionValue = description.AsString();
-                            }
-
-                            //Convert Revit material to IfcMaterial
-                            IfcMaterial ifcMaterial = new IfcMaterial();
-                            ifcMaterial.Name = material.Name;
-                            ifcMaterial.Description = descriptionValue;
-                            ifcMaterial.Category = material.Category.Name;
-                            /*
-                            ifcMaterial.HasRepresentation = ;
-                            ifcMaterial.IsRelatedWith = ;
-                            ifcMaterial.RelatesTo = ;
-                            */
-                            ifcMaterial.Name = material.Name;
-                            ifcMaterial.Type = "IfcMaterial";
-
-                            //Make IfcMaterialLayer
-                            IfcMaterialLayer ifcMaterialLayer = new IfcMaterialLayer();
-                            ifcMaterialLayer.Material = ifcMaterial;
-                            ifcMaterialLayer.LayerThickness = layer.Width * 304.8;
-                            //ifcMaterialLayer.IsVentilated = ;
-                            ifcMaterialLayer.Name = material.Name;
-                            ifcMaterialLayer.Description = "N/A";
-                            ifcMaterialLayer.Category = layer.Function.ToString();
-                            ifcMaterialLayer.Priority = 0;
-                            matLayerSet.Add(ifcMaterialLayer);
-                        }
-                    }
-                }
-            }
-
-            if(matLayerSet.Count > 0)
-            {
-                IfcMaterialLayerSet ifcMaterialLayerSet = new IfcMaterialLayerSet();
-                ifcMaterialLayerSet.IfcMaterialLayer = matLayerSet;
-                ifcMaterialLayerSet.LayerSetName = "N/A";
-                ifcMaterialLayerSet.Description = "N/A";
-                //calculate total length
-                double thickness = 0;
-                foreach (IfcMaterialLayer layer in ifcMaterialLayerSet.IfcMaterialLayer)
-                {
-                    thickness = thickness + layer.LayerThickness;
-                }
-                ifcMaterialLayerSet.TotalThickness = thickness;
-                ifcMaterialLayerSet.Name = e.Name;
-                ifcMaterialLayerSet.Type = "IfcMaterialLayerSet";
-
-                return ifcMaterialLayerSet;
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        public static String IFCMappingValue(Document doc, Element elem)
-        {
-            if (elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS)?.AsString() != null &&
-                elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS)?.AsString() != "")
-            {
-                return elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS)?.AsString();
-            }
-
-            //krijg category van element
-            Category elemCategory = elem.Category;
-            String cat = elemCategory.Name.ToString();
-
-            //txt opbouw per regel: Category<tab> Subcategory<tab> Layer name < tab > Color number<tab>
-            String exportCategoryTableFilePath = doc.Application.ExportIFCCategoryTable;
-
-            // Dictionary to store the mapping between Revit categories and IFC class names
-            Dictionary<string, string> mappingTable = new Dictionary<string, string>();
-
-            String line;
-            try
-            {
-                //Pass the file path and file name to the StreamReader constructor
-                StreamReader sr = new StreamReader(exportCategoryTableFilePath);
-                line = sr.ReadLine();
-                String sep = "\t";
-                while (line != null)
-                {
-                    if (line.StartsWith("#") || line == null)
-                    {
-
-                    }
-                    else
-                    {
-                        string[] splitContent = line.Split(sep.ToCharArray());
-                        // Dictionary to store the mapping between Revit categories and IFC class names
-                        mappingTable.Add(splitContent[0] + "\t" + splitContent[1], splitContent[2]);
-                    }
-
-                    //Read the next line
-                    line = sr.ReadLine();
-                }
-                //close the file
-                sr.Close();
-                Console.ReadLine();
-            }
-            catch
-            {
-
+            string[] revitGeoCategorie = { 
+                //"Abutment Foundation Tags",
+                //"Abutment Pile Tags",
+                //"Abutment Tags",
+                //"Abutment Wall Tags",
+                "Abutments",
+                "Air Terminals",
+                //"Alignment Station Label Sets",
+                //"Alignment Station Labels",
+                //"Alignment Tags",
+                //"Alignments",
+                //"Analytical Member Tags",
+                //"Analytical Members",
+                //"Analytical Opening Tags",
+                //"Analytical Openings",
+                //"Analytical Panel Tags",
+                //"Analytical Panels",
+                //"Anchor Tags",
+                //"Approach Slab Tags",
+                //"Area Based Load Tags",
+                //"Area Polylines",
+                //"Area Tags",
+                "Areas",
+                "Assemblies",
+                //"Audio Visual Device Tags",
+                "Audio Visual Devices",
+                //"Bearing Tags",
+                "Bearings",
+                //"Bolt Tags",
+                //"Bridge Arch Tags",
+                //"Bridge Cable Tags",
+                "Bridge Cables",
+                //"Bridge Cross Bracing Tags",
+                //"Bridge Deck Tags",
+                "Bridge Decks",
+                //"Bridge Diaphragm Tags",
+                "Bridge Framing",
+                //"Bridge Girder Tags",
+                //"Bridge Truss Tags",
+                "Cable Tray Fittings",
+                "Cable Trays",
+                //"Callouts",
+                "Casework",
+                //"Casework Tags",
+                //"Ceiling Tags",
+                "Ceilings",
+                //"Color Fill Legends",
+                //"Column Tags",
+                "Columns",
+                "Communication Devices",
+                "Conduit Fittings",
+                "Conduits",
+                //"Constraints",
+                //"Contour Labels",
+                //"Curtain Panel Tags",
+                "Curtain Panels",
+                "Curtain Systems",
+                //"Curtain Wall Mullion Tags",
+                "Curtain Wall Mullions",
+                "Data Devices",
+                //"Demolished",
+                //"Detail Items",
+                //"Dimensions",
+                //"Door Tags",
+                "Doors",
+                "Duct Accessories",
+                "Duct Fittings",
+                "Duct Insulations",
+                "Duct Linings",
+                "Duct Placeholders",
+                "Ducts",
+                "Electrical Equipment",
+                //"Electrical Equipment Tags",
+                //"Electrical Fixture Tags",
+                "Electrical Fixtures",
+                //"Elevations",
+                "Entourage",
+                //"Entourage Tags",
+                //"Existing",
+                //"Expansion Joint Tags",
+                "Expansion Joints",
+                //"Fascia Tags",
+                //"Filled region",
+                "Fire Alarm Devices",
+                "Fire Protection",
+                "Flex Ducts",
+                "Flex Pipes",
+                "Floors",
+                "Food Service Equipment",
+                //"Food Service Equipment Tags",
+                "Furniture",
+                "Furniture Systems",
+                //"Generic Annotations",
+                //"Generic Model Tags",
+                "Generic Models",
+                //"Grids",
+                //"Gutter Tags",
+                //"Handrail Tags",
+                "Hardscape",
+                //"Hardscape Tags",
+                //"Hole Tags",
+                "HVAC Zones",
+                "Imports in Families",
+                //"Levels",
+                "Lighting Devices",
+                //"Lighting Fixture Tags",
+                "Lighting Fixtures",
+                //"Lines",
+                "Mass",
+                "Massing",
+                //"Mechanical Control Device Tags",
+                "Mechanical Control Devices",
+                "Mechanical Equipment",
+                //"Mechanical Equipment Set Boundary Lines",
+                //"Mechanical Equipment Set Tags",
+                //"Mechanical Equipment Tags",
+                "Medical Equipment",
+                //"Medical Equipment Tags",
+                "MEP Fabrication Containment",
+                "MEP Fabrication Ductwork",
+                "MEP Fabrication Hangers",
+                "MEP Fabrication Pipework",
+                //"Model Group Tags",
+                //"Multi-Category Tags",
+                //"New",
+                "Nurse Call Devices",
+                //"Pad Tags",
+                //"Panel Schedule Graphics",
+                "Parking",
+                "Parts",
+                //"Path of Travel Tags",
+                //"Pier Cap Tags",
+                //"Pier Column Tags",
+                //"Pier Foundation Tags",
+                //"Pier Pile Tags",
+                //"Pier Tags",
+                //"Pier Tower Tags",
+                //"Pier Wall Tags",
+                "Piers",
+                "Pipe Accessories",
+                "Pipe Fittings",
+                "Pipe Insulations",
+                "Pipe Placeholders",
+                "Pipes",
+                //"Plan Region",
+                "Planting",
+                //"Planting Tags",
+                //"Plate Tags",
+                "Plumbing Equipment",
+                //"Plumbing Equipment Tags",
+                //"Plumbing Fixture Tags",
+                "Plumbing Fixtures",
+                //"Point Clouds",
+                //"Profile Tags",
+                //"Property Line Segment Tags",
+                //"Property Tags",
+                //"Railing Tags",
+                "Railings",
+                //"Ramp Tags",
+                "Ramps",
+                //"Raster Images",
+                //"Reference Planes",
+                //"Road Tags",
+                "Roads",
+                //"Roof Soffit Tags",
+                //"Roof Tags",
+                "Roofs",
+                //"Room Polylines",
+                //"Room Tags",
+                "Rooms",
+                "Ruled Curtain System",
+                //"RVT Link Tags",
+                //"Schedule Graphics",
+                //"Scope Boxes",
+                //"Sections",
+                "Security Devices",
+                "Shaft Openings",
+                //"Shear Stud Tags",
+                "Signage",
+                //"Signage Tags",
+                "Site",
+                //"Site Tags",
+                //"Slab Edge Tags",
+                "Spaces",
+                "Specialty Equipment",
+                //"Specialty Equipment Tags",
+                //"Spot Coordinates",
+                //"Spot Elevations",
+                //"Spot Slopes",
+                "Sprinklers",
+                //"Stair Landing Tags",
+                //"Stair Paths",
+                //"Stair Run Tags",
+                //"Stair Support Tags",
+                //"Stair Tags",
+                //"Stair Tread/Riser Numbers",
+                "Stairs",
+                "Structural Area Reinforcement",
+                "Structural Beam Systems",
+                //"Structural Column Tags",
+                "Structural Columns",
+                "Structural Connections",
+                "Structural Fabric Areas",
+                //"Structural Fabric Areas Boundary",
+                "Structural Fabric Reinforcement",
+                //"Structural Fabric Reinforcement Boundary",
+                "Structural Fabric Reinforcement Fabric Wire",
+                //"Structural Foundation Tags",
+                "Structural Foundations",
+                "Structural Framing",
+                //"Structural Framing Tags",
+                "Structural Path Reinforcement",
+                "Structural Rebar",
+                "Structural Rebar Couplers",
+                //"Structural Stiffener Tags",
+                "Structural Stiffeners",
+                //"Structural Tendon Tags",
+                "Structural Tendons",
+                //"Structural Truss Tags",
+                "Structural Trusses",
+                "Telephone Devices",
+                "Temporary",
+                //"Temporary Structure Tags",
+                "Temporary Structures",
+                //"Text Notes",
+                //"Title Blocks",
+                //"Top Rail Tags",
+                "Topography",
+                "Vertical Circulation",
+                //"Vertical Circulation Tags",
+                //"Vibration Damper Tags",
+                //"Vibration Isolator Tags",
+                //"Vibration Management",
+                //"Vibration Management Tags",
+                //"View Titles",
+                //"Wall Sweep Tags",
+                //"Wall Tags",
+                "Walls",
+                "Walls/Interior:1",
+                "Walls/Exterior:2",
+                "Walls/Foundation:3",
+                "Walls/Retaining:4",
+                //"Weld Tags",
+                //"Window Tags",
+                "Windows",
+                "Wires"
             };
 
-            try
+            if (revitGeoCategorie.Contains(elem.Category.Name))
             {
-                return mappingTable[cat + "\t"];
+                return true;
             }
-            catch
-            {
-                mappingTable.Add(cat + "\t", "Not Exported");
-                return mappingTable[cat + "\t"];
-            }
+            
+            return false;
         }
+        
+
     }
     #endregion
     #endregion
@@ -2678,7 +3081,7 @@ namespace BsddRevitPlugin.Logic.Model
 
     #endregion
 }
-#endregion
+
 
 
 
