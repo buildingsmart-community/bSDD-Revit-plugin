@@ -13,6 +13,9 @@ using Revit.IFC.Import.Data;
 using Autodesk.Revit.DB.Architecture;
 using Newtonsoft.Json;
 using System.Security.Principal;
+using Autodesk.Revit.DB.Mechanical;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace BsddRevitPlugin.Logic.Model
 {
@@ -28,15 +31,17 @@ namespace BsddRevitPlugin.Logic.Model
                      
             void GetParameterMaterials(List<ElementId> e, Document doc);
 
-            void SetCompoundStructure(List<ElementId> e, Document doc);
+            void GetCompoundStructureMat(List<ElementId> e, Document doc);
 
-            void SetLayersOfCompoundStructure(List<ElementId> e, Document doc);
+            void GetProfileMat(List<ElementId> e, Document doc);
 
-            void SetLayersInMaterialLayerset(List<ElementId> e, Document doc);
+            void ifcMaterialToDictionary(List<ElementId> e, Document doc);
 
-            
-            void ThrowToAssiciation();
-            
+            void ThrowToAssociation();
+
+
+            AssociationProduct GetResult();
+
         }
 
         /// <summary>
@@ -47,19 +52,13 @@ namespace BsddRevitPlugin.Logic.Model
         // several variations of Builders, implemented differently.
         public class MatRelAssociatesBuilder : IMaterialRelAssociatesBuilder
         {
-            private AssociationProduct _association = new AssociationProduct();
-            private CompoundStructure _compoundStructure = null;
-            private IList<CompoundStructureLayer> _compoundStructureLayerList;
-            private List<IfcMaterialLayer> _ifcMaterialLayerSet = new List<IfcMaterialLayer>();
-            private IfcRelAssociatesMaterial _ifcRelAssociatesMaterial = new IfcRelAssociatesMaterial();
-            private IfcMaterialProfileSet _ifcMaterialProfileSet = new IfcMaterialProfileSet();
-            private IfcMaterialProfile _ifcMaterialProfile = new IfcMaterialProfile();
-            private IfcProfileDef _ifcProfileDef = new IfcProfileDef();
-            private IfcMaterialConstituentSet _ifcMaterialConstituentSet = new IfcMaterialConstituentSet();
-            private IfcMaterialConstituent _ifcMaterialConstituent = new IfcMaterialConstituent();
-            private IfcMaterials _ifcMaterial = new IfcMaterials();
-            private List<Material> _Material = new List<Material>();
+            //Make list of assosiations to return
+            private AssociationProduct _associationProduct = new AssociationProduct();
 
+            //Builder variables
+            private Association _association = new Association();
+            
+            
             // A fresh builder instance should contain a blank product object, which
             // is used in further assembly.
             public MatRelAssociatesBuilder()
@@ -69,57 +68,105 @@ namespace BsddRevitPlugin.Logic.Model
 
             public void Reset()
             {
-                this._association = new AssociationProduct();
+                this._associationProduct = new AssociationProduct();
             }
 
             // All production steps work with the same product instance.
-                  
+
+            //Get Element(Type) Materials in List<Material> Materials (Parameters)
             public void GetParameterMaterials(List<ElementId> e, Document doc)
             {
                 if(GetElementMaterials(e, doc) != null)
                 {
-                    foreach (Material mat in GetElementMaterials(e, doc))
-                    {
-                        this._Material.Add(mat);
-                    }
+                    this._associationProduct.matList = GetElementMaterials(e, doc);
                 }
             }
 
-            public void SetCompoundStructure(List<ElementId> e, Document doc)
+            //Get materials of each Layer of compound structure
+            public void GetCompoundStructureMat(List<ElementId> e, Document doc)
             {
-                this._compoundStructure = GetCompoundStructure(e, doc);
+                //Get materials of each Layer of compound structure and transform to IfcLayerSet
+                this._associationProduct.MatLayerset = GetElementMaterialsLayerset(e, doc);
             }
 
-            public void SetLayersOfCompoundStructure(List<ElementId> e, Document doc)
+            //Get materials of Profile
+            public void GetProfileMat(List<ElementId> e, Document doc)
             {
-                if (this._compoundStructure != null)
-                {
-                    this._compoundStructureLayerList = this._compoundStructure.GetLayers();
-                }
+                this._associationProduct.MatProfileset = GetElementMaterialsProfileset(e, doc);
             }
 
-            public void SetLayersInMaterialLayerset(List<ElementId> e, Document doc)
+            public void ifcMaterialToDictionary(List<ElementId> e, Document doc)
             {
-                if(this._compoundStructureLayerList != null)
-                {
-                    foreach (CompoundStructureLayer layer in this._compoundStructureLayerList)
-                    {
-                        this._ifcMaterialLayerSet.Add(ifcMaterialLayer(layer, doc));
-                    }
-                }
+                Element elem = doc.GetElement(e[0]);
+                ElementType elemType = doc.GetElement(e[0]) as ElementType;
+                ElementId elemId;
                 
-            }
-
-            public void ThrowToAssiciation()
-            {
-                foreach (IfcMaterial ifcMat in this._ifcMaterial.ListIfcMaterials())
+                if(elemType != null)
                 {
-                    this._association.Add(ifcMat);
+                    elemId = elemType.Id;
+                }
+                else
+                {
+                    elemId = elem.Id;
+                }
+
+                //ElementId elemId = e[0] as ElementId;
+
+                if (this._associationProduct.matList != null)
+                {
+                    this._associationProduct.associationsMat = ifcMatToDictionary(_associationProduct.matList);
+                }
+
+                if (this._associationProduct.MatLayerset != null)
+                {
+                    this._associationProduct.associationsMatLayerset = ifcMatLayerToDictionary(elemId, _associationProduct.MatLayerset);
+                }
+
+                if (this._associationProduct.MatProfileset != null)
+                {
+                    this._associationProduct.associationsMatProfileset = ifcMatProfilesetToDictionary(elemId, _associationProduct.MatProfileset);
                 }
             }
 
-            
+            public void ThrowToAssociation()
+            {
+                if(this._associationProduct.associationsMat != null)
+                {
+                    foreach (KeyValuePair<ElementId, IfcMaterial> pair in _associationProduct.associationsMat)
+                    {
+                        Association association = new Association();
+                        association = (IfcMaterial)pair.Value;
+                        this._associationProduct.Add(association);
+                    }
+                }
 
+                //#TODO Ifc4 out of scope: foreach (KeyValuePair<ElementId, IfcMaterialConstituentSet> pair in _association.associationsMatConstituentSet)
+                //{
+                //    Association association = new Association();
+                //    association = (IfcMaterialConstituentSet)pair.Value;
+                //    _associationProduct.Add(association);
+                //}
+
+                if (_associationProduct.associationsMatLayerset != null)
+                {
+                    foreach (KeyValuePair<ElementId, IfcMaterialLayerSet> pair in _associationProduct.associationsMatLayerset)
+                    {
+                        Association association = new Association();
+                        association = (IfcMaterialLayerSet)pair.Value;
+                        this._associationProduct.Add(association);
+                    }
+                }
+
+                if (_associationProduct.associationsMatProfileset != null)
+                {
+                    foreach (KeyValuePair<ElementId, IfcMaterialProfileSet> pair in _associationProduct.associationsMatProfileset)
+                    {
+                        Association association = new Association();
+                        association = (IfcMaterialProfileSet)pair.Value;
+                        this._associationProduct.Add(association);
+                    }
+                }
+            }
 
 
             // Concrete Builders are supposed to provide their own methods for
@@ -135,9 +182,9 @@ namespace BsddRevitPlugin.Logic.Model
             // of the `GetProduct` method body. However, this behavior is not
             // mandatory, and you can make your builders wait for an explicit reset
             // call from the client code before disposing of the previous result.
-            public AssociationProduct GetAssociation()
+            public AssociationProduct GetResult()
             {
-                AssociationProduct result = this._association;
+                AssociationProduct result = this._associationProduct;
 
                 this.Reset();
 
@@ -157,16 +204,25 @@ namespace BsddRevitPlugin.Logic.Model
             Logger logger = LogManager.GetCurrentClassLogger();
 
             private List<Association> _associations = new List<Association>();
+            public List<Material> matList { get; set; }
+            public Dictionary<ElementId, IfcMaterial> associationsMat { get; set; }
+            //#TODO Ifc4 out of scope: public Dictionary<ElementId, IfcMaterialConstituentSet> associationsMatConstituentSet { get; set; }
+            public IfcMaterialLayerSet MatLayerset { get; set; }
+            public Dictionary<ElementId, IfcMaterialLayerSet> associationsMatLayerset { get; set; }
+            public IfcMaterialProfileSet MatProfileset { get; set; }
+            public Dictionary<ElementId, IfcMaterialProfileSet> associationsMatProfileset { get; set; }
+
 
             public void Add(Association association)
             {
                 this._associations.Add(association);
             }
 
-            public List<Association> ListAssociations()
+            public List<Association> SetAssociations(List<Association> ExistingAssiciations)
             {
                 List<Association> associations = new List<Association>();
-                
+                associations = ExistingAssiciations;
+
                 for (int i = 0; i < this._associations.Count; i++)
                 {
                     associations.Add(this._associations[i]);
@@ -208,6 +264,7 @@ namespace BsddRevitPlugin.Logic.Model
         {
             private IMaterialRelAssociatesBuilder _builder;
 
+
             public IMaterialRelAssociatesBuilder Builder
             {
                 set { _builder = value; }
@@ -223,33 +280,14 @@ namespace BsddRevitPlugin.Logic.Model
                 //      |
                 //      | --IfcMaterial
 
-//Totale lijst van stappen
-                //Get Materials (Parameters) --> GetElementMaterials(elementType, doc)
-                //Get Layer
-                //Get Materials of Layer
-                //Get (material) Element Id of each found material
-                //Get the description value
-
-                //add new IfcMaterial to the dictionary based on dictionaryUri, Identification and Name
-                //OR
-                //update the existing IfcClassificationReference with the new values from the revit typeEntity
-
-                //Add new IfcMaterial to the dictionary based on elementId and IfcMaterial
-                //Add MaterialRelAssociatesDictionart to Associations
-
-
-
-
-
-
-
+                //Get Element(Type) Materials in List<Material> Materials (Parameters) --> GetElementMaterials(elementType, doc)
                 this._builder.GetParameterMaterials(e, doc);
-                //Build IfcMaterials
 
-                //Build IfcRelAssociatesMaterial
-
-                //Throw IfcRelAssociatesMaterial into Assiciation
-                this._builder.ThrowToAssiciation();
+                //add found IfcMaterial to the dictionary
+                this._builder.ifcMaterialToDictionary(e, doc);
+                
+                //Add Dictionary to Associations
+                this._builder.ThrowToAssociation();
             }
 
             public void BuildMaterialLayerSet(List<ElementId> e, Document doc)
@@ -264,22 +302,12 @@ namespace BsddRevitPlugin.Logic.Model
                 //          | --IfcMaterial(Isolatie)
                 //          | --IfcMaterial(Gipsplaat)
 
-                //Get Materials (Compound)
-       //         GetCompoundMaterials(e, doc);
-                //Build IfcMaterials
-       //         this._builder.BuildIfcMaterial(e, doc);
-                //Build IfcMaterialLayerSet
-        //        this._builder.BuildIfcMaterialLayerSet(e, doc);
-                //Build IfcRelAssociatesMaterial
-      //          this._builder.IfcRelAssociatesMaterial(e, doc);
-                //Throw IfcRelAssociatesMaterial into Assiciation
-                this._builder.ThrowToAssiciation();
-
-
-                this._builder.SetCompoundStructure(e, doc);
-                this._builder.SetLayersOfCompoundStructure(e, doc);
-                this._builder.SetLayersInMaterialLayerset(e, doc);
-                //this._builder.ThrowToAssiciation();
+                //Get materials of each Layer of compound structure
+                this._builder.GetCompoundStructureMat(e, doc);
+                //add found IfcMaterial to the dictionary
+                this._builder.ifcMaterialToDictionary(e, doc);
+                //Add Dictionary to Associations
+                this._builder.ThrowToAssociation();
 
                 //Get number of materials in layer
                 //Make a IfcMaterial for each found layer
@@ -290,7 +318,7 @@ namespace BsddRevitPlugin.Logic.Model
                 //Add IfcMaterialLayerSet to IfcRelAssociatesMaterial
             }
 
-            public void BuildMaterialProfileSet()
+            public void BuildMaterialProfileSet(List<ElementId> e, Document doc)
             {
                 // IfcElement(bijv.IfcBeam, IfcColumn)
                 //  |
@@ -303,10 +331,34 @@ namespace BsddRevitPlugin.Logic.Model
                 //              | --IfcProfileDef(bijv.IfcRectangleProfileDef, IfcCircleProfileDef)
                 //              | --IfcMaterial
 
+                //Get materials of each Layer of compound structure
+                this._builder.GetProfileMat(e, doc);
+                //add found IfcMaterial to the dictionary
+                this._builder.ifcMaterialToDictionary(e, doc);
+                //Add Dictionary to Associations
+                this._builder.ThrowToAssociation();
+
+                //Get Element(Type) Materials in List<Material> Materials (Parameters) --> GetElementMaterials(elementType, doc)
+
+                //Get IfcMaterialLayer ifcMaterialLayer(CompoundStructureLayer layer, Document doc)
+                //X Get the description value
+
+                //add new IfcMaterial to the dictionary
+                //OR
+                //update the existing IfcClassificationReference with the new values from the revit typeEntity
+
+                //Add new IfcMaterial to the dictionary based on elementId and IfcMaterial
+
+
+
+                //Build IfcMaterialLayerSet
+                //        this._builder.BuildIfcMaterialLayerSet(e, doc);
+
+
                 //this._builder.BuildPartA();
                 //this._builder.BuildPartB();
                 //this._builder.BuildPartC();
-                //this._builder.ThrowToAssiciation();
+                //this._builder.ThrowToAssociation();
 
                 //Get number of materials in parameters
                 //Make a IfcMaterial for each found parameter
@@ -320,8 +372,8 @@ namespace BsddRevitPlugin.Logic.Model
                 //Add IfcMaterialProfileSet to IfcRelAssociatesMaterial
             }
 
-            
-            //#TODO ifc schema = Ifc4
+
+            //#TODO Ifc4 out of scope: Make function
             public void BuildMaterialConstituentSet()
             {
                 // IfcElement(bijv.IfcWall, IfcBeam, IfcColumn)
@@ -337,224 +389,7 @@ namespace BsddRevitPlugin.Logic.Model
                 //              |
                 //              | -- IfcMaterial
 
-                //this._builder.BuildPartA();
-                //this._builder.BuildPartB();
-                //this._builder.BuildPartC();
-                //this._builder.ThrowToAssiciation();
-
-                //Get number of materials in parameters
-                //Make a IfcMaterial for each found parameter
-                //Store each material in a IfcMaterial
-                //Make a IfcMaterialConstituent for each IfcMaterial
-                //Store each IfcMaterial in the IfcMaterialConstituent
-                //Make IfcMaterialConstituentSet
-                //Add IfcMaterialConstituent to IfcMaterialConstituentSet
-                //Make IfcRelAssociatesMaterial
-                //Add IfcMaterialConstituentSet to IfcRelAssociatesMaterial
             }
-        }
-
-        //combine associations
-//        foreach (KeyValuePair<Uri, IfcClassificationReference> pair in associationsRef)
-//        {
-//            Association association = new Association();
-//            association = (IfcClassificationReference) pair.Value;
-//            associations.Add(association);
-//        }
-
-        public static List<Association> IfcMaterialToAssociation(List<Association> associations, Dictionary<ElementId, IfcMaterial> Dict)
-        {
-            foreach(KeyValuePair<ElementId, IfcMaterial> pair in Dict)
-            {
-                Association association = new Association();
-                association = (IfcMaterial)pair.Value;
-                associations.Add(association);
-            }
-
-            return associations;
-        }
-
-        //        foreach (KeyValuePair<ElementId, IfcMaterialLayerSet> pair in associationsMatLayerset)
-        //        {
-        //            Association association = new Association();
-        //            association = (IfcMaterialLayerSet)pair.Value;
-        //            associations.Add(association);
-        //        }
-
-        //        foreach (KeyValuePair<ElementId, IfcMaterialConstituentSet> pair in associationsMatConstituentSet)
-        //        {
-        //            Association association = new Association();
-        //            association = (IfcMaterialConstituentSet)pair.Value;
-        //            associations.Add(association);
-        //        }
-
-        //        foreach (KeyValuePair<ElementId, IfcMaterialProfileSet> pair in associationsMatProfileset)
-        //        {
-        //            Association association = new Association();
-        //            association = (IfcMaterialProfileSet)pair.Value;
-        //            associations.Add(association);
-        //        }
-
-        public static List<IfcMaterial> ReplacedGetElementMaterials(Element e, Document doc)
-        {
-            //Make material list
-            List<Material> mat = new List<Material>();
-            
-            // Find out or there are any material parameters
-            foreach (Parameter parameter in e.Parameters)
-            {
-                // Check if the parameter is related to materials
-                if (parameter.Definition.GetDataType() == SpecTypeId.Reference.Material)
-                {
-                    Material Pmat = null;
-                    ElementId materialId = parameter.AsElementId();
-                    if (-1 == materialId.IntegerValue)
-                    {
-                        //Invalid ElementId, assume the material is "By Category"
-                        if (null != e.Category)
-                        {
-                            Pmat = e.Category.Material;
-                            if (Pmat != null)
-                            {
-                                mat.Add(Pmat);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Pmat = doc.GetElement(materialId) as Material;
-                        mat.Add(Pmat);
-                    }
-                }
-            }
-            
-
-            //if (mat.Count > 0)
-            //{
-                var MaterialRelAssociatesDictionart = new Dictionary<ElementId, IfcMaterial>();
-
-                if (mat != null)
-                {
-                    foreach (Material m in mat)
-                    {
-
-                        ElementId elemId = m.Id;
-                        if (!MaterialRelAssociatesDictionart.TryGetValue(elemId, out var associationM))
-                        {
-                            // add new IfcMaterial to the dictionary based on elementId and IfcMaterial
-                            MaterialRelAssociatesDictionart[elemId] = new IfcMaterial
-                            {
-                                Type = "IfcMaterial",
-                                Name = m.Name,
-                            };
-                        }
-                    }
-                }
-                
-                List<IfcMaterial> ifcMaterialList = new List<IfcMaterial>();
-
-                foreach (KeyValuePair<ElementId, IfcMaterial> pair in MaterialRelAssociatesDictionart)
-                {
-                    ifcMaterialList.Add((IfcMaterial)pair.Value);
-                }
-
-                return ifcMaterialList;
-            //}
-            //else
-            //{
-            //    return ifcMaterialList;
-            //}
-        }
-
-        public static List<IfcMaterial> ReplacedGetElementMaterials(ElementType e, Document doc)
-        {
-            //Make material list
-            List<Material> mat = new List<Material>();
-
-            // Find out or there are any material parameters
-            foreach (Parameter parameter in e.Parameters)
-            {
-                // Check if the parameter is related to materials
-                if (parameter.Definition.GetDataType() == SpecTypeId.Reference.Material)
-                {
-                    Material Pmat = null;
-                    ElementId materialId = parameter.AsElementId();
-                    if (-1 == materialId.IntegerValue)
-                    {
-                        //Invalid ElementId, assume the material is "By Category"
-                        if (null != e.Category)
-                        {
-                            Pmat = e.Category.Material;
-                            if (Pmat != null)
-                            {
-                                mat.Add(Pmat);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Pmat = doc.GetElement(materialId) as Material;
-                        mat.Add(Pmat);
-                    }
-                }
-            }
-
-            //if (mat.Count > 0)
-            //{
-                var MaterialRelAssociatesDictionart = new Dictionary<ElementId, IfcMaterial>();
-
-                if (mat != null)
-                {
-                    foreach (Material m in mat)
-                    {
-
-                        ElementId elemId = m.Id;
-                        if (!MaterialRelAssociatesDictionart.TryGetValue(elemId, out var association))
-                        {
-                            //get the description value
-                            BuiltInParameter desiredBIP = BuiltInParameter.ALL_MODEL_DESCRIPTION;
-                            string descriptionValue = "";
-
-                            Parameter description = m.get_Parameter(desiredBIP);
-                            if (description != null)
-                            {
-                                descriptionValue = description.AsString();
-                            }
-
-                            // add new IfcMaterial to the dictionary based on dictionaryUri, Identification and Name
-                            MaterialRelAssociatesDictionart[elemId] = new IfcMaterial
-                            {
-                                Name = m.Name,
-                                Description = descriptionValue,
-                                Category = m.Category.Name,
-                                //HasRepresentation = m.,
-                                //IsRelatedWith = m.,
-                                //RelatesTo = m.,
-                                Type = "IfcMaterial",
-                            };
-                        }
-                        else
-                        {
-                            //update the existing IfcClassificationReference with the new values from the revit typeEntity
-                            var ifcMaterial = (IfcMaterial)association;
-                            ifcMaterial.Name = m.Name;
-                        }
-                    }
-                }
-                
-                List<IfcMaterial> ifcMaterialList = new List<IfcMaterial>();
-
-                foreach (KeyValuePair<ElementId, IfcMaterial> pair in MaterialRelAssociatesDictionart)
-                {
-                    ifcMaterialList.Add((IfcMaterial)pair.Value);
-                }
-
-                return ifcMaterialList;
-            //}
-            //else
-            //{
-            //    return ifcMaterialList;
-            //}
         }
 
         public static List<Material> GetElementMaterials(List<ElementId> elemSet, Document doc)
@@ -647,101 +482,457 @@ namespace BsddRevitPlugin.Logic.Model
             return null;
         }
 
-        public static CompoundStructure GetCompoundStructure(List<ElementId> elemSet, Document doc)
+        public static Dictionary<ElementId, IfcMaterial> ifcMatToDictionary(List<Material> matList)
         {
-            //Always only 1 element. ElementSet used to make it compattible for both Element and ElementType
-            try
-            {
-                foreach (ElementId id in elemSet)
-                {
-                    if(doc.GetElement(id) is ElementType)
-                    {
-                        ElementType elemType = (ElementType)doc.GetElement(id);
-                        
-                        //take first element out of elementtype
-                        List<Element> collectorEF = new FilteredElementCollector(doc)
-                            .WhereElementIsNotElementType()
-                            .ToList<Element>();
-                        List<Element> listEI = collectorEF.Where(q => q.GetTypeId() == elemType.Id).ToList<Element>();
-                        Element instances = listEI[0];
-                        CompoundStructure compoundStructure = null;
+            Dictionary<ElementId, IfcMaterial> associationsMat = new Dictionary<ElementId, IfcMaterial>();
 
-                        switch (elemType.Category.Name)
-                        {
-                            case "Walls":
-                                Wall wall = instances as Wall;
-                                compoundStructure = wall.WallType.GetCompoundStructure();
-                                break;
-                            case "Floors":
-                                Floor floor = instances as Floor;
-                                compoundStructure = floor.FloorType.GetCompoundStructure();
-                                break;
-                            case "Ceilings":
-                                try
-                                {
-                                    Ceiling ceiling = instances as Ceiling;
-                                    CeilingType CT = doc.GetElement(ceiling.GetTypeId()) as CeilingType;
-                                    compoundStructure = CT.GetCompoundStructure();
-                                }
-                                catch { }
-                                break;
-                            case "Roofs":
-                                RoofBase roof = instances as RoofBase;
-                                compoundStructure = roof.RoofType.GetCompoundStructure();
-                                break;
-                        }
-
-                        return compoundStructure;
-                    }
-                }
-            } catch { }
-            
-            return null;
-        }
-
-        public static IfcMaterialLayer ifcMaterialLayer(CompoundStructureLayer layer, Document doc)
-        {
-            Material material = doc.GetElement(layer.MaterialId) as Material;
-            
-            if (material != null)
+            foreach (Material mat in matList)
             {
                 //get the description value
                 BuiltInParameter desiredBIP = BuiltInParameter.ALL_MODEL_DESCRIPTION;
-                string descriptionValue = "N/A";
-                
-                Parameter description = material.get_Parameter(desiredBIP);
+                string descriptionValue = "";
+
+                Parameter description = mat.get_Parameter(desiredBIP);
                 if (description != null)
                 {
                     descriptionValue = description.AsString();
                 }
-                
-                //Convert Revit material to IfcMaterial
-                IfcMaterial ifcMaterial = new IfcMaterial();
-                ifcMaterial.Name = material.Name;
-                ifcMaterial.Description = descriptionValue;
-                ifcMaterial.Category = material.Category.Name;
-                /*
-                ifcMaterial.HasRepresentation = ;
-                ifcMaterial.IsRelatedWith = ;
-                ifcMaterial.RelatesTo = ;
-                */
-                ifcMaterial.Type = "IfcMaterial";
-                
-                //Make IfcMaterialLayer
-                IfcMaterialLayer ifcMaterialLayer = new IfcMaterialLayer();
-                ifcMaterialLayer.Material = ifcMaterial;
-                ifcMaterialLayer.LayerThickness = layer.Width * 304.8;
-                //ifcMaterialLayer.IsVentilated = ;
-                ifcMaterialLayer.Name = material.Name;
-                ifcMaterialLayer.Description = "N/A";
-                ifcMaterialLayer.Category = layer.Function.ToString();
-                ifcMaterialLayer.Priority = 0;
-                return ifcMaterialLayer;
+
+                // add new IfcMaterial to the dictionary based on dictionaryUri, Identification and Name
+                associationsMat[mat.Id] = new IfcMaterial
+                {
+                    Name = mat.Name,
+                    Description = descriptionValue,
+                    Category = mat.Category.Name,
+                    //HasRepresentation = mat.,
+                    //IsRelatedWith = mat.,
+                    //RelatesTo = mat.,
+                    Type = "IfcMaterial",
+                };
+            }
+
+            return associationsMat;
+        }
+
+        public static Dictionary<ElementId, IfcMaterialLayerSet> ifcMatLayerToDictionary(ElementId elemId, IfcMaterialLayerSet matLayerSet)
+        {
+            Dictionary<ElementId, IfcMaterialLayerSet> MatLayerSetDict = new Dictionary<ElementId, IfcMaterialLayerSet>();
+
+            MatLayerSetDict[elemId] = matLayerSet;
+
+            return MatLayerSetDict;
+        }
+
+        public static Dictionary<ElementId, IfcMaterialProfileSet> ifcMatProfilesetToDictionary(ElementId elemId, IfcMaterialProfileSet matProfileSet)
+        {
+            Dictionary<ElementId, IfcMaterialProfileSet> MatProfileSetDict = new Dictionary<ElementId, IfcMaterialProfileSet>();
+
+            MatProfileSetDict[elemId] = matProfileSet;
+
+            return MatProfileSetDict;
+        }
+
+        public static IfcMaterialProfileSet GetElementMaterialsProfileset(List<ElementId> e, Document doc)
+        {
+            // IfcElement(bijv.IfcBeam, IfcColumn)
+            //  |
+            //  | --IfcRelAssociatesMaterial
+            //      |
+            //      | --IfcMaterialProfileSet
+            //          |
+            //          | --IfcMaterialProfile(1..n)
+            //              |
+            //              | --IfcProfileDef(bijv.IfcRectangleProfileDef, IfcCircleProfileDef)
+            //              | --IfcMaterial
+
+            //Make materila list
+            List<IfcMaterialProfile> matProfileSet = new List<IfcMaterialProfile>();
+
+            //Make material list
+            List<Material> mat = new List<Material>();
+
+            // #Is elem Profile
+            if (
+                e != null &&
+                doc.GetElement(e[0]).Category.Name == "Structural Beam Systems" ||
+                doc.GetElement(e[0]).Category.Name == "Structural Columns" ||
+                doc.GetElement(e[0]).Category.Name == "Structural Framing" ||
+                doc.GetElement(e[0]).Category.Name == "Structural Trusses"
+                )
+            {
+                // Find out or there are any material parameters
+                foreach (Parameter parameter in doc.GetElement(e[0]).Parameters)
+                {
+                    // Check if the parameter is related to materials
+                    if (parameter.Definition.GetDataType() == SpecTypeId.Reference.Material)
+                    {
+                        Material Pmat = null;
+                        ElementId materialId = parameter.AsElementId();
+                        if (-1 == materialId.IntegerValue)
+                        {
+                            //Invalid ElementId, assume the material is "By Category"
+                            if (null != doc.GetElement(e[0]).Category)
+                            {
+                                Pmat = doc.GetElement(e[0]).Category.Material;
+                                if (Pmat != null)
+                                {
+                                    mat.Add(Pmat);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Pmat = doc.GetElement(materialId) as Material;
+                            mat.Add(Pmat);
+                        }
+                    }
+                }
+
+            }
+
+            for (int i = 0; i < mat.Count; i++)
+            {
+                if (mat[i] == null)
+                {
+                    mat.RemoveAt(mat.IndexOf(mat[i]));
+                    i--;
+                }
+            }
+
+            foreach (Material material in mat)
+            {
+                if (material != null)
+                {
+                    //get the description value
+                    BuiltInParameter desiredBIP = BuiltInParameter.ALL_MODEL_DESCRIPTION;
+                    string descriptionValue = "N/A";
+
+                    Parameter description = material.get_Parameter(desiredBIP);
+                    if (description != null)
+                    {
+                        descriptionValue = description.AsString();
+                    }
+
+                    //Convert Revit material to IfcMaterial by IfcMaterialBuilder
+                    IfcMaterial ifcMaterial = new IfcMaterialBuilder()
+                        .AddName(material.Name)
+                        .AddDescription(descriptionValue)
+                        .AddCategory(material.Category.Name)
+                        //.AddHasRepresentation()
+                        //.AddIsRelatedWith()
+                        //.AddRelatesTo()
+                        .Build();
+
+                    //!!!!!!!!!!!!!!!!!!!Add assosiation inherrit builder??
+
+                    ifcMaterial.Name = material.Name;
+                    ifcMaterial.Type = "IfcMaterial";
+
+                    //Make IfcMaterialProfile
+                    IfcMaterialProfile ifcMaterialProfile = new IfcMaterialProfile();
+                    ifcMaterialProfile.Name = material.Name;
+                    ifcMaterialProfile.Description = "N/A";
+                    ifcMaterialProfile.Material = ifcMaterial;
+                    //ifcMaterialProfile.Profile = ;
+                    ifcMaterialProfile.Priority = 0;
+                    //ifcMaterialProfile.Category = ;
+                    matProfileSet.Add(ifcMaterialProfile);
+                }
+            }
+
+            if (matProfileSet.Count > 0)
+            {
+                //Define IfcProfileDef
+                IfcProfileDef ifcProfileDef = new IfcProfileDef();
+                //ifcProfileDef.ProfileType = ;
+                ifcProfileDef.ProfileName = doc.GetElement(e[0]).Name;
+                //ifcProfileDef.HasExternalReference = ;
+                //ifcProfileDef.HasProperties = ;
+
+                //Define IfcCompositeProfileDef
+                IfcCompositeProfileDef ifcCompositeProfileDef = new IfcCompositeProfileDef();
+                ifcProfileDef.ProfileName = doc.GetElement(e[0]).Name;
+                ifcProfileDef.ProfileName = doc.GetElement(e[0]).Name;
+                ifcCompositeProfileDef.Profiles = ifcProfileDef;
+                ifcCompositeProfileDef.Label = "ifcCompositeProfileDef";
+
+                //Define IfcMaterialProfileSet
+                IfcMaterialProfileSet ifcMaterialProfileSet = new IfcMaterialProfileSet();
+                ifcMaterialProfileSet.Name = doc.GetElement(e[0]).Name;
+                ifcMaterialProfileSet.Description = "N/A";
+                ifcMaterialProfileSet.MaterialProfiles = matProfileSet;
+                ifcMaterialProfileSet.CompositeProfile = ifcCompositeProfileDef;
+                ifcMaterialProfileSet.Type = "IfcMaterialProfileSet";
+
+                return ifcMaterialProfileSet;
             }
             else
             {
                 return null;
             }
         }
+
+        public static IfcMaterialLayerSet GetElementMaterialsLayerset(List<ElementId> e, Document doc)
+        {
+            // IfcWall
+            //  |
+            //  | --IfcRelAssociatesMaterial
+            //      |
+            //      | --IfcMaterialLayerSet
+            //          |
+            //          | --IfcMaterial(Baksteen)
+            //          | --IfcMaterial(Isolatie)
+            //          | --IfcMaterial(Gipsplaat)
+
+            
+            //Make material list
+            List<IfcMaterialLayer> matLayerSet = new List<IfcMaterialLayer>();
+
+            /*//Get HostObject by query existing FamilyInstances with the same ElementType
+            var instances1 = new FilteredElementCollector(doc)
+                .OfClass(typeof(FamilyInstance))
+                .Cast<FamilyInstance>()
+                .Where(fi => fi.Symbol.Id == e.Id);*/
+
+            //take first element out of elementtype
+            List<Element> collectorEF = new FilteredElementCollector(doc)
+                .WhereElementIsNotElementType()
+                .ToList<Element>();
+            List<Element> listEI = collectorEF.Where(q => q.GetTypeId() == e[0]).ToList<Element>();
+            Element instances = listEI[0];
+            CompoundStructure compoundStructure = null;
+
+            ElementType elemType = doc.GetElement(e[0]) as ElementType;
+
+            // #Is elem with compound structure
+            if(elemType != null)
+            {
+                if (
+                    elemType.Category.Name == "Ceilings" ||
+                    elemType.Category.Name == "Roofs" ||
+                    elemType.Category.Name == "Walls" ||
+                    elemType.Category.Name == "Floors"
+                )
+                {
+                    switch (doc.GetElement(e[0]).Category.Name)
+                    {
+                        case "Walls":
+                            Wall wall = instances as Wall;
+                            compoundStructure = wall.WallType.GetCompoundStructure();
+                            break;
+                        case "Floors":
+                            Floor floor = instances as Floor;
+                            compoundStructure = floor.FloorType.GetCompoundStructure();
+                            break;
+                        case "Ceilings":
+                            try
+                            {
+                                Ceiling ceiling = instances as Ceiling;
+                                CeilingType CT = doc.GetElement(ceiling.GetTypeId()) as CeilingType;
+                                compoundStructure = CT.GetCompoundStructure();
+                            }
+                            catch { }
+                            break;
+                        case "Roofs":
+                            RoofBase roof = instances as RoofBase;
+                            compoundStructure = roof.RoofType.GetCompoundStructure();
+                            break;
+                    }
+
+
+                    if (compoundStructure != null)
+                    {
+                        var layers = compoundStructure.GetLayers();
+                        if (layers == null)
+                        {
+                            //find category and subcategory corresponding to the compoundstructure layer
+                        }
+                        foreach (var layer in layers)
+                        {
+                            Material material = doc.GetElement(layer.MaterialId) as Material;
+
+                            if (material != null)
+                            {
+                                //get the description value
+                                BuiltInParameter desiredBIP = BuiltInParameter.ALL_MODEL_DESCRIPTION;
+                                string descriptionValue = "N/A";
+
+                                Parameter description = material.get_Parameter(desiredBIP);
+                                if (description != null)
+                                {
+                                    descriptionValue = description.AsString();
+                                }
+
+                                //Convert Revit material to IfcMaterial
+                                IfcMaterial ifcMaterial = new IfcMaterial();
+                                ifcMaterial.Name = material.Name;
+                                ifcMaterial.Description = descriptionValue;
+                                ifcMaterial.Category = material.Category.Name;
+                                /*
+                                ifcMaterial.HasRepresentation = ;
+                                ifcMaterial.IsRelatedWith = ;
+                                ifcMaterial.RelatesTo = ;
+                                */
+                                ifcMaterial.Name = material.Name;
+                                ifcMaterial.Type = "IfcMaterial";
+
+                                //Make IfcMaterialLayer
+                                IfcMaterialLayer ifcMaterialLayer = new IfcMaterialLayer();
+                                ifcMaterialLayer.Material = ifcMaterial;
+                                ifcMaterialLayer.LayerThickness = layer.Width * 304.8;
+                                //ifcMaterialLayer.IsVentilated = ;
+                                ifcMaterialLayer.Name = material.Name;
+                                ifcMaterialLayer.Description = "N/A";
+                                ifcMaterialLayer.Category = layer.Function.ToString();
+                                ifcMaterialLayer.Priority = 0;
+                                matLayerSet.Add(ifcMaterialLayer);
+                            }
+                        }
+                    }
+                }
+            }
+            
+
+            if (matLayerSet.Count > 0)
+            {
+                IfcMaterialLayerSet ifcMaterialLayerSet = new IfcMaterialLayerSet();
+                ifcMaterialLayerSet.IfcMaterialLayer = matLayerSet;
+                ifcMaterialLayerSet.LayerSetName = "N/A";
+                ifcMaterialLayerSet.Description = "N/A";
+                //calculate total length
+                double thickness = 0;
+                foreach (IfcMaterialLayer layer in ifcMaterialLayerSet.IfcMaterialLayer)
+                {
+                    thickness = thickness + layer.LayerThickness;
+                }
+                ifcMaterialLayerSet.TotalThickness = thickness;
+                ifcMaterialLayerSet.Name = elemType.Name;
+                ifcMaterialLayerSet.Type = "IfcMaterialLayerSet";
+
+                return ifcMaterialLayerSet;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        // #TODO
+        /*public static IfcMaterialConstituentSet GetElementMatConstituentSet(Element e, Document doc)
+        {
+            //schema
+            //https://help.autodesk.com/view/RVT/2022/ENU/?guid=Revit_API_Revit_API_Developers_Guide_Revit_Geometric_Elements_Material_Element_Material_html
+
+            // koppeling materialen via IfcRelAssociatesMaterial
+            // verbindt een IfcElement met een IfcMaterial, IfcMaterialLayerSet (layered element zoals wall), of IfcMaterialProfileSet (profielen).
+
+            // IfcElement(bijv.IfcWall, IfcBeam, IfcColumn)
+            //  |
+            //  | --IfcRelAssociatesMaterial
+            //      |
+            //      | --IfcMaterialConstituentSet
+            //          |
+            //          | -- IfcMaterialConstituent
+            //              |
+            //              | -- IfcMaterial
+            //          | -- IfcMaterialConstituent
+            //              |
+            //              | -- IfcMaterial
+
+            //Make material list
+            Dictionary<Material, String> matDict = new Dictionary<Material, String>();
+
+            if (
+                e != null &&
+                e.Category.Name != "Structural Beam Systems" &&
+                e.Category.Name != "Structural Columns" &&
+                e.Category.Name != "Structural Framing" &&
+                e.Category.Name != "Structural Trusses"
+                )
+            {
+
+                // Find out or there are any material parameters
+                foreach (Parameter parameter in e.Parameters)
+                {
+                    // Check if the parameter is related to materials
+                    if (parameter.Definition.GetDataType() == SpecTypeId.Reference.Material)
+                    {
+                        Material Pmat = null;
+                        ElementId materialId = parameter.AsElementId();
+                        if (-1 == materialId.IntegerValue)
+                        {
+                            //Invalid ElementId, assume the material is "By Category"
+                            if (null != e.Category)
+                            {
+                                Pmat = e.Category.Material;
+                                if (Pmat != null)
+                                {
+                                    matDict.Add(Pmat, parameter.Definition.Name);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Pmat = doc.GetElement(materialId) as Material;
+                            matDict.Add(Pmat, "");
+                        }
+                    }
+                }
+            }
+
+
+
+            if (matDict.Count > 1)
+            {
+                //Define IfcMaterialConstituentSet
+                IfcMaterialConstituentSet ifcMaterialConstituentSet = new IfcMaterialConstituentSet();
+
+                List<IfcMaterialConstituent> ifcMaterialConstituentList = new List<IfcMaterialConstituent>();
+                foreach (KeyValuePair<Material, String> entry in matDict)
+                {
+                    //get the description value
+                    BuiltInParameter desiredBIP = BuiltInParameter.ALL_MODEL_DESCRIPTION;
+                    string descriptionValue = "N/A";
+
+                    Parameter description = entry.Key.get_Parameter(desiredBIP);
+                    if (description != null)
+                    {
+                        descriptionValue = description.AsString();
+                    }
+
+                    //Convert Revit material to IfcMaterial
+                    IfcMaterial ifcMaterial = new IfcMaterial();
+                    ifcMaterial.Name = entry.Key.Name;
+                    ifcMaterial.Description = descriptionValue;
+                    ifcMaterial.Category = entry.Key.Category.Name;
+                    //ifcMaterial.HasRepresentation = ;
+                    //ifcMaterial.IsRelatedWith = ;
+                    //ifcMaterial.RelatesTo = ;
+                    ifcMaterial.Type = "IfcMaterial";
+
+                    //Make IfcMaterialConstituent
+                    IfcMaterialConstituent ifcMaterialConstituent = new IfcMaterialConstituent();
+                    ifcMaterialConstituent.Name = entry.Value;
+                    ifcMaterialConstituent.Description = "N/A";
+                    ifcMaterialConstituent.Material = ifcMaterial;
+                    //ifcMaterialConstituent.Fraction = ;
+                    //ifcMaterialConstituent.Category = ;
+                    //ifcMaterialConstituent.ToMaterialConstituentSet = ifcMaterialConstituentSet;
+                    ifcMaterialConstituentList.Add(ifcMaterialConstituent);
+                }
+
+
+                ifcMaterialConstituentSet.Name = e.Name;
+                ifcMaterialConstituentSet.Description = "N/A";
+                ifcMaterialConstituentSet.MaterialConstituents = ifcMaterialConstituentList;
+
+                return ifcMaterialConstituentSet;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        */
     }
 }
