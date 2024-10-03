@@ -37,6 +37,8 @@ namespace BsddRevitPlugin.Logic.Model
 
         public static void SetIfcEntityToElementDataStorage(IfcEntity ifcEntity, ElementType elementType)
         {
+            Logger logger = LogManager.GetCurrentClassLogger();
+
             //Add all associations to the element in element entity storage
             Schema schema = GetBsddDataSchema();
             var field = schema.GetField(s_IfcClassificationData);
@@ -48,6 +50,7 @@ namespace BsddRevitPlugin.Logic.Model
             }
             catch
             {
+                logger.Error($"Failed to set datastorage for element '{elementType.Name}'!");
                 Console.WriteLine("error");
             }
         }
