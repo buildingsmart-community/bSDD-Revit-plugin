@@ -67,9 +67,15 @@ namespace BsddRevitPlugin.Logic.Model
                 int idInt = Convert.ToInt32(ifcEntity.Tag);
                 ElementId typeId = new ElementId(idInt);
                 ElementType elementType = doc.GetElement(typeId) as ElementType;
+                using (Transaction tx = new Transaction(doc))
+                {
+                    tx.Start("SetIfcEntity");
 
-                //Set IfcEntity to the Elements DataStorage
-                SetIfcEntityToElementDataStorage(ifcEntity, elementType);
+                    //Set IfcEntity to the Elements DataStorage
+                    SetIfcEntityToElementDataStorage(ifcEntity, elementType);
+
+                    tx.Commit();
+                }
 
                 ForgeTypeId groupType = GroupTypeId.Ifc;
 
