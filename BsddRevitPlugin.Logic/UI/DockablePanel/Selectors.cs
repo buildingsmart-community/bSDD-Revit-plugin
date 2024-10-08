@@ -4,6 +4,7 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
+using BsddRevitPlugin.Logic.UI.View;
 using System.Collections;
 using System.Collections.Generic;
 using System.Xml.Linq;

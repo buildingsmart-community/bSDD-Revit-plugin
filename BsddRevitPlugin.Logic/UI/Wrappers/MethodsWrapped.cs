@@ -133,6 +133,52 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         }
     }
 
+    public abstract class EventRevitSelectionMode_Finish : RevitEventWrapper<string>
+    {
+        
+        public override void Execute(UIApplication uiapp, string args)
+        {
+            FinishSelection(uiapp);
+        }
+        protected abstract void FinishSelection(UIApplication uiapp);
+    }
+
+    public abstract class EventRevitSelectionMode_Cancel : RevitEventWrapper<string>
+    {
+        public override void Execute(UIApplication uiapp, string args)
+        {
+            MessageBox.Show("Cancel clicked 1");
+            CancelSelection(uiapp);
+            MessageBox.Show("Cancel clicked 3");
+        }
+        protected abstract void CancelSelection(UIApplication uiapp);
+    }
+
+    /// <summary>
+    /// Selection event for .
+    /// </summary>
+    public class EventSelectionMode_Finish : EventRevitSelectionMode_Finish
+    {
+        protected override void FinishSelection(UIApplication uiapp)
+        {
+            RevitCommandId finishCommandId = RevitCommandId.LookupCommandId("ID_BUTTON_SELECT");
+            uiapp.PostCommand(finishCommandId);
+            MessageBox.Show("Finish clicked");
+        }
+    }
+
+    public class EventSelectionMode_Cancel : EventRevitSelectionMode_Cancel
+    {
+        protected override void CancelSelection(UIApplication uiapp)
+        {
+            
+            RevitCommandId finishCommandId = RevitCommandId.LookupCommandId("ID_CANCEL_EDITOR");
+            uiapp.PostCommand(finishCommandId);
+            MessageBox.Show("Cancel clicked 2");
+        }
+    }
+    
+
     /// <summary>
     /// Selection event for manualy selecting elements in Revit.
     /// </summary>

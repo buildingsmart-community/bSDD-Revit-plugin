@@ -10,6 +10,11 @@ using BsddRevitPlugin.Logic.UI.BsddBridge;
 using Newtonsoft.Json;
 using BsddRevitPlugin.Logic.Model;
 using BsddRevitPlugin.Logic.UI.Services;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Globalization;
+using System.Net.Sockets;
+using static Autodesk.Revit.DB.SpecTypeId;
 
 /// <summary>
 /// Event handler for the selection method combo box. Clears the element manager and raises the appropriate external event based on the selected item in the combo box.
@@ -21,19 +26,98 @@ namespace BsddRevitPlugin.Logic.UI.View
     // This class represents the main panel of the bSDD Revit plugin
     public partial class BsddSelection : Page, IDockablePaneProvider
     {
+        private SelectionMode _selectionMode;
         private readonly IBrowserService _browserService;
+
+
+
+
+        public void CheckSelectionMode(UIDocument uidoc, SelectionMode selectionMode)
+        {
+            // Example method to check selection mode
+            selectionMode.IsInSelectionMode = uidoc.Selection.GetElementIds().Count > 0;
+        }
+
+        private void ToggleButtonVisibility(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is SelectionMode buttonsVisible)
+            {
+                buttonsVisible.IsInSelectionMode = !buttonsVisible.IsInSelectionMode;
+            }
+        }
+
+        public void ToggleVisibility(bool boolean)
+        {
+            if (DataContext is SelectionMode buttonsVisible)
+            {
+                buttonsVisible.IsInSelectionMode = boolean;
+            }
+        }
+
+        public class RevitEventHandler : IExternalEventHandler
+        {
+            private SelectionMode _selectionMode;
+            private UIDocument _uidoc;
+
+            public RevitEventHandler(UIDocument uidoc, SelectionMode selectionMode)
+            {
+                _uidoc = uidoc;
+                _selectionMode = selectionMode;
+            }
+
+            public void Execute(UIApplication app)
+            {
+                _selectionMode.IsInSelectionMode = _uidoc.Selection.GetElementIds().Count > 0;
+            }
+
+            public string GetName()
+            {
+                return "Revit Selection Mode Handler";
+            }
+        }
+
+
+
+
+
+
+
+
 
         // Declaration of events and external events
         EventMakeSelection SelectEHMS;
         EventSelectAll SelectEHSA;
         EventSelectView SelectEHSV;
         EventUseLastSelection eventUseLastSelection;
-        ExternalEvent SelectEEMS, SelectEESA, SelectEESV, SelectEULS;
+        EventSelectionMode_Finish eventSelectionMode_Finish;
+        EventSelectionMode_Cancel eventSelectionMode_Cancel;
+        ExternalEvent SelectEEMS, SelectEESA, SelectEESV, SelectEULS, SelectMode_Finish, SelectMode_Cancel;
         UpdateUIonSave updateUIEvent;
         private BsddBridgeData _inputBsddBridgeData;
 
-
         // Data fields
+        public class SelectionMode : INotifyPropertyChanged
+        {
+            private bool _isInSelectionMode = false; // Initialize to false
+            public bool IsInSelectionMode
+            {
+                get { return _isInSelectionMode; }
+                set
+                {
+                    if (_isInSelectionMode != value)
+                    {
+                        _isInSelectionMode = value;
+                        OnPropertyChanged(nameof(IsInSelectionMode));
+                    }
+                }
+            }
+
+            public event PropertyChangedEventHandler PropertyChanged;
+            protected void OnPropertyChanged([CallerMemberName] string name = null)
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+            }
+        }
         private Guid m_targetGuid = new Guid("D7C963CE-B3CA-426A-8D51-6E8254D21158");
         private DockPosition m_position = DockPosition.Floating;
         private int m_left = 100;
@@ -46,6 +130,14 @@ namespace BsddRevitPlugin.Logic.UI.View
         {
             _browserService = browserService;
             InitializeComponent();
+            _selectionMode = new SelectionMode();
+            DataContext = _selectionMode;
+
+            /*RevitEventHandler handler = new RevitEventHandler(uidoc, _selectionMode);
+            _externalEvent = ExternalEvent.Create(handler);
+
+            // Subscribe to the Idling event
+            uidoc.Application.Idling += OnIdling;*/
 
             string addinLocation = Assembly.GetExecutingAssembly().Location;
             string addinDirectory = System.IO.Path.GetDirectoryName(addinLocation);
@@ -54,6 +146,8 @@ namespace BsddRevitPlugin.Logic.UI.View
             updateUIEvent.SetBrowser(_browserService);
 
             // Initialize the events
+            eventSelectionMode_Finish = new EventSelectionMode_Finish();
+            eventSelectionMode_Cancel = new EventSelectionMode_Cancel();
             SelectEHMS = new EventMakeSelection();
             SelectEHSA = new EventSelectAll();
             SelectEHSV = new EventSelectView();
@@ -66,6 +160,8 @@ namespace BsddRevitPlugin.Logic.UI.View
             eventUseLastSelection.SetBrowser(_browserService);
 
             // Initialize external events
+            SelectMode_Finish = ExternalEvent.Create(eventSelectionMode_Finish);
+            SelectMode_Cancel = ExternalEvent.Create(eventSelectionMode_Cancel);
             SelectEEMS = ExternalEvent.Create(SelectEHMS);
             SelectEESA = ExternalEvent.Create(SelectEHSA);
             SelectEESV = ExternalEvent.Create(SelectEHSV);
@@ -137,40 +233,20 @@ namespace BsddRevitPlugin.Logic.UI.View
             }
         }
 
-        //public async void ShowAndSendData(object data)
-        //{
-        //     Show the form
-        //    this.Show();
-
-        //     Serialize the data to a JSON string
-        //    var jsonString = JsonConvert.SerializeObject(data);
-
-        //     Create a JavaScript function call
-        //    var jsFunctionCall = $"myJavaScriptFunction({jsonString});";
-
-        //     Wait for the browser to be initialized
-        //    if (!_browserService.IsBrowserInitialized)
-        //    {
-        //        var tcs = new TaskCompletionSource<bool>();
-        //        EventHandler handler = null;
-        //        handler = (sender, args) =>
-        //        {
-        //            _browserService.IsBrowserInitializedChanged -= handler;
-        //            tcs.SetResult(true);
-        //        };
-        //        _browserService.IsBrowserInitializedChanged += handler;
-        //        await tcs.Task;
-        //    }
-
-        //     Execute the JavaScript function
-        //    await _browserService.ExecuteScriptAsync(jsFunctionCall);
-
-        //}
-
         // Event handlers
         private void PaneInfoButton_Click(object sender, RoutedEventArgs e)
         {
             // TODO: Implement this method
+        }
+        private void Click_Finish(object sender, RoutedEventArgs e)
+        {
+            ToggleVisibility(false);
+            SelectMode_Finish.Raise();
+        }
+        private void Click_Cancel(object sender, RoutedEventArgs e)
+        {
+            ToggleVisibility(false);
+            SelectMode_Cancel.Raise();
         }
 
         private void wpf_stats_Click(object sender, RoutedEventArgs e)
@@ -199,26 +275,21 @@ namespace BsddRevitPlugin.Logic.UI.View
         // Event handler for the selection method combo box
         private void SM_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // Clear the element manager
-            //ElemManager.Clear();
-
             // Raise the appropriate external event based on the selected item in the combo box
             if (((ComboBoxItem)(((ComboBox)sender).SelectedItem)).Content.ToString() == "Make selection")
             {
                 SelectEEMS.Raise();
-                //testExEvent.Raise
-                //testExEvent2.Raise();
-
-
-                ////Main.Instance.ShowbSDDSelector(commandData.Application);
+                ToggleVisibility(true);
             }
             else if (((ComboBoxItem)(((ComboBox)sender).SelectedItem)).Content.ToString() == "Select all")
             {
                 SelectEESA.Raise();
+                ToggleVisibility(false);
             }
             else if (((ComboBoxItem)(((ComboBox)sender).SelectedItem)).Content.ToString() == "Select visible in view")
             {
                 SelectEESV.Raise();
+                ToggleVisibility(false);
             };
         }
 

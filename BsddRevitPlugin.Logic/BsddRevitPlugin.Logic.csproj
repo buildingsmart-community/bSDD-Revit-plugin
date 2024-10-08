@@ -134,6 +134,7 @@
     <Compile Include="IfcJson\IfcJsonConverter.cs" />
     <Compile Include="Model\ElementsManager.cs" />
     <Compile Include="Model\ElementsManager.Logic.cs" />
+    <Compile Include="UI\Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Utilities\IfcParameterMappings.cs" />
     <Compile Include="Model\SettingsManager.cs" />
     <Compile Include="Model\IfcClassificationManager.cs" />

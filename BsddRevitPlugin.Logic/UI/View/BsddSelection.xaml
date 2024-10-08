@@ -3,24 +3,34 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:BsddRevitPlugin.Logic.UI.Converters"
       mc:Ignorable="d" 
-      d:DesignHeight="auto" d:DesignWidth="200"
+      d:DesignWidth="200"
       Title="bSDD Selection"
       x:Name="DockableDialogs"
       Background="LightGray"
       Loaded="DockableDialogs_Loaded">
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </Page.Resources>
     <Grid Name="PanelGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition />
             <RowDefinition Height="Auto" />
+            <RowDefinition />
         </Grid.RowDefinitions>
-        <Grid>
-            <DockPanel>
-                <ComboBox DockPanel.Dock="Top" Name="SM" SelectionChanged="SM_SelectionChanged" DropDownOpened="SM_DropDownOpened"/>
-            </DockPanel>
+        <DockPanel Grid.Row="0">
+            <ComboBox DockPanel.Dock="Top" Name="SM" SelectionChanged="SM_SelectionChanged" DropDownOpened="SM_DropDownOpened"/>
+        </DockPanel>
+        <Grid Grid.Row="1" HorizontalAlignment="Stretch" Margin="0" Visibility="{Binding IsInSelectionMode, Converter={StaticResource BoolToVis}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Button Content="Finish" Margin="0" Click="Click_Finish" Visibility="Visible" HorizontalAlignment="Stretch" Grid.Column="0"/>
+            <Button Content="Cancel" Margin="0" Click="Click_Cancel" Visibility="Visible" HorizontalAlignment="Stretch" Grid.Column="1"/>
         </Grid>
-        <Grid Grid.Row="1" x:Name="BrowserContainer">
+        <Grid Grid.Row="2" x:Name="BrowserContainer">
         </Grid>
     </Grid>
 </Page>
