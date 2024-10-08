@@ -135,6 +135,7 @@ namespace BsddRevitPlugin.Logic.IfcExport
                 if (locationIndex != -1 && identifierIndex != -1)
                 {
                     line = line.Replace(data.ClassificationLocation, data.ClassificationReferenceLocation);
+                    break;
                 }
             }
 
