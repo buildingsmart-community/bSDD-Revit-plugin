@@ -104,9 +104,21 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             
             _updateUIEvent.Raise(settings);
         }
-        public string loadSettings()
+        ////public string loadSettings()
+        ////{
+        ////    return JsonConvert.SerializeObject(GlobalBsddSettings.bsddsettings);
+        ////}
+        /// <summary>
+        /// Loads BsddBridgeData.
+        /// </summary>
+        public string loadBridgeData()
         {
-            return JsonConvert.SerializeObject(GlobalBsddSettings.bsddsettings);
+            BsddBridgeData bsddBridgeData = new BsddBridgeData
+            {
+                Settings = GlobalBsddSettings.bsddsettings,
+                IfcData = new List<IfcEntity>()
+            };
+            return JsonConvert.SerializeObject(bsddBridgeData);
         }
     }
 }
