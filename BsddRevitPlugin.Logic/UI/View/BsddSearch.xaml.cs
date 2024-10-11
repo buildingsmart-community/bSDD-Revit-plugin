@@ -50,7 +50,7 @@ namespace BsddRevitPlugin.Logic.UI.View
             //_browserService.Address = "http://localhost:3000/bsdd_search";
             //_browserService.Address = "http://localhost:3000/bsdd_search";
             //_browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/v1.4.0/bsdd_search/";
-            _browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/v1.5.1/bsdd_search/";
+            _browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/v1.6.0/bsdd_search/";
             //_browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/main/bsdd_search/";
             var bridgeSearch = new BsddSearchBridge(bsddBridgeData, _bsddLastSelectionEvent);
             bridgeSearch.SetParentWindow(this);
