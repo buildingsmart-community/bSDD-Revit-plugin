@@ -71,7 +71,14 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             _bsddSearchParent.Dispatcher.Invoke(() => _bsddSearchParent.Close());
 
         }
-        public string loadSettings ()
+        ////public string loadSettings ()
+        ////{
+        ////    return JsonConvert.SerializeObject(_bsddBridgeData);
+        ////}
+        /// <summary>
+        /// Loads BsddBridgeData.
+        /// </summary>
+        public string loadBridgeData()
         {
             return JsonConvert.SerializeObject(_bsddBridgeData);
         }
