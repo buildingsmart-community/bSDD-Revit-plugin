@@ -35,11 +35,23 @@ namespace BsddRevitPlugin.Logic.UI.View
         private BsddBridgeData _inputBsddBridgeData;
         private ExternalEvent _bsddLastSelectionEvent;
 
+        private static double _width = 800;
+        private static double _height = 800;
+        private static double _left = 100;
+        private static double _top = 100;
+
         public BsddSearch(BsddBridgeData bsddBridgeData, ExternalEvent bsddLastSelectionEvent)
         {
+
             _bsddLastSelectionEvent = bsddLastSelectionEvent;
             _browserService = GlobalServiceFactory.Factory.CreateBrowserService();
             InitializeComponent();
+
+            // Set the window size and position using stored values
+            this.Width = _width;
+            this.Height = _height;
+            this.Left = _left;
+            this.Top = _top;
 
             string addinLocation = Assembly.GetExecutingAssembly().Location;
             string addinDirectory = System.IO.Path.GetDirectoryName(addinLocation);
@@ -56,11 +68,19 @@ namespace BsddRevitPlugin.Logic.UI.View
             bridgeSearch.SetParentWindow(this);
             _browserService.RegisterJsObject("bsddBridge", bridgeSearch, true);
             _browserService.IsBrowserInitializedChanged += OnIsBrowserInitializedChanged;
+
+            // Handle the Closed event to store the window size and position
+            this.Closed += Window_Closed;
         }
 
         private void Window_Closed(object sender, EventArgs e)
         {
-            Close();
+            // Store the current window size and position
+            _width = this.Width;
+            _height = this.Height;
+            _left = this.Left;
+            _top = this.Top;
+
         }
 
 
