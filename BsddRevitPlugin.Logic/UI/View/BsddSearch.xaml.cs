@@ -48,10 +48,10 @@ namespace BsddRevitPlugin.Logic.UI.View
             InitializeComponent();
 
             // Set the window size and position using stored values
-            this.Width = _width;
-            this.Height = _height;
-            this.Left = _left;
-            this.Top = _top;
+            this.Width = Settings.Default.SearchWindowWidth;
+            this.Height = Settings.Default.SearchWindowHeight;
+            this.Left = Settings.Default.SearchWindowLeft;
+            this.Top = Settings.Default.SearchWindowTop;
 
             string addinLocation = Assembly.GetExecutingAssembly().Location;
             string addinDirectory = System.IO.Path.GetDirectoryName(addinLocation);
@@ -76,11 +76,11 @@ namespace BsddRevitPlugin.Logic.UI.View
         private void Window_Closed(object sender, EventArgs e)
         {
             // Store the current window size and position
-            _width = this.Width;
-            _height = this.Height;
-            _left = this.Left;
-            _top = this.Top;
-
+            Settings.Default.SearchWindowWidth = this.Width;
+            Settings.Default.SearchWindowHeight = this.Height;
+            Settings.Default.SearchWindowLeft = this.Left;
+            Settings.Default.SearchWindowTop = this.Top;
+            Settings.Default.Save();
         }
 
 

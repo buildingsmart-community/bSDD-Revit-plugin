@@ -134,6 +134,11 @@
     <Compile Include="IfcJson\IfcJsonConverter.cs" />
     <Compile Include="Model\ElementsManager.cs" />
     <Compile Include="Model\ElementsManager.Logic.cs" />
+    <Compile Include="Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
     <Compile Include="Utilities\IfcParameterMappings.cs" />
     <Compile Include="Model\SettingsManager.cs" />
     <Compile Include="Model\IfcClassificationManager.cs" />
@@ -170,6 +175,10 @@
     <None Include="Resources\IFC Shared Parameters - bSDD Revit Plugin.xlsx" />
     <None Include="Resources\ifcDataFromBsddExample.json" />
     <None Include="Resources\ifcDataFromRevitExample.json" />
+    <None Include="Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
     <None Include="UI\Settings\BsddSettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
