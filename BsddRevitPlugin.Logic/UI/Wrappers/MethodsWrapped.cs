@@ -1,5 +1,7 @@
+using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using Autodesk.Revit.UI.Selection;
 using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.Model;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
@@ -10,6 +12,7 @@ using Newtonsoft.Json;
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Runtime;
 using System.Windows;
@@ -135,12 +138,16 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
     public abstract class EventRevitSelectionMode_Finish : RevitEventWrapper<string>
     {
-        
         public override void Execute(UIApplication uiapp, string args)
         {
             FinishSelection(uiapp);
         }
         protected abstract void FinishSelection(UIApplication uiapp);
+
+        public string GetName()
+        {
+            return "My External Event Handler";
+        }
     }
 
     public abstract class EventRevitSelectionMode_Cancel : RevitEventWrapper<string>
@@ -154,16 +161,20 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         protected abstract void CancelSelection(UIApplication uiapp);
     }
 
+
+
     /// <summary>
     /// Selection event for .
     /// </summary>
     public class EventSelectionMode_Finish : EventRevitSelectionMode_Finish
     {
+        
         protected override void FinishSelection(UIApplication uiapp)
         {
+            MessageBox.Show("Finish clicked voor uitvoering");
             RevitCommandId finishCommandId = RevitCommandId.LookupCommandId("ID_BUTTON_SELECT");
             uiapp.PostCommand(finishCommandId);
-            MessageBox.Show("Finish clicked");
+            MessageBox.Show("Finish clicked na uitvoering");
         }
     }
 

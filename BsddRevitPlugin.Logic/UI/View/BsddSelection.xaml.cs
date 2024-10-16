@@ -15,6 +15,8 @@ using System.Runtime.CompilerServices;
 using System.Globalization;
 using System.Net.Sockets;
 using static Autodesk.Revit.DB.SpecTypeId;
+using Autodesk.Revit.DB;
+using BsddRevitPlugin.Logic.Commands;
 
 /// <summary>
 /// Event handler for the selection method combo box. Clears the element manager and raises the appropriate external event based on the selected item in the combo box.
@@ -53,6 +55,8 @@ namespace BsddRevitPlugin.Logic.UI.View
                 buttonsVisible.IsInSelectionMode = boolean;
             }
         }
+
+        
 
         public class RevitEventHandler : IExternalEventHandler
         {
@@ -240,6 +244,12 @@ namespace BsddRevitPlugin.Logic.UI.View
         }
         private void Click_Finish(object sender, RoutedEventArgs e)
         {
+            UIApplication uiapp = getUIapp();
+            
+            // Post the finish command
+            RevitCommandId finishCommandId = RevitCommandId.LookupPostableCommandId(PostableCommand.Finish);
+            uiapp.PostCommand(finishCommandId);
+
             ToggleVisibility(false);
             SelectMode_Finish.Raise();
         }
