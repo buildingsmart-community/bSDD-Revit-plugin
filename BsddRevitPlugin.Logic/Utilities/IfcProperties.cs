@@ -9,11 +9,112 @@ namespace BsddRevitPlugin.Logic.Utilities
     {
         public static IfcPropertySingleValue GetIfcPropertySingleValue(string name, Parameter parameter)
         {
+            parameter = ConvertInchesToMetric(parameter);
+
             return new IfcPropertySingleValue
             {
                 NominalValue = GetNominalValue(parameter),
                 Name = name
             };
+        }
+
+        private static Parameter ConvertInchesToMetric(Parameter parameter)
+        {
+            // Get the unit type of the parameter
+            ForgeTypeId unitTypeId = parameter.GetUnitTypeId();
+
+            // Get the value in the original unit
+            double valueInImperial = parameter.AsDouble();
+            double valueInMetric = valueInImperial; // Default to the original value
+
+            // Check if the parameter is in an imperial unit and convert accordingly
+            if (unitTypeId == UnitTypeId.Inches || unitTypeId == UnitTypeId.Feet)
+            {
+                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.Millimeters);
+            }
+            else if (unitTypeId == UnitTypeId.FeetPerSecond || unitTypeId == UnitTypeId.MilesPerHour)
+            {
+                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.MetersPerSecond);
+            }
+            else if (unitTypeId == UnitTypeId.BritishThermalUnits || unitTypeId == UnitTypeId.BritishThermalUnitsPerHour)
+            {
+                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.Joules);
+            }
+            else if (unitTypeId == UnitTypeId.PoundsForce || unitTypeId == UnitTypeId.PoundsForcePerSquareInch)
+            {
+                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.Newtons);
+            }
+            else if (unitTypeId == UnitTypeId.UsGallons || unitTypeId == UnitTypeId.UsGallonsPerMinute)
+            {
+                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.Liters);
+            }
+            else if (unitTypeId == UnitTypeId.Acres)
+            {
+                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.SquareMeters);
+            }
+            else if (unitTypeId == UnitTypeId.PoundsMass)
+            {
+                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.Kilograms);
+            }
+            else if (unitTypeId == UnitTypeId.Fahrenheit || unitTypeId == UnitTypeId.FahrenheitInterval)
+            {
+                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.Celsius);
+            }
+            else if (unitTypeId == UnitTypeId.Horsepower)
+            {
+                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.Watts);
+            }
+            else if (unitTypeId == UnitTypeId.PoundsMassPerCubicFoot)
+            {
+                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerCubicMeter);
+            }
+            else if (unitTypeId == UnitTypeId.PoundsMassPerHour)
+            {
+                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerHour);
+            }
+            else if (unitTypeId == UnitTypeId.PoundsMassPerMinute)
+            {
+                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerMinute);
+            }
+            else if (unitTypeId == UnitTypeId.PoundsMassPerSecond)
+            {
+                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerSecond);
+            }
+            else if (unitTypeId == UnitTypeId.PoundsMassPerSquareFoot)
+            {
+                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerSquareMeter);
+            }
+            else if (unitTypeId == UnitTypeId.PoundsMassPerFoot)
+            {
+                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerMeter);
+            }
+            else if (unitTypeId == UnitTypeId.PoundsMassPerFootHour)
+            {
+                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerMeterHour);
+            }
+            else if (unitTypeId == UnitTypeId.PoundsMassPerFootSecond)
+            {
+                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerMeterSecond);
+            }
+            else if (unitTypeId == UnitTypeId.PoundsMassPerPoundDegreeFahrenheit)
+            {
+                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerKilogramKelvin);
+            }
+            else if (unitTypeId == UnitTypeId.PoundsMassPerCubicInch)
+            {
+                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerCubicMeter);
+            }
+            else
+            {
+                // If the unit type is not imperial, return the parameter without changing the value
+                return parameter;
+            }
+
+            // Set the parameter value in metric units
+            parameter.Set(valueInMetric);
+
+            // Return the updated parameter
+            return parameter;
         }
 
         private static IfcValue GetNominalValue(Parameter parameter)
@@ -687,3 +788,306 @@ namespace BsddRevitPlugin.Logic.Utilities
         }
     }
 }
+
+
+/*
+all posibie UnitTypeId'"s:
+UnitTypeId.Acres
+UnitTypeId.Amperes
+UnitTypeId.Atmospheres
+UnitTypeId.Bars
+UnitTypeId.BritishThermalUnits
+UnitTypeId.BritishThermalUnitsPerDegreeFahrenheit
+UnitTypeId.BritishThermalUnitsPerHour
+UnitTypeId.BritishThermalUnitsPerHourCubicFoot
+UnitTypeId.BritishThermalUnitsPerHourFootDegreeFahrenheit
+UnitTypeId.BritishThermalUnitsPerHourSquareFoot
+UnitTypeId.BritishThermalUnitsPerHourSquareFootDegreeFahrenheit
+UnitTypeId.BritishThermalUnitsPerPound
+UnitTypeId.BritishThermalUnitsPerPoundDegreeFahrenheit
+UnitTypeId.BritishThermalUnitsPerSecond
+UnitTypeId.BritishThermalUnitsPerSquareFootDegreeFahrenheit
+UnitTypeId.Calories
+UnitTypeId.CaloriesPerSecond
+UnitTypeId.Candelas
+UnitTypeId.CandelasPerSquareFoot
+UnitTypeId.CandelasPerSquareMeter
+UnitTypeId.Celsius
+UnitTypeId.CelsiusInterval
+UnitTypeId.Centimeters
+UnitTypeId.CentimetersPerMinute
+UnitTypeId.CentimetersToTheFourthPower
+UnitTypeId.CentimetersToTheSixthPower
+UnitTypeId.Centipoises
+UnitTypeId.CubicCentimeters
+UnitTypeId.CubicFeet
+UnitTypeId.CubicFeetPerHour
+UnitTypeId.CubicFeetPerKip
+UnitTypeId.CubicFeetPerMinute
+UnitTypeId.CubicFeetPerMinuteCubicFoot
+UnitTypeId.CubicFeetPerMinutePerBritishThermalUnitPerHour
+UnitTypeId.CubicFeetPerMinuteSquareFoot
+UnitTypeId.CubicFeetPerMinuteTonOfRefrigeration
+UnitTypeId.CubicFeetPerPoundMass
+UnitTypeId.CubicInches
+UnitTypeId.CubicMeters
+UnitTypeId.CubicMetersPerHour
+UnitTypeId.CubicMetersPerHourCubicMeter
+UnitTypeId.CubicMetersPerHourSquareMeter
+UnitTypeId.CubicMetersPerKilogram
+UnitTypeId.CubicMetersPerKilonewton
+UnitTypeId.CubicMetersPerSecond
+UnitTypeId.CubicMetersPerWattSecond
+UnitTypeId.CubicMillimeters
+UnitTypeId.CubicYards
+UnitTypeId.Currency
+UnitTypeId.CurrencyPerBritishThermalUnit
+UnitTypeId.CurrencyPerBritishThermalUnitPerHour
+UnitTypeId.CurrencyPerSquareFoot
+UnitTypeId.CurrencyPerSquareMeter
+UnitTypeId.CurrencyPerWatt
+UnitTypeId.CurrencyPerWattHour
+UnitTypeId.Custom
+UnitTypeId.CyclesPerSecond
+UnitTypeId.Decimeters
+UnitTypeId.Degrees
+UnitTypeId.DegreesMinutes
+UnitTypeId.DekanewtonMeters
+UnitTypeId.DekanewtonMetersPerMeter
+UnitTypeId.Dekanewtons
+UnitTypeId.DekanewtonsPerMeter
+UnitTypeId.DekanewtonsPerSquareMeter
+UnitTypeId.Fahrenheit
+UnitTypeId.FahrenheitInterval
+UnitTypeId.Feet
+UnitTypeId.FeetFractionalInches
+UnitTypeId.FeetOfWater39_2DegreesFahrenheit
+UnitTypeId.FeetOfWater39_2DegreesFahrenheitPer100Feet
+UnitTypeId.FeetPerKip
+UnitTypeId.FeetPerMinute
+UnitTypeId.FeetPerSecond
+UnitTypeId.FeetPerSecondSquared
+UnitTypeId.FeetToTheFourthPower
+UnitTypeId.FeetToTheSixthPower
+UnitTypeId.Fixed
+UnitTypeId.Footcandles
+UnitTypeId.Footlamberts
+UnitTypeId.FractionalInches
+UnitTypeId.General
+UnitTypeId.Gradians
+UnitTypeId.GrainsPerHourSquareFootInchMercury
+UnitTypeId.Hectares
+UnitTypeId.Hertz
+UnitTypeId.Horsepower
+UnitTypeId.Hours
+UnitTypeId.HourSquareFootDegreesFahrenheitPerBritishThermalUnit
+UnitTypeId.Inches
+UnitTypeId.InchesOfMercury32DegreesFahrenheit
+UnitTypeId.InchesOfWater60DegreesFahrenheit
+UnitTypeId.InchesOfWater60DegreesFahrenheitPer100Feet
+UnitTypeId.InchesPerSecondSquared
+UnitTypeId.InchesToTheFourthPower
+UnitTypeId.InchesToTheSixthPower
+UnitTypeId.InverseDegreesCelsius
+UnitTypeId.InverseDegreesFahrenheit
+UnitTypeId.InverseKilonewtons
+UnitTypeId.InverseKips
+UnitTypeId.Joules
+UnitTypeId.JoulesPerGram
+UnitTypeId.JoulesPerGramDegreeCelsius
+UnitTypeId.JoulesPerKelvin
+UnitTypeId.JoulesPerKilogramDegreeCelsius
+UnitTypeId.JoulesPerSquareMeterKelvin
+UnitTypeId.Kelvin
+UnitTypeId.KelvinInterval
+UnitTypeId.Kiloamperes
+UnitTypeId.Kilocalories
+UnitTypeId.KilocaloriesPerSecond
+UnitTypeId.KilogramForceMeters
+UnitTypeId.KilogramForceMetersPerMeter
+UnitTypeId.Kilograms
+UnitTypeId.KilogramsForce
+UnitTypeId.KilogramsForcePerMeter
+UnitTypeId.KilogramsForcePerSquareMeter
+UnitTypeId.KilogramsPerCubicMeter
+UnitTypeId.KilogramsPerHour
+UnitTypeId.KilogramsPerKilogramKelvin
+UnitTypeId.KilogramsPerMeter
+UnitTypeId.KilogramsPerMeterHour
+UnitTypeId.KilogramsPerMeterSecond
+UnitTypeId.KilogramsPerMinute
+UnitTypeId.KilogramsPerSecond
+UnitTypeId.KilogramsPerSquareMeter
+UnitTypeId.Kilojoules
+UnitTypeId.KilojoulesPerKelvin
+UnitTypeId.KilojoulesPerSquareMeterKelvin
+UnitTypeId.KilometersPerHour
+UnitTypeId.KilometersPerSecondSquared
+UnitTypeId.KilonewtonMeters
+UnitTypeId.KilonewtonMetersPerDegree
+UnitTypeId.KilonewtonMetersPerDegreePerMeter
+UnitTypeId.KilonewtonMetersPerMeter
+UnitTypeId.Kilonewtons
+UnitTypeId.KilonewtonsPerCubicMeter
+UnitTypeId.KilonewtonsPerMeter
+UnitTypeId.KilonewtonsPerSquareCentimeter
+UnitTypeId.KilonewtonsPerSquareMeter
+UnitTypeId.KilonewtonsPerSquareMillimeter
+UnitTypeId.Kilopascals
+UnitTypeId.KilovoltAmperes
+UnitTypeId.Kilovolts
+UnitTypeId.KilowattHours
+UnitTypeId.Kilowatts
+UnitTypeId.KipFeet
+UnitTypeId.KipFeetPerDegree
+UnitTypeId.KipFeetPerDegreePerFoot
+UnitTypeId.KipFeetPerFoot
+UnitTypeId.Kips
+UnitTypeId.KipsPerCubicFoot
+UnitTypeId.KipsPerCubicInch
+UnitTypeId.KipsPerFoot
+UnitTypeId.KipsPerInch
+UnitTypeId.KipsPerSquareFoot
+UnitTypeId.KipsPerSquareInch
+UnitTypeId.Liters
+UnitTypeId.LitersPerHour
+UnitTypeId.LitersPerMinute
+UnitTypeId.LitersPerSecond
+UnitTypeId.LitersPerSecondCubicMeter
+UnitTypeId.LitersPerSecondKilowatt
+UnitTypeId.LitersPerSecondSquareMeter
+UnitTypeId.Lumens
+UnitTypeId.LumensPerWatt
+UnitTypeId.Lux
+UnitTypeId.MeganewtonMeters
+UnitTypeId.MeganewtonMetersPerMeter
+UnitTypeId.Meganewtons
+UnitTypeId.MeganewtonsPerMeter
+UnitTypeId.MeganewtonsPerSquareMeter
+UnitTypeId.Megapascals
+UnitTypeId.Meters
+UnitTypeId.MetersCentimeters
+UnitTypeId.MetersOfWaterColumn
+UnitTypeId.MetersOfWaterColumnPerMeter
+UnitTypeId.MetersPerKilonewton
+UnitTypeId.MetersPerSecond
+UnitTypeId.MetersPerSecondSquared
+UnitTypeId.MetersToTheFourthPower
+UnitTypeId.MetersToTheSixthPower
+UnitTypeId.MicroinchesPerInchDegreeFahrenheit
+UnitTypeId.MicrometersPerMeterDegreeCelsius
+UnitTypeId.MilesPerHour
+UnitTypeId.MilesPerSecondSquared
+UnitTypeId.Milliamperes
+UnitTypeId.Millimeters
+UnitTypeId.MillimetersOfMercury
+UnitTypeId.MillimetersOfWaterColumn
+UnitTypeId.MillimetersOfWaterColumnPerMeter
+UnitTypeId.MillimetersToTheFourthPower
+UnitTypeId.MillimetersToTheSixthPower
+UnitTypeId.Milliseconds
+UnitTypeId.Millivolts
+UnitTypeId.Minutes
+UnitTypeId.NanogramsPerPascalSecondSquareMeter
+UnitTypeId.NewtonMeters
+UnitTypeId.NewtonMetersPerMeter
+UnitTypeId.Newtons
+UnitTypeId.NewtonSecondsPerSquareMeter
+UnitTypeId.NewtonsPerMeter
+UnitTypeId.NewtonsPerSquareMeter
+UnitTypeId.NewtonsPerSquareMillimeter
+UnitTypeId.OhmMeters
+UnitTypeId.OneToRatio
+UnitTypeId.Pascals
+UnitTypeId.PascalSeconds
+UnitTypeId.PascalsPerMeter
+UnitTypeId.Percentage
+UnitTypeId.PerMille
+UnitTypeId.Pi
+UnitTypeId.PoundForceFeet
+UnitTypeId.PoundForceFeetPerFoot
+UnitTypeId.PoundForceSecondsPerSquareFoot
+UnitTypeId.PoundsForce
+UnitTypeId.PoundsForcePerCubicFoot
+UnitTypeId.PoundsForcePerFoot
+UnitTypeId.PoundsForcePerSquareFoot
+UnitTypeId.PoundsForcePerSquareInch
+UnitTypeId.PoundsMass
+UnitTypeId.PoundsMassPerCubicFoot
+UnitTypeId.PoundsMassPerCubicInch
+UnitTypeId.PoundsMassPerFoot
+UnitTypeId.PoundsMassPerFootHour
+UnitTypeId.PoundsMassPerFootSecond
+UnitTypeId.PoundsMassPerHour
+UnitTypeId.PoundsMassPerMinute
+UnitTypeId.PoundsMassPerPoundDegreeFahrenheit
+UnitTypeId.PoundsMassPerSecond
+UnitTypeId.PoundsMassPerSquareFoot
+UnitTypeId.Radians
+UnitTypeId.RadiansPerSecond
+UnitTypeId.Rankine
+UnitTypeId.RankineInterval
+UnitTypeId.RatioTo1
+UnitTypeId.RatioTo10
+UnitTypeId.RatioTo12
+UnitTypeId.RevolutionsPerMinute
+UnitTypeId.RevolutionsPerSecond
+UnitTypeId.RiseDividedBy1000Millimeters
+UnitTypeId.RiseDividedBy10Feet
+UnitTypeId.RiseDividedBy120Inches
+UnitTypeId.RiseDividedBy12Inches
+UnitTypeId.RiseDividedBy1Foot
+UnitTypeId.Seconds
+UnitTypeId.SlopeDegrees
+UnitTypeId.SquareCentimeters
+UnitTypeId.SquareCentimetersPerMeter
+UnitTypeId.SquareFeet
+UnitTypeId.SquareFeetPer1000BritishThermalUnitsPerHour
+UnitTypeId.SquareFeetPerFoot
+UnitTypeId.SquareFeetPerKip
+UnitTypeId.SquareFeetPerSecond
+UnitTypeId.SquareFeetPerTonOfRefrigeration
+UnitTypeId.SquareInches
+UnitTypeId.SquareInchesPerFoot
+UnitTypeId.SquareMeterKelvinsPerWatt
+UnitTypeId.SquareMeters
+UnitTypeId.SquareMetersPerKilonewton
+UnitTypeId.SquareMetersPerKilowatt
+UnitTypeId.SquareMetersPerMeter
+UnitTypeId.SquareMetersPerSecond
+UnitTypeId.SquareMillimeters
+UnitTypeId.SquareMillimetersPerMeter
+UnitTypeId.StationingFeet
+UnitTypeId.StationingMeters
+UnitTypeId.StationingSurveyFeet
+UnitTypeId.Therms
+UnitTypeId.ThousandBritishThermalUnitsPerHour
+UnitTypeId.TonneForceMeters
+UnitTypeId.TonneForceMetersPerMeter
+UnitTypeId.Tonnes
+UnitTypeId.TonnesForce
+UnitTypeId.TonnesForcePerMeter
+UnitTypeId.TonnesForcePerSquareMeter
+UnitTypeId.TonsOfRefrigeration
+UnitTypeId.UsGallons
+UnitTypeId.UsGallonsPerHour
+UnitTypeId.UsGallonsPerMinute
+UnitTypeId.UsSurveyFeet
+UnitTypeId.UsTonnesForce
+UnitTypeId.UsTonnesMass
+UnitTypeId.VoltAmperes
+UnitTypeId.VoltAmperesPerSquareFoot
+UnitTypeId.VoltAmperesPerSquareMeter
+UnitTypeId.Volts
+UnitTypeId.Watts
+UnitTypeId.WattsPerCubicFoot
+UnitTypeId.WattsPerCubicFootPerMinute
+UnitTypeId.WattsPerCubicMeter
+UnitTypeId.WattsPerCubicMeterPerSecond
+UnitTypeId.WattsPerFoot
+UnitTypeId.WattsPerMeter
+UnitTypeId.WattsPerMeterKelvin
+UnitTypeId.WattsPerSquareFoot
+UnitTypeId.WattsPerSquareMeter
+UnitTypeId.WattsPerSquareMeterKelvin
+*/

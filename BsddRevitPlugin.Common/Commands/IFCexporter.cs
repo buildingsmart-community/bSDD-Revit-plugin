@@ -25,9 +25,9 @@ namespace BsddRevitPlugin.Common.Commands
     public class IFCexporter : IExternalCommand
     {
         public Result Execute(
-        ExternalCommandData commandData,
-        ref string message,
-        ElementSet elements)
+            ExternalCommandData commandData,
+            ref string message,
+            ElementSet elements)
         {
             Logger logger = LogManager.GetCurrentClassLogger();
             try
@@ -42,7 +42,8 @@ namespace BsddRevitPlugin.Common.Commands
                 //Create an Instance of the IFC Export Class
                 IFCExportOptions ifcExportOptions = new IFCExportOptions();
 
-                //Get the bsdd confguration from document or create a new one
+                //Get the bsdd confguration from document or create a new one 
+                //TODO EB Check of er een relatie is met inch/mm settings
                 IFCExportConfiguration bsddIFCExportConfiguration = ifcExportService.GetOrSetBsddConfiguration(document);
 
                 //Somehow UpdateOptions() can't handle the activeViewId, so we set it manually to -1

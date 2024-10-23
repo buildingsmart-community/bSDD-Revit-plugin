@@ -82,9 +82,11 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
             if (!(this is EventUseLastSelection))
             {
+                //Get selection elements
                 var elemList = GetSelection(uiapp);
+                //filter only geometric objects
                 elemList = ListFilter(elemList);
-                // Update LastSelectedElements for other events
+                //Update LastSelectedElements for other events
                 //GlobalSelection.LastSelectedElements.Clear();
                 //GlobalSelection.LastSelectedElements.AddRange(elemList);
 
