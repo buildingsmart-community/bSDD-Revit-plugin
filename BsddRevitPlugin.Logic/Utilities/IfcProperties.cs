@@ -18,100 +18,115 @@ namespace BsddRevitPlugin.Logic.Utilities
             };
         }
 
-        private static Parameter ConvertInchesToMetric(Parameter parameter)
+        public static Parameter ConvertInchesToMetric(Parameter parameter)
         {
             // Get the unit type of the parameter
-            ForgeTypeId unitTypeId = parameter.GetUnitTypeId();
+            try
+            {
+                ForgeTypeId unitTypeId = parameter.GetUnitTypeId();
 
-            // Get the value in the original unit
-            double valueInImperial = parameter.AsDouble();
-            double valueInMetric = valueInImperial; // Default to the original value
+                // Get the value in the original unit
+                double valueInImperial = parameter.AsDouble();
+                double valueInMetric = valueInImperial; // Default to the original value
 
-            // Check if the parameter is in an imperial unit and convert accordingly
-            if (unitTypeId == UnitTypeId.Inches || unitTypeId == UnitTypeId.Feet)
-            {
-                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.Millimeters);
+                // Check if the parameter is in an imperial unit and convert accordingly
+                if (unitTypeId == UnitTypeId.Inches || unitTypeId == UnitTypeId.Feet)
+                {
+                    valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.Millimeters);
+                }
+                else if (unitTypeId == UnitTypeId.SquareFeet || unitTypeId == UnitTypeId.SquareInches)
+                {
+                    valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.SquareMeters);
+                }
+                else if (unitTypeId == UnitTypeId.CubicFeet || unitTypeId == UnitTypeId.CubicInches)
+                {
+                    valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.CubicMeters);
+                }
+                else if (unitTypeId == UnitTypeId.FeetPerSecond || unitTypeId == UnitTypeId.MilesPerHour)
+                {
+                    valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilometersPerHour);
+                }
+                else if (unitTypeId == UnitTypeId.BritishThermalUnits || unitTypeId == UnitTypeId.BritishThermalUnitsPerHour)
+                {
+                    valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.Joules);
+                }
+                else if (unitTypeId == UnitTypeId.PoundsForce || unitTypeId == UnitTypeId.PoundsForcePerSquareInch)
+                {
+                    valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.Newtons);
+                }
+                else if (unitTypeId == UnitTypeId.UsGallons || unitTypeId == UnitTypeId.UsGallonsPerMinute)
+                {
+                    valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.LitersPerMinute);
+                }
+                else if (unitTypeId == UnitTypeId.Acres)
+                {
+                    valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.SquareMeters);
+                }
+                else if (unitTypeId == UnitTypeId.PoundsMass)
+                {
+                    valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.Kilograms);
+                }
+                else if (unitTypeId == UnitTypeId.Fahrenheit || unitTypeId == UnitTypeId.FahrenheitInterval)
+                {
+                    valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.Celsius);
+                }
+                else if (unitTypeId == UnitTypeId.Horsepower)
+                {
+                    valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.Watts);
+                }
+                else if (unitTypeId == UnitTypeId.PoundsMassPerCubicFoot)
+                {
+                    valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerCubicMeter);
+                }
+                else if (unitTypeId == UnitTypeId.PoundsMassPerHour)
+                {
+                    valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerHour);
+                }
+                else if (unitTypeId == UnitTypeId.PoundsMassPerMinute)
+                {
+                    valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerMinute);
+                }
+                else if (unitTypeId == UnitTypeId.PoundsMassPerSecond)
+                {
+                    valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerSecond);
+                }
+                else if (unitTypeId == UnitTypeId.PoundsMassPerSquareFoot)
+                {
+                    valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerSquareMeter);
+                }
+                else if (unitTypeId == UnitTypeId.PoundsMassPerFoot)
+                {
+                    valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerMeter);
+                }
+                else if (unitTypeId == UnitTypeId.PoundsMassPerFootHour)
+                {
+                    valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerMeterHour);
+                }
+                else if (unitTypeId == UnitTypeId.PoundsMassPerFootSecond)
+                {
+                    valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerMeterSecond);
+                }
+                else if (unitTypeId == UnitTypeId.PoundsMassPerPoundDegreeFahrenheit)
+                {
+                    valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerKilogramKelvin);
+                }
+                else if (unitTypeId == UnitTypeId.PoundsMassPerCubicInch)
+                {
+                    valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerCubicMeter);
+                }
+                else
+                {
+                    // If the unit type is not imperial, return the parameter without changing the value
+                    return parameter;
+                }
+
+                // Set the parameter value in metric units
+                parameter.Set(valueInMetric);
             }
-            else if (unitTypeId == UnitTypeId.FeetPerSecond || unitTypeId == UnitTypeId.MilesPerHour)
+            catch
             {
-                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.MetersPerSecond);
-            }
-            else if (unitTypeId == UnitTypeId.BritishThermalUnits || unitTypeId == UnitTypeId.BritishThermalUnitsPerHour)
-            {
-                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.Joules);
-            }
-            else if (unitTypeId == UnitTypeId.PoundsForce || unitTypeId == UnitTypeId.PoundsForcePerSquareInch)
-            {
-                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.Newtons);
-            }
-            else if (unitTypeId == UnitTypeId.UsGallons || unitTypeId == UnitTypeId.UsGallonsPerMinute)
-            {
-                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.Liters);
-            }
-            else if (unitTypeId == UnitTypeId.Acres)
-            {
-                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.SquareMeters);
-            }
-            else if (unitTypeId == UnitTypeId.PoundsMass)
-            {
-                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.Kilograms);
-            }
-            else if (unitTypeId == UnitTypeId.Fahrenheit || unitTypeId == UnitTypeId.FahrenheitInterval)
-            {
-                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.Celsius);
-            }
-            else if (unitTypeId == UnitTypeId.Horsepower)
-            {
-                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.Watts);
-            }
-            else if (unitTypeId == UnitTypeId.PoundsMassPerCubicFoot)
-            {
-                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerCubicMeter);
-            }
-            else if (unitTypeId == UnitTypeId.PoundsMassPerHour)
-            {
-                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerHour);
-            }
-            else if (unitTypeId == UnitTypeId.PoundsMassPerMinute)
-            {
-                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerMinute);
-            }
-            else if (unitTypeId == UnitTypeId.PoundsMassPerSecond)
-            {
-                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerSecond);
-            }
-            else if (unitTypeId == UnitTypeId.PoundsMassPerSquareFoot)
-            {
-                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerSquareMeter);
-            }
-            else if (unitTypeId == UnitTypeId.PoundsMassPerFoot)
-            {
-                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerMeter);
-            }
-            else if (unitTypeId == UnitTypeId.PoundsMassPerFootHour)
-            {
-                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerMeterHour);
-            }
-            else if (unitTypeId == UnitTypeId.PoundsMassPerFootSecond)
-            {
-                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerMeterSecond);
-            }
-            else if (unitTypeId == UnitTypeId.PoundsMassPerPoundDegreeFahrenheit)
-            {
-                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerKilogramKelvin);
-            }
-            else if (unitTypeId == UnitTypeId.PoundsMassPerCubicInch)
-            {
-                valueInMetric = UnitUtils.Convert(valueInImperial, unitTypeId, UnitTypeId.KilogramsPerCubicMeter);
-            }
-            else
-            {
-                // If the unit type is not imperial, return the parameter without changing the value
                 return parameter;
             }
-
-            // Set the parameter value in metric units
-            parameter.Set(valueInMetric);
 
             // Return the updated parameter
             return parameter;

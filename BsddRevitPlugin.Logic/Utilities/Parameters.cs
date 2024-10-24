@@ -3,6 +3,7 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using BsddRevitPlugin.Logic.Utilities;
 
 namespace BsddRevitPlugin.Logic.Utilities
 {
@@ -488,6 +489,7 @@ namespace BsddRevitPlugin.Logic.Utilities
 
             foreach (Parameter typeparameter in elementType.Parameters)
             {
+                
                 if (parametersToSet.ContainsKey(typeparameter.Definition.Name))
                 {
 
@@ -501,12 +503,11 @@ namespace BsddRevitPlugin.Logic.Utilities
                     {
                         try
                         {
+                            param = IfcProperties.ConvertInchesToMetric(param);
                             typeparameter.Set(param);
-
                         }
                         catch (Exception e)
                         {
-
                             logger.Error($"Parameter {typeparameter.Definition.Name} could not be set. Message: {e}");
                         }
                     }
@@ -518,6 +519,5 @@ namespace BsddRevitPlugin.Logic.Utilities
                 }
             }
         }
-
     }
 }
