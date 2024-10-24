@@ -19,6 +19,7 @@ using BsddRevitPlugin.Logic.UI.Wrappers;
 using System.Reflection;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
 using BsddRevitPlugin.Logic.UI.Services;
+using System.Windows.Forms;
 
 namespace BsddRevitPlugin.Logic.UI.View
 {
@@ -53,6 +54,9 @@ namespace BsddRevitPlugin.Logic.UI.View
             this.Left = Settings.Default.SearchWindowLeft;
             this.Top = Settings.Default.SearchWindowTop;
 
+            // Ensure the window is within the bounds of the current screen setup
+            EnsureWindowIsVisible();
+
             string addinLocation = Assembly.GetExecutingAssembly().Location;
             string addinDirectory = System.IO.Path.GetDirectoryName(addinLocation);
 
@@ -82,7 +86,25 @@ namespace BsddRevitPlugin.Logic.UI.View
             Settings.Default.SearchWindowTop = this.Top;
             Settings.Default.Save();
         }
+        private void EnsureWindowIsVisible()
+        {
+            bool isVisible = false;
+            foreach (Screen screen in Screen.AllScreens)
+            {
+                if (screen.WorkingArea.Contains(new System.Drawing.Point((int)this.Left, (int)this.Top)))
+                {
+                    isVisible = true;
+                    break;
+                }
+            }
 
+            if (!isVisible)
+            {
+                // Reset to default values if the window is off-screen
+                this.Left = 100;
+                this.Top = 100;
+            }
+        }
 
         public void UpdateBsddBridgeData(BsddBridgeData bsddBridgeData)
         {
