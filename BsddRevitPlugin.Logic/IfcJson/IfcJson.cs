@@ -50,6 +50,7 @@ namespace BsddRevitPlugin.Logic.IfcJson
         /// <summary>
         /// Identifies the predefined types of an element from which the type required may be set.
         /// Not part of IfcTypeProduct, but used in many supertypes
+        /// Multiple tags can be added in the string using , as separator
         /// </summary>
         [JsonProperty("predefinedType")]
         public string PredefinedType { get; set; }
