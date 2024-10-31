@@ -51,67 +51,72 @@ namespace BsddRevitPlugin.Logic.Model
         /// </summary>
         /// <param name="doc"></param>
         /// <param name="ifcEntity"></param>
-        public static void SetIfcDataToRevitElement(Document doc, IfcEntity ifcEntity)
+        public static void SetIfcDataToRevitElement(Document doc, List<IfcEntity> ifcEntityLst)
         {
             Logger logger = LogManager.GetCurrentClassLogger();
 
-            logger.Info($"Element json {JsonConvert.SerializeObject(ifcEntity)}");
 
 
-            try
+            foreach (var ifcEntity in ifcEntityLst)
             {
-                // Create a classification set in which every dictionary will be collected
-                HashSet<IfcClassification> dictionaryCollection = new HashSet<IfcClassification>();
+                logger.Info($"Element json {JsonConvert.SerializeObject(ifcEntity)}");
 
-                //Get the elementType
-                int idInt = Convert.ToInt32(ifcEntity.Tag);
-                ElementId typeId = new ElementId(idInt);
-                ElementType elementType = doc.GetElement(typeId) as ElementType;
-                using (Transaction tx = new Transaction(doc))
+                try
                 {
-                    tx.Start("SetIfcEntity");
+                    // Create a classification set in which every dictionary will be collected
+                    HashSet<IfcClassification> dictionaryCollection = new HashSet<IfcClassification>();
 
-                    //Set IfcEntity to the Elements DataStorage
-                    SetIfcEntityToElementDataStorage(ifcEntity, elementType);
+                    //Get the elementType
+                    int idInt = Convert.ToInt32(ifcEntity.Tag);
+                    ElementId typeId = new ElementId(idInt);
+                    ElementType elementType = doc.GetElement(typeId) as ElementType;
+                    using (Transaction tx = new Transaction(doc))
+                    {
+                        tx.Start("SetIfcEntity");
 
-                    tx.Commit();
+                        //Set IfcEntity to the Elements DataStorage
+                        SetIfcEntityToElementDataStorage(ifcEntity, elementType);
+
+                        tx.Commit();
+                    }
+
+                    ForgeTypeId groupType = GroupTypeId.Ifc;
+
+                    List<ParameterCreation> parametersToCreate = new List<ParameterCreation>();
+                    Dictionary<string, object> parametersToSet = new Dictionary<string, object>();
+
+                    ParameterDataManagement parameterDataManagement = new ParameterDataManagement();
+                    parameterDataManagement.GetParametersToCreateAndSet(doc, ifcEntity, dictionaryCollection, out parametersToCreate, out parametersToSet);
+
+
+                    using (Transaction tx = new Transaction(doc))
+                    {
+                        tx.Start("Create or edit parameters");
+
+                        //First create all parameters at once (in Release creating parameters seperately sometimes fails)
+                        List<Category> currentCategoryLst = new List<Category>() { elementType.Category };
+                        Parameters.CreateProjectParameters(doc, parametersToCreate, "tempGroupName", groupType, false, currentCategoryLst);
+
+                        tx.Commit();
+                    }
+
+                    using (Transaction tx = new Transaction(doc))
+                    {
+                        tx.Start("Set parameters");
+
+                        //Set all parameters
+                        Parameters.SetElementTypeParameters(elementType, parametersToSet);
+
+                        tx.Commit();
+                    }
                 }
-
-                ForgeTypeId groupType = GroupTypeId.Ifc;
-
-                List<ParameterCreation> parametersToCreate = new List<ParameterCreation>();
-                Dictionary<string, object> parametersToSet = new Dictionary<string, object>();
-
-                ParameterDataManagement parameterDataManagement = new ParameterDataManagement();
-                parameterDataManagement.GetParametersToCreateAndSet(doc, ifcEntity, dictionaryCollection, out parametersToCreate, out parametersToSet);
-
-
-                using (Transaction tx = new Transaction(doc))
+                catch (Exception e)
                 {
-                    tx.Start("Create or edit parameters");
-
-                    //First create all parameters at once (in Release creating parameters seperately sometimes fails)
-                    List<Category> currentCategoryLst = new List<Category>() { elementType.Category };
-                    Parameters.CreateProjectParameters(doc, parametersToCreate, "tempGroupName", groupType, false, currentCategoryLst);
-
-                    tx.Commit();
-                }
-
-                using (Transaction tx = new Transaction(doc))
-                {
-                    tx.Start("Set parameters");
-
-                    //Set all parameters
-                    Parameters.SetElementTypeParameters(elementType, parametersToSet);
-
-                    tx.Commit();
+                    logger.Info($"Failed to set elementdata: {e.Message}");
+                    throw;
                 }
             }
-            catch (Exception e)
-            {
-                logger.Info($"Failed to set elementdata: {e.Message}");
-                throw;
-            }
+
         }
         /// <summary>
         /// Highlight/select the elements in Revit
