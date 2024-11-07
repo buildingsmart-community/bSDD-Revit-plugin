@@ -7,6 +7,7 @@ using System;
 using System.Web.Script.Serialization;
 using System.IO;
 using NLog;
+using System.Reflection;
 
 namespace BsddRevitPlugin.Logic.UI.Services
 {
@@ -105,6 +106,13 @@ namespace BsddRevitPlugin.Logic.UI.Services
                     add_BSDD_UDPS += $"{dataType}\t{parameterName}";
                 }
             }
+
+            //Find the UDPS -Quantities-4x3.txt file to export Quantities in IFC 4x3
+            string currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string settingsFilePath = currentPath + "\\Resources\\UDPS-Quantities-4x3.txt";
+
+            // Add all text from the settingsfilepath file to the add_BSDD_UDPS string
+            add_BSDD_UDPS += File.ReadAllText(settingsFilePath);
 
             // Create a new temp file for the user defined parameter mapping file
             string randomFileName = Path.GetRandomFileName();

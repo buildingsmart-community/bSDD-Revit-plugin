@@ -1,0 +1,82 @@
+##
+## Export to IFC4x3
+## Provided by Arons en Gelauff architecten
+## The current Revit exporter is still experimental and does not export BaseQuantities.
+##
+## buildingSMART Common Propertysets that do not export without setting it here.
+##
+PropertySet:	Pset_FurnitureTypeCommon	I/T	IfcFurniture, IfcFurnitureType
+	NominalHeight	Length	NominalHeight
+	NominalLength	Length	NominalLength
+	NominalDepth	Length	NominalDepth
+	Style	Text	Description
+
+PropertySet:	Pset_DoorPanelProperties	I/T	IfcDoor, IfcDoorType
+	PanelDepth	Length	PanelDepth
+	PanelWidth	Length	PanelWidth
+	PanelOperation	Text	PanelOperation
+##
+## buildingSMART Quantitysets that do not export without setting in here.
+## Some quantities are required but not in the Qto's. Usually Volume and Weight.
+## These Quantities are added to an eQto_
+##
+PropertySet:	Qto_BodyGeometryValidation	I/T	IfcDoor, IfcDoorType, IfcSolarDeviceType, IfcRailing, IfcRailingType
+	GrossVolume	Volume	GrossVolume
+	NetVolume	Volume	NetVolume
+##
+## Qto_BodyGeometryValidation applies to IfcProduct.
+## Add Entities when needed. Only for Loadable Families.
+##
+PropertySet:	Qto_CoveringBaseQuantities	I/T	IfcCovering, IfcCoveringType
+	GrossArea	Area	GrossArea
+	NetArea	Area	Area
+	Width	Length	Width
+PropertySet:	eQto_CoveringBaseQuantities	I/T	IfcCovering, IfcCoveringType
+	NetVolume	Volume	Volume
+	NetWeight	Number	NetWeight
+
+PropertySet:	Qto_CurtainWallQuantities	I/T	IfcCurtainWall, IfcCurtainWallType
+	Length	Length	Length
+	Height	Length	Unconnected Height
+	NetSideArea	Area	Area
+	Width	Length	Width
+
+PropertySet:	Qto_DoorBaseQuantities	I/T	IfcDoor, IfcDoorType
+	Width	Length	Width
+	Height	Length	Height
+
+PropertySet:	Qto_MemberbBaseQuantities	I/T	IfcMember, IfcMemberType
+	Length	Length	Length
+	Length	Length	lengte
+	NetVolume	Volume	Volume
+
+PropertySet:	Qto_RailingBaseQuantities	I/T	IfcRailing, IfcRailingType
+	Length	Length	Length
+
+PropertySet:	Qto_SlabBaseQuantities	I/T	IfcSlab, IfcSlabType
+	Perimeter	Length	Perimeter
+	NetArea	Area	Area
+	NetVolume	Volume	Volume
+	NetWeight	Number	NetWeight
+	Width	Length	Default Thickness
+
+PropertySet:	Qto_SolarDeviceBaseQuantities	I/T	IfcSolarDeviceType
+	GrossArea	Area	GrossArea
+
+PropertySet:	Qto_WallBaseQuantities	I/T	IfcWall, IfcWallType
+	GrossFootprintArea	Area	GrossFootprintArea
+	GrossSideArea	Area	GrossSideArea
+	GrossVolume	Volume	GrossVolume 
+	NetSideArea	Area	Area
+	NetVolume	Volume	Volume
+	Height	Length	Unconnected Height
+	Height	Length	Height
+	Length	Length	Length
+	NetWeight	Number	NetWeight
+	Width	Length	Width
+
+PropertySet:	Qto_SpatialZoneBaseQuantities	I/T	IfcSpatialZoneType, IfcSpatialZone
+	Height	Length	Height
+	Length	Length	Length
+	Width	Length	Width
+##
