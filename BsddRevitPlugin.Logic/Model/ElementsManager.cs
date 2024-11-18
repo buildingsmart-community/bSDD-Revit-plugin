@@ -2,6 +2,7 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
+using BsddRevitPlugin.Logic.UI.BsddBridge;
 using BsddRevitPlugin.Logic.Utilities;
 using Newtonsoft.Json;
 using NLog;
@@ -51,11 +52,19 @@ namespace BsddRevitPlugin.Logic.Model
         /// </summary>
         /// <param name="doc"></param>
         /// <param name="ifcEntity"></param>
-        public static void SetIfcDataToRevitElement(Document doc, List<IfcEntity> ifcEntityLst)
+        public static void SetIfcDataToRevitElement(Document doc, BsddBridgeData bsddBridgeData)
         {
+            BsddSettings bsddSettings = new BsddSettings();
+
+            Dictionary<string, bool> keyValuePairs = new Dictionary<string, bool>();
+            //TODO: Let this work with full settings (and aditional project parameters)
+
             Logger logger = LogManager.GetCurrentClassLogger();
 
+            List<IfcEntity> ifcEntityLst = bsddBridgeData.IfcData;
 
+            //TODO: make sure parameters are being made instance/type according to list below
+            Dictionary<string, bool> propertyIsInstanceMap = bsddBridgeData.PropertyIsInstanceMap;
 
             foreach (var ifcEntity in ifcEntityLst)
             {

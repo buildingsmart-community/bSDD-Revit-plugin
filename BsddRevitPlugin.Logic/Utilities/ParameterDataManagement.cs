@@ -14,6 +14,7 @@ namespace BsddRevitPlugin.Logic.Utilities
 {
     public class ParameterDataManagement
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
 
         public void GetParametersToCreateAndSet(Document doc, IfcEntity ifcEntity, HashSet<IfcClassification> dictionaryCollection, out List<ParameterCreation> parametersToCreate, out Dictionary<string, object> parametersToSet)
         {
@@ -383,6 +384,49 @@ namespace BsddRevitPlugin.Logic.Utilities
                 }
             }
             return null;
+        }
+
+        public static Dictionary<string,bool> GetProjectParameterTypes(Document doc)
+        {
+            Dictionary<string, bool> projectParameterTypes = new Dictionary<string, bool>();
+
+            ////CODE BELOW GETS ALL INTERNAL DEFINITIONS, ALSO FAMILY ONES (SAVED FOR LATER USE):
+            //var projectParameters = new FilteredElementCollector(doc)
+            //    .OfClass(typeof(ParameterElement))
+            //    .Cast<ParameterElement>()
+            //    .Where(p => p.GetDefinition() is InternalDefinition)
+            //    .Select(p => p.GetDefinition() as InternalDefinition)
+            //    .ToList();
+            //foreach (var projectParameter in projectParameters)
+            //{
+            //    projectParameterTypes.Add(projectParameter.Name, false);
+            //}
+
+            BindingMap bindingMap = doc.ParameterBindings;
+            DefinitionBindingMapIterator it = bindingMap.ForwardIterator();
+
+            while (it.MoveNext())
+            {
+                if (it.Key is InternalDefinition def)
+                {
+                    string parameterName = def.Name;
+                    string parameterIfcName;
+                    bool isInstance = false;
+
+                    if (IfcParameterMappings.Mappings.ContainsValue(parameterName) || parameterName.StartsWith("bsdd/prop/"))
+                    {
+                        if (it.Current is InstanceBinding)
+                        {
+                            isInstance = true;
+                        }
+                        //TODO change bsdd/prop parameter name
+                        projectParameterTypes.Add(parameterName, isInstance);
+                        
+                    }
+                }
+            }
+
+            return projectParameterTypes;
         }
 
     }
