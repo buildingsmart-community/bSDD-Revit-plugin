@@ -6,6 +6,7 @@ using BsddRevitPlugin.Logic.Model;
 using BsddRevitPlugin.Logic.UI.Services;
 using BsddRevitPlugin.Logic.UI.View;
 using BsddRevitPlugin.Logic.UI.Wrappers;
+using BsddRevitPlugin.Logic.Utilities;
 using Newtonsoft.Json;
 using NLog;
 using System.Collections.Generic;
@@ -60,7 +61,8 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             var bsddBridgeData = new BsddBridgeData
             {
                 Settings = GlobalBsddSettings.bsddsettings,
-                IfcData = new List<IfcEntity> { ifcEntity }
+                IfcData = new List<IfcEntity> { ifcEntity },
+                PropertyIsInstanceMap = ParameterDataManagement.GetProjectParameterTypes(GlobalDocument.currentDocument)
             };
             _eventHandlerBsddSearch.setBsddBridgeData(bsddBridgeData);
             _eventHandlerBsddSearch.Raise("openSearch");
@@ -76,6 +78,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         /// <returns>The serialized IFC data, in JSON format.</returns>
         public void bsddSelect(string ifcJsonData)
         {
+
             Logger logger = LogManager.GetCurrentClassLogger();
 
             logger.Info($"BSDDSELECT: Trying to select ifcJsonData to Element: {ifcJsonData}");
@@ -101,7 +104,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             logger.Info($"SAVESETTINGS: Trying to save settings: {settingsJson}");
 
             var settings = JsonConvert.DeserializeObject<BsddSettings>(settingsJson);
-            
+
             _updateUIEvent.Raise(settings);
         }
         ////public string loadSettings()

@@ -179,18 +179,19 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
     /// <summary>
     /// Represents a class that triggers the writing of IFC data into a Revit type object.
     /// </summary>
-    public class UpdateElementtypeWithIfcData : RevitEventWrapper<List<IfcEntity>>
+    public class UpdateElementsWithIfcData : RevitEventWrapper<BsddBridgeData>
     {
         Logger logger = LogManager.GetCurrentClassLogger();
 
-        List<IfcEntity> ifcDataLst;
-
-        public override void Execute(UIApplication uiapp, List<IfcEntity> ifcDataObjectLst)
+        public override void Execute(UIApplication uiapp, BsddBridgeData bsddBridgeData)
         {
             var uidoc = uiapp.ActiveUIDocument;
             var doc = uidoc.Document;
 
-            SetIfcDataToRevitElement(doc, ifcDataObjectLst);
+            
+            SetIfcDataToRevitElement(doc, bsddBridgeData);
+
+
         }
 
     }
