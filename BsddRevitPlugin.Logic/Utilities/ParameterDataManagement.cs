@@ -16,8 +16,10 @@ namespace BsddRevitPlugin.Logic.Utilities
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        public void GetParametersToCreateAndSet(Document doc, IfcEntity ifcEntity, HashSet<IfcClassification> dictionaryCollection, out List<ParameterCreation> parametersToCreate, out Dictionary<string, object> parametersToSet)
+        private static Dictionary<string, bool> _propertyIsInstanceMap = new Dictionary<string, bool>();
+        public void GetParametersToCreateAndSet(Document doc, IfcEntity ifcEntity, HashSet<IfcClassification> dictionaryCollection, Dictionary<string, bool> propertyIsInstanceMap, out List<ParameterCreation> parametersToCreate, out Dictionary<string, object> parametersToSet)
         {
+            _propertyIsInstanceMap = propertyIsInstanceMap;
 
             //Get all classifications and properties from the ifcEntity
             var associations = ifcEntity.HasAssociations;
@@ -55,6 +57,8 @@ namespace BsddRevitPlugin.Logic.Utilities
                 .Concat(attParametersToSet)
                 .GroupBy(pair => pair.Key)
                 .ToDictionary(group => group.Key, group => group.Last().Value);
+
+            _propertyIsInstanceMap.Clear();
         }
 
         private static void CollectParametersAndValuesFromAssociations(Document doc, HashSet<IfcClassification> dictionaryCollection, List<Association> associations, ForgeTypeId specType, out List<ParameterCreation> parametersToCreate, out Dictionary<string, object> parametersToSet)
@@ -76,9 +80,9 @@ namespace BsddRevitPlugin.Logic.Utilities
                         case IfcClassificationReference ifcClassificationReference:
                             // do something with ifcClassificationReference
 
-                            //Create parameter name for each unique the bsdd classificationReference
+                            //Create parameter name for each unique the bsdd classificationReference, this is always added as type parameter!
                             bsddParameterName = ElementsManagerLogic.CreateParameterNameFromIFCClassificationReferenceSourceLocation(ifcClassificationReference);
-                            parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType, Parameters.ExistingProjectParameter(doc, bsddParameterName)));
+                            parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType, Parameters.ExistingProjectParameter(doc, bsddParameterName), false));
                             parametersToSet.Add(bsddParameterName, ifcClassificationReference.Identification + ":" + ifcClassificationReference.Name);
 
                             dictionaryCollection.Add(ifcClassificationReference.ReferencedSource);
@@ -141,8 +145,12 @@ namespace BsddRevitPlugin.Logic.Utilities
                             value = GetParameterValueInCorrectDatatype(enumerationValue);
                             specType = GetParameterTypeFromProperty(enumerationValue);
                         }
+                        //check if instance or type
+                        string propertyName = property.Name;
+                        bool isInstance = _propertyIsInstanceMap.TryGetValue(propertyName, out bool isInstanceValue);
+
                         bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property);
-                        parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType, Parameters.ExistingProjectParameter(doc, bsddParameterName)));
+                        parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType, Parameters.ExistingProjectParameter(doc, bsddParameterName), isInstanceValue));
                         parametersToSet.Add(bsddParameterName, value);
                     }
                 }
@@ -176,8 +184,9 @@ namespace BsddRevitPlugin.Logic.Utilities
 
             if (ifcEntity.ObjectType != null)
             {
+                //, this is always added as type parameter!
                 string objectTypeParamName = "IfcObjectType[Type]";
-                parametersToCreate.Add(new ParameterCreation(objectTypeParamName, SpecTypeId.String.Text, Parameters.ExistingProjectParameter(doc, objectTypeParamName)));
+                parametersToCreate.Add(new ParameterCreation(objectTypeParamName, SpecTypeId.String.Text, Parameters.ExistingProjectParameter(doc, objectTypeParamName), false));
                 parametersToSet.Add(objectTypeParamName, ifcEntity.ObjectType);
             }
 
@@ -410,18 +419,25 @@ namespace BsddRevitPlugin.Logic.Utilities
                 if (it.Key is InternalDefinition def)
                 {
                     string parameterName = def.Name;
-                    string parameterIfcName;
                     bool isInstance = false;
 
-                    if (IfcParameterMappings.Mappings.ContainsValue(parameterName) || parameterName.StartsWith("bsdd/prop/"))
+                    if (IfcParameterMappings.Mappings.ContainsValue(parameterName))
                     {
                         if (it.Current is InstanceBinding)
                         {
                             isInstance = true;
                         }
-                        //TODO change bsdd/prop parameter name
                         projectParameterTypes.Add(parameterName, isInstance);
-                        
+
+                    }
+                    else if (parameterName.StartsWith("bsdd/prop/"))
+                    {
+                        string parameterPropertyName = parameterName.Substring(parameterName.LastIndexOf('/') + 1);
+                        if (it.Current is InstanceBinding)
+                        {
+                            isInstance = true;
+                        }
+                        projectParameterTypes.Add(parameterPropertyName, isInstance);
                     }
                 }
             }

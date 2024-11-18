@@ -66,6 +66,8 @@ namespace BsddRevitPlugin.Logic.Model
             //TODO: make sure parameters are being made instance/type according to list below
             Dictionary<string, bool> propertyIsInstanceMap = bsddBridgeData.PropertyIsInstanceMap;
 
+            ParameterDataManagement parameterDataManagement = new ParameterDataManagement();
+
             foreach (var ifcEntity in ifcEntityLst)
             {
                 logger.Info($"Element json {JsonConvert.SerializeObject(ifcEntity)}");
@@ -94,8 +96,7 @@ namespace BsddRevitPlugin.Logic.Model
                     List<ParameterCreation> parametersToCreate = new List<ParameterCreation>();
                     Dictionary<string, object> parametersToSet = new Dictionary<string, object>();
 
-                    ParameterDataManagement parameterDataManagement = new ParameterDataManagement();
-                    parameterDataManagement.GetParametersToCreateAndSet(doc, ifcEntity, dictionaryCollection, out parametersToCreate, out parametersToSet);
+                    parameterDataManagement.GetParametersToCreateAndSet(doc, ifcEntity, dictionaryCollection, propertyIsInstanceMap, out parametersToCreate, out parametersToSet);
 
 
                     using (Transaction tx = new Transaction(doc))
@@ -104,7 +105,7 @@ namespace BsddRevitPlugin.Logic.Model
 
                         //First create all parameters at once (in Release creating parameters seperately sometimes fails)
                         List<Category> currentCategoryLst = new List<Category>() { elementType.Category };
-                        Parameters.CreateProjectParameters(doc, parametersToCreate, "tempGroupName", groupType, false, currentCategoryLst);
+                        Parameters.CreateProjectParameters(doc, parametersToCreate, "tempGroupName", groupType, currentCategoryLst);
 
                         tx.Commit();
                     }
@@ -126,6 +127,7 @@ namespace BsddRevitPlugin.Logic.Model
                 }
             }
 
+            propertyIsInstanceMap.Clear();
         }
         /// <summary>
         /// Highlight/select the elements in Revit
