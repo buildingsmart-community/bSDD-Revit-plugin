@@ -211,7 +211,7 @@ namespace BsddRevitPlugin.Common
 
             }
             // Pack data into json format
-            List<IfcEntity> selectionData = BsddRevitPlugin.Logic.Model.ElementsManager.SelectionToIfcJson(doc, elemSet);
+            List<IfcEntity> selectionData = SelectElements.SelectionToIfcJson(doc, elemSet);
 
             // Send MainData to BsddSelection html
             eventUseLastSelection.UpdateBsddSelection(selectionData);

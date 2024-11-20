@@ -55,7 +55,31 @@ namespace BsddRevitPlugin.Logic.UI.DockablePanel
             List<Element> list = new List<Element>();
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Autodesk.Revit.DB.Document doc = uidoc.Document;
-            IList<Reference> collectionSelect = uidoc.Selection.PickObjects(ObjectType.Element);
+            
+            //Make an IList to store the selection
+            IList<Reference> collectionSelect = new List<Reference>();
+            //Make an ICollection to store the selection before going in selection mode
+            ICollection<ElementId> elemIds = uidoc.Selection.GetElementIds();
+            //If nothing selected go into selection mode to make an selection. Else select what is selected
+            if (elemIds.Count == 0)
+            {
+                //Select elements in selection mode
+                collectionSelect = uidoc.Selection.PickObjects(ObjectType.Element);
+            }
+            else
+            {
+                //Get one by one the elementId's of the stored selection set and transform them into the IList<Reference> collection
+                foreach (ElementId id in elemIds)
+                {
+                    Element element = doc.GetElement(id); // Get the Element
+                    if (element != null)
+                    {
+                        Reference reference = new Reference(element); // Make a new Reference
+                        collectionSelect.Add(reference); // Add the Reference to the IList
+                    }
+                }
+            }
+
             foreach (Reference element in collectionSelect)
             {
                 Element elem = doc.GetElement(element);

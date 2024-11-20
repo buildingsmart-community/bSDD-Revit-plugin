@@ -69,7 +69,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             {
 
             }
-            var jsonString = JsonConvert.SerializeObject(ElementsManager.SelectionToIfcJson(GlobalDocument.currentDocument, lastSelection));
+            var jsonString = JsonConvert.SerializeObject(SelectElements.SelectionToIfcJson(GlobalDocument.currentDocument, lastSelection));
             var jsFunctionCall = $"updateSelection({jsonString});";
 
             if (browser.IsBrowserInitialized)
@@ -118,7 +118,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             {
                 elemSet.Add(elem.Id);
             }
-            List<IfcEntity> selectionData = SelectionToIfcJson(doc, elemSet);
+            List<IfcEntity> selectionData = SelectElements.SelectionToIfcJson(doc, elemSet);
             
             // Send MainData to BsddSelection html
             UpdateBsddSelection(selectionData);
