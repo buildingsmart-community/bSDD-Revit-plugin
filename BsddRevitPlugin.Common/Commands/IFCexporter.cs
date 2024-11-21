@@ -104,8 +104,8 @@ namespace BsddRevitPlugin.Common.Commands
             bsddIFCExportConfiguration.ExportUserDefinedPsets = true;
             bsddIFCExportConfiguration.ExportUserDefinedPsetsFileName = combinedParameterFilePath;
 
-            // //Set the ExportIFCCommonPropertySets to false, so it doesn't interfere with the user defined IFC property sets added by the BSDD plugin
-            // HandleIFCCommonPropertySets(bsddIFCExportConfiguration);
+            //Set the ExportIFCCommonPropertySets to true, if user selects yes in the TaskDialog
+            HandleIFCCommonPropertySets(bsddIFCExportConfiguration);
 
             //Pass the setting of the myIFCExportConfiguration to the IFCExportOptions
             bsddIFCExportConfiguration.UpdateOptions(ifcExportOptions, activeViewId);
@@ -179,32 +179,32 @@ namespace BsddRevitPlugin.Common.Commands
             }
         }
 
-        // /// <summary>
-        // /// Warns the user against adding IFC common property sets to the IFC export configuration.
-        // /// Because it might interfere with the IFC property sets added by the bSDD plugin.
-        // /// </summary>
-        // /// <param name="bsddIFCExportConfiguration">The IFC export configuration.</param>
-        // private void HandleIFCCommonPropertySets(IFCExportConfiguration bsddIFCExportConfiguration)
-        // {
+        /// <summary>
+        /// Warns the user to add IFC common property sets to the IFC export configuration.
+        /// Because IFC properties might not be exported even though the bSDD / IDS ask for them.
+        /// </summary>
+        /// <param name="bsddIFCExportConfiguration">The IFC export configuration.</param>
+        private void HandleIFCCommonPropertySets(IFCExportConfiguration bsddIFCExportConfiguration)
+        {
 
-        //     LanguageConverter languageConverter = new LanguageConverter();
-        //     string currentLanguage = GlobalBsddSettings.bsddsettings.Language;
+            LanguageConverter languageConverter = new LanguageConverter();
+            string currentLanguage = GlobalBsddSettings.bsddsettings.Language;
 
-        //     if (!bsddIFCExportConfiguration.ExportIFCCommonPropertySets)
-        //     {
-        //         return;
-        //     }
+            if (bsddIFCExportConfiguration.ExportIFCCommonPropertySets)
+            {
+                return;
+            }
 
-        //     TaskDialog dialog = new TaskDialog(languageConverter.Translate("IFCExport_TaskDialogName", currentLanguage))
-        //     {
-        //         MainInstruction = languageConverter.Translate("IFCExport_TaskDialogMessage", currentLanguage),
-        //         CommonButtons = TaskDialogCommonButtons.Yes | TaskDialogCommonButtons.No
-        //     };
+            TaskDialog dialog = new TaskDialog(languageConverter.Translate("IFCExport_TaskDialogName", currentLanguage))
+            {
+                MainInstruction = languageConverter.Translate("IFCExport_TaskDialogMessage", currentLanguage),
+                CommonButtons = TaskDialogCommonButtons.Yes | TaskDialogCommonButtons.No
+            };
 
-        //     if (dialog.Show() == TaskDialogResult.Yes)
-        //     {
-        //         bsddIFCExportConfiguration.ExportIFCCommonPropertySets = false;
-        //     }
-        // }
+            if (dialog.Show() == TaskDialogResult.Yes)
+            {
+                bsddIFCExportConfiguration.ExportIFCCommonPropertySets = true;
+            }
+        }
     }
 }
