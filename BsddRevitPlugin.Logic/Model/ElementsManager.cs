@@ -2,6 +2,7 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
+using BsddRevitPlugin.Logic.UI.BsddBridge;
 using BsddRevitPlugin.Logic.Utilities;
 using Newtonsoft.Json;
 using NLog;
@@ -51,74 +52,89 @@ namespace BsddRevitPlugin.Logic.Model
         /// </summary>
         /// <param name="doc"></param>
         /// <param name="ifcEntity"></param>
-        public static void SetIfcDataToRevitElement(Document doc, IfcEntity ifcEntity)
+        public static void SetIfcDataToRevitElement(Document doc, BsddBridgeData bsddBridgeData)
         {
+            BsddSettings bsddSettings = new BsddSettings();
+
+            Dictionary<string, bool> keyValuePairs = new Dictionary<string, bool>();
+            //TODO: Let this work with full settings (and aditional project parameters)
+
             Logger logger = LogManager.GetCurrentClassLogger();
 
-            logger.Info($"Element json {JsonConvert.SerializeObject(ifcEntity)}");
+            List<IfcEntity> ifcEntityLst = bsddBridgeData.IfcData;
 
+            //TODO: make sure parameters are being made instance/type according to list below
+            Dictionary<string, bool> propertyIsInstanceMap = bsddBridgeData.PropertyIsInstanceMap;
 
-            try
+            ParameterDataManagement parameterDataManagement = new ParameterDataManagement();
+
+            foreach (var ifcEntity in ifcEntityLst)
             {
-                // Create a classification set in which every dictionary will be collected
-                HashSet<IfcClassification> dictionaryCollection = new HashSet<IfcClassification>();
+                logger.Info($"Element json {JsonConvert.SerializeObject(ifcEntity)}");
 
-                //Get the elementType
-                int idInt = Convert.ToInt32(ifcEntity.Tag);
-                ElementId typeId = new ElementId(idInt);
-                ElementType elementType = doc.GetElement(typeId) as ElementType;
-                using (Transaction tx = new Transaction(doc))
+                try
                 {
-                    tx.Start("SetIfcEntity");
+                    // Create a classification set in which every dictionary will be collected
+                    HashSet<IfcClassification> dictionaryCollection = new HashSet<IfcClassification>();
 
-                    //Set IfcEntity to the Elements DataStorage
-                    SetIfcEntityToElementDataStorage(ifcEntity, elementType);
+                    //Get the elementType
+                    int idInt = Convert.ToInt32(ifcEntity.Tag);
+                    ElementId typeId = new ElementId(idInt);
+                    ElementType elementType = doc.GetElement(typeId) as ElementType;
+                    using (Transaction tx = new Transaction(doc))
+                    {
+                        tx.Start("SetIfcEntity");
 
-                    tx.Commit();
+                        //Set IfcEntity to the Elements DataStorage
+                        SetIfcEntityToElementDataStorage(ifcEntity, elementType);
+
+                        tx.Commit();
+                    }
+
+                    ForgeTypeId groupType = GroupTypeId.Ifc;
+
+                    List<ParameterCreation> parametersToCreate = new List<ParameterCreation>();
+                    Dictionary<string, object> parametersToSet = new Dictionary<string, object>();
+
+                    parameterDataManagement.GetParametersToCreateAndSet(doc, ifcEntity, dictionaryCollection, propertyIsInstanceMap, out parametersToCreate, out parametersToSet);
+
+
+                    using (Transaction tx = new Transaction(doc))
+                    {
+                        tx.Start("Create or edit parameters");
+
+                        //First create all parameters at once (in Release creating parameters seperately sometimes fails)
+                        List<Category> currentCategoryLst = new List<Category>() { elementType.Category };
+                        Parameters.CreateProjectParameters(doc, parametersToCreate, "tempGroupName", groupType, currentCategoryLst);
+
+                        tx.Commit();
+                    }
+
+                    using (Transaction tx = new Transaction(doc))
+                    {
+                        tx.Start("Set parameters");
+
+                        //Set all parameters
+                        Parameters.SetElementTypeParameters(elementType, parametersToSet);
+
+                        tx.Commit();
+                    }
                 }
-
-                ForgeTypeId groupType = GroupTypeId.Ifc;
-
-                List<ParameterCreation> parametersToCreate = new List<ParameterCreation>();
-                Dictionary<string, object> parametersToSet = new Dictionary<string, object>();
-
-                ParameterDataManagement parameterDataManagement = new ParameterDataManagement();
-                parameterDataManagement.GetParametersToCreateAndSet(doc, ifcEntity, dictionaryCollection, out parametersToCreate, out parametersToSet);
-
-
-                using (Transaction tx = new Transaction(doc))
+                catch (Exception e)
                 {
-                    tx.Start("Create or edit parameters");
-
-                    //First create all parameters at once (in Release creating parameters seperately sometimes fails)
-                    List<Category> currentCategoryLst = new List<Category>() { elementType.Category };
-                    Parameters.CreateProjectParameters(doc, parametersToCreate, "tempGroupName", groupType, false, currentCategoryLst);
-
-                    tx.Commit();
-                }
-
-                using (Transaction tx = new Transaction(doc))
-                {
-                    tx.Start("Set parameters");
-
-                    //Set all parameters
-                    Parameters.SetElementTypeParameters(elementType, parametersToSet);
-
-                    tx.Commit();
+                    logger.Info($"Failed to set elementdata: {e.Message}");
+                    throw;
                 }
             }
-            catch (Exception e)
-            {
-                logger.Info($"Failed to set elementdata: {e.Message}");
-                throw;
-            }
+
+            propertyIsInstanceMap.Clear();
         }
         /// <summary>
         /// Highlight/select the elements in Revit
         /// </summary>
         /// <param name="uidoc"></param>
         /// <param name="ifcEntity"></param>
-        public static void SelectElementsWithIfcData(UIDocument uidoc, IfcEntity ifcEntity)
+        public static void SelectElementsWithIfcData(UIDocument uidoc, List<IfcEntity> ifcEntity)
         {
             Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -127,27 +143,34 @@ namespace BsddRevitPlugin.Logic.Model
 
             try
             {
-                //Get the elementType
-                int idInt = Convert.ToInt32(ifcEntity.Tag);
-                ElementId typeId = new ElementId(idInt);
-                ElementType elementType = doc.GetElement(typeId) as ElementType;
+                List<ElementId> allElementIds = new List<ElementId>();
+                foreach (IfcEntity ifcElement in ifcEntity)
+                {
+                    //Get the elementType
+                    int idInt = Convert.ToInt32(ifcElement.Tag);
+                    ElementId typeId = new ElementId(idInt);
+                    ElementType elementType = doc.GetElement(typeId) as ElementType;
 
-                //Get all instances of the elementtype
-                FilteredElementCollector collector = new FilteredElementCollector(doc);
-                var elements = collector
-                    .WhereElementIsNotElementType()
-                    .Where(e => e.GetTypeId() == elementType.Id)
-                    .ToList();
+                    //Get all instances of the elementtype
+                    FilteredElementCollector collector = new FilteredElementCollector(doc);
+                    var elements = collector
+                        .WhereElementIsNotElementType()
+                        .Where(e => e.GetTypeId() == elementType.Id)
+                        .ToList();
 
-                //Get element ids
-                List<ElementId> elementIds = elements.Select(e => e.Id).ToList();
+                    //Get element ids
+                    List<ElementId> elementIds = elements.Select(e => e.Id).ToList();
+
+                    allElementIds.AddRange(elementIds);
+                }
+                
 
 
                 try
                 {
 
                     // Select the elements in the UI
-                    uidoc.Selection.SetElementIds(elementIds);
+                    uidoc.Selection.SetElementIds(allElementIds);
                 }
                 catch
                 {

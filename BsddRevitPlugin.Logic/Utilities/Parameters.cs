@@ -11,17 +11,19 @@ namespace BsddRevitPlugin.Logic.Utilities
         public string parameterName { get; set; }
         public ForgeTypeId specType { get; set; }
         public bool existing { get; set; }
+        public bool isInstance { get; set; }
 
         public ParameterCreation(string parameterName, ForgeTypeId specType)
         {
             this.parameterName = parameterName;
             this.specType = specType;
         }
-        public ParameterCreation(string parameterName, ForgeTypeId specType, bool existing)
+        public ParameterCreation(string parameterName, ForgeTypeId specType, bool existing, bool isInstance)
         {
             this.parameterName = parameterName;
             this.specType = specType;
             this.existing = existing;
+            this.isInstance = isInstance;
         }
     }
     public static class Parameters
@@ -237,7 +239,7 @@ namespace BsddRevitPlugin.Logic.Utilities
         /// <param name="instance">True if it's an instance parameter, otherwise it's a type parameter</param>
         public static void CreateProjectParametersForAllCategories(Document doc, List<ParameterCreation> parametersToCreate, string groupName, ForgeTypeId groupType, bool instance)
         {
-            CreateProjectParameters(doc, parametersToCreate, groupName, groupType, instance, null);
+            CreateProjectParameters(doc, parametersToCreate, groupName, groupType, null);
         }
         /// <summary>
         /// Create a new Project Parameters in this current Revit document
@@ -248,7 +250,7 @@ namespace BsddRevitPlugin.Logic.Utilities
         /// <param name="groupType">The type of the group to which the parameter belongs.</param>
         /// <param name="instance">True if it's an instance parameter, otherwise it's a type parameter</param>
         /// <param name="categoryList">A list of categories this parameter applies to. If no category is supplied, all possible categories are selected</param>
-        public static void CreateProjectParameters(Document doc, List<ParameterCreation> parametersToCreate, string groupName, ForgeTypeId groupType, bool instance, System.Collections.Generic.IEnumerable<Category> categoryList)
+        public static void CreateProjectParameters(Document doc, List<ParameterCreation> parametersToCreate, string groupName, ForgeTypeId groupType, System.Collections.Generic.IEnumerable<Category> categoryList)
         {
             Logger logger = LogManager.GetCurrentClassLogger();
             // get document and open transaction
@@ -313,7 +315,7 @@ namespace BsddRevitPlugin.Logic.Utilities
                                     (externalDefinitionCreationOptions) as ExternalDefinition;
 
                                 // Apply instance or type binding
-                                Binding bin = (instance) ?
+                                Binding bin = (parameter.isInstance) ?
                                     (Binding)document.Application.Create.NewInstanceBinding(categories) :
                                     (Binding)document.Application.Create.NewTypeBinding(categories);
 

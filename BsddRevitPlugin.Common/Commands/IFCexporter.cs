@@ -100,7 +100,7 @@ namespace BsddRevitPlugin.Common.Commands
 
             // Add bSDD properties to user defined properties parameter mapping table
             string activeParameterFilePath = bsddIFCExportConfiguration.ExportUserDefinedPsetsFileName;
-            string combinedParameterFilePath = ifcExportService.GetBsddPropertiesAsParameterfile(document, activeParameterFilePath);
+            string combinedParameterFilePath = ifcExportService.GetBsddPropertiesAsParameterfile(document, activeParameterFilePath, bsddIFCExportConfiguration.IFCVersion);
             bsddIFCExportConfiguration.ExportUserDefinedPsets = true;
             bsddIFCExportConfiguration.ExportUserDefinedPsetsFileName = combinedParameterFilePath;
 
