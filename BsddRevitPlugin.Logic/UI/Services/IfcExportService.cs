@@ -7,6 +7,7 @@ using System;
 using System.Web.Script.Serialization;
 using System.IO;
 using NLog;
+using System.Reflection;
 
 namespace BsddRevitPlugin.Logic.UI.Services
 {
@@ -54,7 +55,7 @@ namespace BsddRevitPlugin.Logic.UI.Services
         /// <param name="document">The Revit document.</param>
         /// <param name="mappingParameterFilePath">The file path of the active mapping parameter file.</param>
         /// <returns>The file path of the combined parameter file.</returns>
-        public string GetBsddPropertiesAsParameterfile(Document document, string mappingParameterFilePath)
+        public string GetBsddPropertiesAsParameterfile(Document document, string mappingParameterFilePath, IFCVersion ifcVersion)
         {
             // Initialize a string to hold all parameters starting with bsdd for the Export User Defined Propertysets
             string add_BSDD_UDPS = null;
@@ -104,6 +105,16 @@ namespace BsddRevitPlugin.Logic.UI.Services
                     string dataType = GetDataType(p);
                     add_BSDD_UDPS += $"{dataType}\t{parameterName}";
                 }
+            }
+
+            if (ifcVersion == IFCVersion.IFC4x3)
+            {
+                //Find the UDPS -Quantities-4x3.txt file to export Quantities in IFC 4x3
+                string currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                string settingsFilePath = currentPath + "\\Resources\\UDPS-Quantities-4x3.txt";
+
+                // Add all text from the settingsfilepath file to the add_BSDD_UDPS string
+                add_BSDD_UDPS += File.ReadAllText(settingsFilePath);
             }
 
             // Create a new temp file for the user defined parameter mapping file
