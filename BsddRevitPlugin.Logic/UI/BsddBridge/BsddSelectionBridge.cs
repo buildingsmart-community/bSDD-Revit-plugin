@@ -68,6 +68,8 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             _eventHandlerBsddSearch.setBsddBridgeData(bsddBridgeData);
             _eventHandlerBsddSearch.Raise("openSearch");
 
+            //Send BsddBridgeData
+
             return JsonConvert.SerializeObject(ifcEntity);
         }
 
