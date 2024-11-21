@@ -203,7 +203,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
     {
         Logger logger = LogManager.GetCurrentClassLogger();
 
-        IfcEntity ifcData;
+        List<IfcEntity> ifcData;
 
         public override void Execute(UIApplication uiapp, string args)
         {
@@ -212,7 +212,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
             SelectElementsWithIfcData(uidoc, ifcData);
         }
-        public void SetIfcData(IfcEntity ifcDataObject)
+        public void SetIfcData(List<IfcEntity> ifcDataObject)
         {
             ifcData = ifcDataObject;
         }

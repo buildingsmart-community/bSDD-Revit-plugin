@@ -41,7 +41,6 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         /// <returns>The response from the bSDD API.</returns>
         public string save(string ifcJsonData)
         {
-            //TODO: GET SETTINGS HERE
 
             Logger logger = LogManager.GetCurrentClassLogger();
 
