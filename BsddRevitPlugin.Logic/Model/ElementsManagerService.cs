@@ -15,7 +15,7 @@ using System.IO;
 
 namespace BsddRevitPlugin.Logic.Model
 {
-    public static class ElementsManagerLogic
+    public static class ElementsManagerService
     {
         //TODO: Split this class into smaller classes serving ElementsManager.cs (FA ParameterDataManagement)
 

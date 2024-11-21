@@ -9,7 +9,7 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static BsddRevitPlugin.Logic.Model.ElementsManagerLogic;
+using static BsddRevitPlugin.Logic.Model.ElementsManagerService;
 
 
 namespace BsddRevitPlugin.Logic.Model

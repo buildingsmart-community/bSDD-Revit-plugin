@@ -81,7 +81,7 @@ namespace BsddRevitPlugin.Logic.Utilities
                             // do something with ifcClassificationReference
 
                             //Create parameter name for each unique the bsdd classificationReference, this is always added as type parameter!
-                            bsddParameterName = ElementsManagerLogic.CreateParameterNameFromIFCClassificationReferenceSourceLocation(ifcClassificationReference);
+                            bsddParameterName = ElementsManagerService.CreateParameterNameFromIFCClassificationReferenceSourceLocation(ifcClassificationReference);
                             parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType, Parameters.ExistingProjectParameter(doc, bsddParameterName), false));
                             parametersToSet.Add(bsddParameterName, ifcClassificationReference.Identification + ":" + ifcClassificationReference.Name);
 
