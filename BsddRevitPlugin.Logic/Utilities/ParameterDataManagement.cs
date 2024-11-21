@@ -356,7 +356,8 @@ namespace BsddRevitPlugin.Logic.Utilities
             string parameterName;
 
             //TODO: add parametermapping for all IFC properties (https://github.com/Autodesk/revit-ifc/blob/master/Source/RevitIFCTools/IFC%20Shared%20Parameters-RevitIFCBuiltIn_ALL.txt)
-            //NOTE: We generate our own parameterguid using the string name (the bsdd code) without the pset (FA not Pset_SlabCommon.LoadBearing (that has guid 92825b2b-4c88-4474-b84c-09c03ed3783a) but LoadBearing)
+            //NOTE: We generate our own parameterguid using the string name (the bsdd code) without the
+            //(FA not Pset_SlabCommon.LoadBearing (that has guid 92825b2b-4c88-4474-b84c-09c03ed3783a) but LoadBearing)
             if (!IfcParameterMappings.Mappings.TryGetValue(property.Specification, out parameterName))
             {
                 parameterName = $"bsdd/prop/{propertySet}/{property.Name}";

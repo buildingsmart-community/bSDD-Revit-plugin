@@ -135,6 +135,7 @@
     <Compile Include="IfcJson\IfcJsonConverter.cs" />
     <Compile Include="Model\ElementsManager.cs" />
     <Compile Include="Model\ElementsManagerService.cs" />
+    <Compile Include="Model\MaterialRelAssociatesBuilder.cs" />
     <Compile Include="Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
