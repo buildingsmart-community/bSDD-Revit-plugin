@@ -132,6 +132,7 @@
     <Compile Include="Commands\RelayCommand.cs" />
     <Compile Include="IfcExport\IfcPostprocessor.cs" />
     <Compile Include="IfcJson\IfcJson.cs" />
+    <Compile Include="IfcJson\IfcJsonBuilder.cs" />
     <Compile Include="IfcJson\IfcJsonConverter.cs" />
     <Compile Include="Model\ElementsManager.cs" />
     <Compile Include="Model\ElementsManagerService.cs" />
