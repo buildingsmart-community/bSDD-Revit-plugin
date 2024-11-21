@@ -435,7 +435,7 @@ namespace BsddRevitPlugin.Logic.Model
             switch (parameter.StorageType)
             {
                 case StorageType.ElementId:
-                    return parameter.AsElementId().IntegerValue;
+                    return parameter.AsElementId().Value;
                 case StorageType.Integer:
                     return parameter.AsInteger();
                 case StorageType.None:
@@ -570,7 +570,7 @@ namespace BsddRevitPlugin.Logic.Model
                 //Needed due to mappingtable not containing certain categories such as "Runs".
                 result = mappingTable[cat + "\t"];
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 result = "";
             }
