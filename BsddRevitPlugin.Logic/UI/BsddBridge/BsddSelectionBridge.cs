@@ -45,23 +45,24 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
 
         /// <summary>
         /// This method is exposed to JavaScript in CefSharp. 
-        /// It opens the bSDD Search panel with the selected object parameters.
+        /// It opens the bSDD Search panel with the selected object parameters. These objects are being transferred through this function to the next window.
         /// </summary>
         /// <param name="ifcJsonData">The IFC data to search, in JSON format.</param>
         /// <returns>The serialized IFC data, in JSON format.</returns>
         public string bsddSearch(string ifcJsonData)
         {
+            //Get List<IfcEntity>
 
             Logger logger = LogManager.GetCurrentClassLogger();
 
             logger.Info($"BSDDSEARCH: Trying to open bsddSearch for ifcJsonData: {ifcJsonData}");
 
             var converter = new IfcJsonConverter();
-            var ifcEntity = JsonConvert.DeserializeObject<IfcEntity>(ifcJsonData, converter);
+            var ifcEntity = JsonConvert.DeserializeObject<List<IfcEntity>>(ifcJsonData, converter);
             var bsddBridgeData = new BsddBridgeData
             {
                 Settings = GlobalBsddSettings.bsddsettings,
-                IfcData = new List<IfcEntity> { ifcEntity },
+                IfcData = ifcEntity,
                 PropertyIsInstanceMap = ParameterDataManagement.GetProjectParameterTypes(GlobalDocument.currentDocument)
             };
             _eventHandlerBsddSearch.setBsddBridgeData(bsddBridgeData);
@@ -72,19 +73,20 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
 
         /// <summary>
         /// This method is exposed to JavaScript in CefSharp. 
-        /// It opens the bSDD Search panel with the selected object parameters.
+        /// It gets the selected elements in the UI and highlights them in Revit.
         /// </summary>
         /// <param name="ifcJsonData">The IFC data to search, in JSON format.</param>
         /// <returns>The serialized IFC data, in JSON format.</returns>
         public void bsddSelect(string ifcJsonData)
         {
+            //Get List<IfcEntity>
 
             Logger logger = LogManager.GetCurrentClassLogger();
 
             logger.Info($"BSDDSELECT: Trying to select ifcJsonData to Element: {ifcJsonData}");
 
             var converter = new IfcJsonConverter();
-            var ifcEntity = JsonConvert.DeserializeObject<IfcEntity>(ifcJsonData, converter);
+            var ifcEntity = JsonConvert.DeserializeObject<List<IfcEntity>>(ifcJsonData, converter);
             
 
             selectElementsWithIfcData.SetIfcData(ifcEntity);
@@ -99,6 +101,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         /// <param name="settingsJson">The JSON string of the new settings.</param>
         public void saveSettings(string settingsJson)
         {
+
             Logger logger = LogManager.GetCurrentClassLogger();
 
             logger.Info($"SAVESETTINGS: Trying to save settings: {settingsJson}");

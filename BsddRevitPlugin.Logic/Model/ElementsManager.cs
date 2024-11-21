@@ -134,7 +134,7 @@ namespace BsddRevitPlugin.Logic.Model
         /// </summary>
         /// <param name="uidoc"></param>
         /// <param name="ifcEntity"></param>
-        public static void SelectElementsWithIfcData(UIDocument uidoc, IfcEntity ifcEntity)
+        public static void SelectElementsWithIfcData(UIDocument uidoc, List<IfcEntity> ifcEntity)
         {
             Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -143,27 +143,34 @@ namespace BsddRevitPlugin.Logic.Model
 
             try
             {
-                //Get the elementType
-                int idInt = Convert.ToInt32(ifcEntity.Tag);
-                ElementId typeId = new ElementId(idInt);
-                ElementType elementType = doc.GetElement(typeId) as ElementType;
+                List<ElementId> allElementIds = new List<ElementId>();
+                foreach (IfcEntity ifcElement in ifcEntity)
+                {
+                    //Get the elementType
+                    int idInt = Convert.ToInt32(ifcElement.Tag);
+                    ElementId typeId = new ElementId(idInt);
+                    ElementType elementType = doc.GetElement(typeId) as ElementType;
 
-                //Get all instances of the elementtype
-                FilteredElementCollector collector = new FilteredElementCollector(doc);
-                var elements = collector
-                    .WhereElementIsNotElementType()
-                    .Where(e => e.GetTypeId() == elementType.Id)
-                    .ToList();
+                    //Get all instances of the elementtype
+                    FilteredElementCollector collector = new FilteredElementCollector(doc);
+                    var elements = collector
+                        .WhereElementIsNotElementType()
+                        .Where(e => e.GetTypeId() == elementType.Id)
+                        .ToList();
 
-                //Get element ids
-                List<ElementId> elementIds = elements.Select(e => e.Id).ToList();
+                    //Get element ids
+                    List<ElementId> elementIds = elements.Select(e => e.Id).ToList();
+
+                    allElementIds.AddRange(elementIds);
+                }
+                
 
 
                 try
                 {
 
                     // Select the elements in the UI
-                    uidoc.Selection.SetElementIds(elementIds);
+                    uidoc.Selection.SetElementIds(allElementIds);
                 }
                 catch
                 {
