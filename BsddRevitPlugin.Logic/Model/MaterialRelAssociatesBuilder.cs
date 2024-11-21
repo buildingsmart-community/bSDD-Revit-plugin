@@ -8,6 +8,7 @@ using System.Windows.Media.Media3D;
 using Autodesk.Revit.DB;
 using Material = Autodesk.Revit.DB.Material;
 using BsddRevitPlugin.Logic.IfcJson;
+using BsddRevitPlugin.Logic.IfcJsonBuilders;
 using NLog;
 using Revit.IFC.Import.Data;
 using Autodesk.Revit.DB.Architecture;
