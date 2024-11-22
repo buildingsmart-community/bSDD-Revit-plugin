@@ -32,10 +32,13 @@ namespace BsddRevitPlugin.Logic.UI.Services
         /// <returns>A list of BSDD parameters.</returns>
         public IList<Parameter> GetAllBsddParameters(Document document)
         {
-            FilteredElementCollector collector = new FilteredElementCollector(document).WhereElementIsElementType();
+            FilteredElementCollector typeCollector = new FilteredElementCollector(document).WhereElementIsElementType();
+            FilteredElementCollector instanceCollector = new FilteredElementCollector(document).WhereElementIsNotElementType();
             IList<Parameter> parameters = new List<Parameter>();
+            IList<Element> allElements = typeCollector.ToList();
+            allElements = allElements.Concat(instanceCollector.ToList()).ToList();
 
-            foreach (Element element in collector)
+            foreach (Element element in allElements)
             {
                 foreach (Parameter parameter in element.Parameters)
                 {
