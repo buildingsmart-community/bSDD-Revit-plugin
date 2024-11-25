@@ -20,8 +20,8 @@ namespace BsddRevitPlugin.Logic.Utilities
         public ParameterDataManagement()
         {
 
-            _roomName = "All rooms";
-            _areaName = "All areas";
+            _roomName = "All Rooms";
+            _areaName = "All Area's";
         }
 
         private static Logger logger = LogManager.GetCurrentClassLogger();
@@ -167,7 +167,7 @@ namespace BsddRevitPlugin.Logic.Utilities
                             specType = GetParameterTypeFromProperty(enumerationValue);
                         }
                         //check if instance or type
-                        string propertyName = property.Name;
+                        string propertyName = propertySet.Name +"/"+ property.Name;
                         bool isInstance = _propertyIsInstanceMap.TryGetValue(propertyName, out bool isInstanceValue);
 
                         bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property);
@@ -459,7 +459,7 @@ namespace BsddRevitPlugin.Logic.Utilities
                     }
                     else if (parameterName.StartsWith("bsdd/prop/"))
                     {
-                        string parameterPropertyName = parameterName.Substring(parameterName.LastIndexOf('/') + 1);
+                        string parameterPropertyName = parameterName.Replace("bsdd/prop/", "");
                         if (it.Current is InstanceBinding)
                         {
                             isInstance = true;
