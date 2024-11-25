@@ -29,6 +29,7 @@ namespace BsddRevitPlugin.Logic.Utilities
     }
     public static class Parameters
     {
+        //This class is based on https://github.com/DynamoDS/DynamoRevit/blob/master/src/Libraries/RevitNodes/Elements/Parameter.cs
 
         #region Shared Parameters
 
@@ -352,7 +353,6 @@ namespace BsddRevitPlugin.Logic.Utilities
             //TransactionManager.Instance.TransactionTaskDone();
         }
 
-
         #endregion
 
         /// <summary>
@@ -418,7 +418,6 @@ namespace BsddRevitPlugin.Logic.Utilities
                         {
                             def.SetAllowVaryBetweenGroups(doc, value);
 
-
                         }
                     }
                 }
@@ -472,6 +471,7 @@ namespace BsddRevitPlugin.Logic.Utilities
                         }
                         break;
                     }
+                   
                 }
             }
             catch (Exception e)

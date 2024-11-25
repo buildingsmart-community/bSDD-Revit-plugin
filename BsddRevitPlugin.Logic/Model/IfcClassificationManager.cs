@@ -90,7 +90,7 @@ namespace BsddRevitPlugin.Logic.Model
 
                     if (storedClassification == null)
                     {
-                        // Create new classification
+                        // Create new classification for types
                         transaction.Start("Create IFC Classification in DataStorage");
                         string classificationParameter = null;
                         if (bsddClassificationMappings != null && bsddClassificationMappings.ContainsKey(classification.ClassificationLocation))
@@ -102,6 +102,19 @@ namespace BsddRevitPlugin.Logic.Model
                         newClassification.SetEntity(classificationEntity);
                         transaction.Commit();
                         updatedClassificationLocations.Add(location);
+
+                        //// Now add instance variant
+                        //transaction.Start("Create IFC Classification in DataStorage");
+                        //string classificationParameterInstance = null;
+                        //if (bsddClassificationMappings != null && bsddClassificationMappings.ContainsKey(classification.ClassificationLocation))
+                        //{
+                        //    classificationParameterInstance = bsddClassificationMappings[classification.ClassificationLocation];
+                        //}
+                        //Entity classificationEntityInstance = ConvertToRevitSchemaIfcClassification(schema, classification, bsddExport, classificationParameterInstance);
+                        //DataStorage newClassificationInstance = DataStorage.Create(document);
+                        //newClassificationInstance.SetEntity(classificationEntityInstance);
+                        //transaction.Commit();
+                        //updatedClassificationLocations.Add(location);
                     }
                     else
                     {
@@ -294,6 +307,7 @@ namespace BsddRevitPlugin.Logic.Model
                         if (!string.IsNullOrEmpty(parameterNameFromUri))
                         {
                             fieldNames.Add(parameterNameFromUri);
+                            fieldNames.Add(parameterNameFromUri+"[Instance]");
                         }
                     }
 
