@@ -1,5 +1,6 @@
 ﻿using ASRR.Core.Persistence;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.IFC;
 using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
@@ -41,6 +42,21 @@ namespace BsddRevitPlugin.Logic.Model
                 var ifcData = CreateIfcEntity(elem, doc);
                 ifcEntities.Add(ifcData);
             }
+
+            //SHOULD ONLY BE IF THEY ARE IN SELECTION OR ALL IN VIEW OR ALL IN DOCUMENT
+            //Add type for all Rooms
+            var roomEntity = new IfcEntity
+            {
+                Name = "Rooms"
+            };
+            ifcEntities.Add(roomEntity);
+
+            //Add type for all Area's
+            var areaEntity = new IfcEntity
+            {
+                Name = "Areas"
+            };
+            ifcEntities.Add(areaEntity);
 
             var provider = new JsonBasedPersistenceProvider("C://temp");
             provider.Persist(ifcEntities);
