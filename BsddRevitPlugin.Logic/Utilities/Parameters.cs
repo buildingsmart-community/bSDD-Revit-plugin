@@ -3,6 +3,7 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Media.Animation;
 
 namespace BsddRevitPlugin.Logic.Utilities
 {
@@ -401,7 +402,29 @@ namespace BsddRevitPlugin.Logic.Utilities
             return categories;
         }
 
+        public static void SetInstanceParameterVaryBetweenGroups(Document doc, List<ParameterCreation> parametersToCreate, bool value)
+        {
 
+            BindingMap bindingMap = doc.ParameterBindings;
+            DefinitionBindingMapIterator it = bindingMap.ForwardIterator();
+
+            while (it.MoveNext())
+            {
+                if (it.Key is InternalDefinition def)
+                {
+                    if(it.Current is InstanceBinding instanceBinding)
+                    {
+                        if (parametersToCreate.Any(x => x.parameterName == def.Name))
+                        {
+                            def.SetAllowVaryBetweenGroups(doc, value);
+
+
+                        }
+                    }
+                }
+            }
+
+        }
         public static bool ExistingProjectParameter(Document doc, string paramName)
         {
             BindingMap bindingMap = doc.ParameterBindings;

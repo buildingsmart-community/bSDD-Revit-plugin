@@ -14,6 +14,15 @@ namespace BsddRevitPlugin.Logic.Utilities
 {
     public class ParameterDataManagement
     {
+        public string _roomName;
+        public string _areaName;
+        public ParameterDataManagement()
+        {
+
+            _roomName = "All rooms";
+            _areaName = "All areas";
+        }
+
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         private static Dictionary<string, bool> _propertyIsInstanceMap = new Dictionary<string, bool>();
@@ -181,10 +190,16 @@ namespace BsddRevitPlugin.Logic.Utilities
 
                 }
             }
-
+            ParameterDataManagement parameterDataManagement = new ParameterDataManagement();
+            if (ifcEntity.Name == parameterDataManagement._areaName || ifcEntity.Name == parameterDataManagement._roomName)
+            {
+                //This is always added as instance parameter!
+                string objectTypeParamName = "IfcObjectType";
+                parametersToCreate.Add(new ParameterCreation(objectTypeParamName, SpecTypeId.String.Text, Parameters.ExistingProjectParameter(doc, objectTypeParamName), true));
+            }
             if (ifcEntity.ObjectType != null)
             {
-                //, this is always added as type parameter!
+                //This is always added as type parameter!
                 string objectTypeParamName = "IfcObjectType[Type]";
                 parametersToCreate.Add(new ParameterCreation(objectTypeParamName, SpecTypeId.String.Text, Parameters.ExistingProjectParameter(doc, objectTypeParamName), false));
                 parametersToSet.Add(objectTypeParamName, ifcEntity.ObjectType);

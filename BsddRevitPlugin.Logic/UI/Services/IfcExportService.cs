@@ -42,10 +42,16 @@ namespace BsddRevitPlugin.Logic.UI.Services
             {
                 foreach (Parameter parameter in element.Parameters)
                 {
-                    if (parameter.Definition.Name.StartsWith("bsdd/prop/") && !parameters.Any(p => p.Definition.Name == parameter.Definition.Name && p.StorageType == parameter.StorageType))
+                    if (parameter.Definition != null )
                     {
-                        parameters.Add(parameter);
+                        if (parameter.Definition.Name.StartsWith("bsdd/prop/") && !parameters.Any(p => p.Definition.Name == parameter.Definition.Name && p.StorageType == parameter.StorageType))
+                        {
+                            parameters.Add(parameter);
+                        }
                     }
+
+                   
+                    
                 }
             }
 
