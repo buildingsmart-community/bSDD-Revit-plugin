@@ -102,19 +102,6 @@ namespace BsddRevitPlugin.Logic.Model
                         newClassification.SetEntity(classificationEntity);
                         transaction.Commit();
                         updatedClassificationLocations.Add(location);
-
-                        //// Now add instance variant
-                        //transaction.Start("Create IFC Classification in DataStorage");
-                        //string classificationParameterInstance = null;
-                        //if (bsddClassificationMappings != null && bsddClassificationMappings.ContainsKey(classification.ClassificationLocation))
-                        //{
-                        //    classificationParameterInstance = bsddClassificationMappings[classification.ClassificationLocation];
-                        //}
-                        //Entity classificationEntityInstance = ConvertToRevitSchemaIfcClassification(schema, classification, bsddExport, classificationParameterInstance);
-                        //DataStorage newClassificationInstance = DataStorage.Create(document);
-                        //newClassificationInstance.SetEntity(classificationEntityInstance);
-                        //transaction.Commit();
-                        //updatedClassificationLocations.Add(location);
                     }
                     else
                     {
