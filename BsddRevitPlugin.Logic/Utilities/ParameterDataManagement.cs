@@ -4,6 +4,7 @@ using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.Model;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
 using NLog;
+using Revit.IFC.Import.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,7 +42,7 @@ namespace BsddRevitPlugin.Logic.Utilities
             List<ParameterCreation> classParametersToCreate = new List<ParameterCreation>();
             Dictionary<string, object> classParametersToSet = new Dictionary<string, object>();
 
-            CollectParametersAndValuesFromAssociations(doc, dictionaryCollection, associations, specType, out classParametersToCreate, out classParametersToSet);
+            CollectParametersAndValuesFromAssociations(doc, ifcEntity, dictionaryCollection, associations, specType, out classParametersToCreate, out classParametersToSet);
 
             //Create a list of PROPERTY parameters to create and set
             List<ParameterCreation> propParametersToCreate = new List<ParameterCreation>();
@@ -70,7 +71,7 @@ namespace BsddRevitPlugin.Logic.Utilities
             _propertyIsInstanceMap.Clear();
         }
 
-        private static void CollectParametersAndValuesFromAssociations(Document doc, HashSet<IfcClassification> dictionaryCollection, List<Association> associations, ForgeTypeId specType, out List<ParameterCreation> parametersToCreate, out Dictionary<string, object> parametersToSet)
+        private static void CollectParametersAndValuesFromAssociations(Document doc,IfcEntity ifcEntity, HashSet<IfcClassification> dictionaryCollection, List<Association> associations, ForgeTypeId specType, out List<ParameterCreation> parametersToCreate, out Dictionary<string, object> parametersToSet)
         {
             //Initialize parameters
             parametersToCreate = new List<ParameterCreation>();
@@ -91,9 +92,20 @@ namespace BsddRevitPlugin.Logic.Utilities
 
                             //Create parameter name for each unique the bsdd classificationReference, this is always added as type parameter!
                             bsddParameterName = ElementsManagerLogic.CreateParameterNameFromIFCClassificationReferenceSourceLocation(ifcClassificationReference);
-                            parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType, Parameters.ExistingProjectParameter(doc, bsddParameterName), false));
-                            parametersToSet.Add(bsddParameterName, ifcClassificationReference.Identification + ":" + ifcClassificationReference.Name);
 
+                            ParameterDataManagement parameterDataManagement = new ParameterDataManagement();
+                            if (ifcEntity.Name == parameterDataManagement._areaName || ifcEntity.Name == parameterDataManagement._roomName)
+                            {
+                                //Add instance parameter
+                                parametersToCreate.Add(new ParameterCreation(bsddParameterName + "[Instance]", specType, Parameters.ExistingProjectParameter(doc, bsddParameterName + "[Instance]"), true));
+                            }
+                            else
+                            {
+                                //Add type parameter
+                                parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType, Parameters.ExistingProjectParameter(doc, bsddParameterName), false));
+                            }
+                            parametersToSet.Add(bsddParameterName, ifcClassificationReference.Identification + ":" + ifcClassificationReference.Name);
+                            
                             dictionaryCollection.Add(ifcClassificationReference.ReferencedSource);
 
                             //Get mapped parametername (stored in the documents DataStorage)

@@ -144,7 +144,7 @@ namespace BsddRevitPlugin.Logic.Model
 
                                 tx.Commit();
                             }
-                        }
+                        }   
                         //TODO: No SetElementTypeParameters for instance parameters (yet), needs UI
                     }
                     else
