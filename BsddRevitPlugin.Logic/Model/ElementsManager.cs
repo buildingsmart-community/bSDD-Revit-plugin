@@ -42,6 +42,31 @@ namespace BsddRevitPlugin.Logic.Model
                 ifcEntities.Add(ifcData);
             }
 
+            //SHOULD ONLY BE IF THEY ARE IN SELECTION OR ALL IN VIEW OR ALL IN DOCUMENT
+            ParameterDataManagement parameterDataManagement = new ParameterDataManagement();
+            //Add type for all Rooms
+            var roomEntity = new IfcEntity
+            {
+                Name = parameterDataManagement._roomName,
+                Type = "Rooms & Area's",
+                Description = "Rooms & Area's",
+                ObjectType = "Rooms & Area's",
+                PredefinedType = "Rooms & Area's"
+            };
+            ifcEntities.Add(roomEntity);
+
+            //Add type for all Area's
+            var areaEntity = new IfcEntity
+            {
+                Name = parameterDataManagement._areaName,
+                Type = "Rooms & Area's",
+                Description = "Rooms & Area's",
+                ObjectType = "Rooms & Area's",
+                PredefinedType = "Rooms & Area's"
+
+            };
+            ifcEntities.Add(areaEntity);
+
             var provider = new JsonBasedPersistenceProvider("C://temp");
             provider.Persist(ifcEntities);
 
@@ -74,22 +99,9 @@ namespace BsddRevitPlugin.Logic.Model
 
                 try
                 {
+
                     // Create a classification set in which every dictionary will be collected
                     HashSet<IfcClassification> dictionaryCollection = new HashSet<IfcClassification>();
-
-                    //Get the elementType
-                    int idInt = Convert.ToInt32(ifcEntity.Tag);
-                    ElementId typeId = new ElementId(idInt);
-                    ElementType elementType = doc.GetElement(typeId) as ElementType;
-                    using (Transaction tx = new Transaction(doc))
-                    {
-                        tx.Start("SetIfcEntity");
-
-                        //Set IfcEntity to the Elements DataStorage
-                        SetIfcEntityToElementDataStorage(ifcEntity, elementType);
-
-                        tx.Commit();
-                    }
 
                     ForgeTypeId groupType = GroupTypeId.Ifc;
 
@@ -98,26 +110,91 @@ namespace BsddRevitPlugin.Logic.Model
 
                     parameterDataManagement.GetParametersToCreateAndSet(doc, ifcEntity, dictionaryCollection, propertyIsInstanceMap, out parametersToCreate, out parametersToSet);
 
-
-                    using (Transaction tx = new Transaction(doc))
+                    if (ifcEntity.Name == parameterDataManagement._areaName || ifcEntity.Name == parameterDataManagement._roomName)
                     {
-                        tx.Start("Create or edit parameters");
+                        //TODO: No SetIfcEntityToElementDataStorage for instance parameters (yet), needs UI
 
-                        //First create all parameters at once (in Release creating parameters seperately sometimes fails)
-                        List<Category> currentCategoryLst = new List<Category>() { elementType.Category };
-                        Parameters.CreateProjectParameters(doc, parametersToCreate, "tempGroupName", groupType, currentCategoryLst);
+                        using (Transaction tx = new Transaction(doc))
+                        {
+                            tx.Start("Create or edit parameters");
 
-                        tx.Commit();
+                            //First create all parameters at once (in Release creating parameters seperately sometimes fails)
+                            List<Category> currentCategoryLst = new List<Category>();
+                            if (ifcEntity.Name == parameterDataManagement._areaName)
+                            {
+                                // add Area category
+                                currentCategoryLst.Add(doc.Settings.Categories.get_Item(BuiltInCategory.OST_Areas));
+                            }
+                            else
+                            {
+                                // add Room category
+                                currentCategoryLst.Add(doc.Settings.Categories.get_Item(BuiltInCategory.OST_Rooms));
+                            }
+                            Parameters.CreateProjectParameters(doc, parametersToCreate, "tempGroupName", groupType, currentCategoryLst);
+
+                            tx.Commit();
+                        }
+                        if (parametersToCreate.Any(a => a.isInstance == true))
+                        {
+                            using (Transaction tx = new Transaction(doc))
+                            {
+                                tx.Start("Update instance parameters");
+
+                                Parameters.SetInstanceParameterVaryBetweenGroups(doc, parametersToCreate, true);
+
+                                tx.Commit();
+                            }
+                        }   
+                        //TODO: No SetElementTypeParameters for instance parameters (yet), needs UI
                     }
-
-                    using (Transaction tx = new Transaction(doc))
+                    else
                     {
-                        tx.Start("Set parameters");
+                        //Get the elementType
+                        int idInt = Convert.ToInt32(ifcEntity.Tag);
+                        ElementId typeId = new ElementId(idInt);
+                        ElementType elementType = doc.GetElement(typeId) as ElementType;
+                        using (Transaction tx = new Transaction(doc))
+                        {
+                            tx.Start("SetIfcEntity");
 
-                        //Set all parameters
-                        Parameters.SetElementTypeParameters(elementType, parametersToSet);
+                            //Set IfcEntity to the Elements DataStorage
+                            SetIfcEntityToElementDataStorage(ifcEntity, elementType);
 
-                        tx.Commit();
+                            tx.Commit();
+                        }
+
+                        using (Transaction tx = new Transaction(doc))
+                        {
+                            tx.Start("Create or edit parameters");
+
+                            //First create all parameters at once (in Release creating parameters seperately sometimes fails)
+                            List<Category> currentCategoryLst = new List<Category>() { elementType.Category };
+                            Parameters.CreateProjectParameters(doc, parametersToCreate, "tempGroupName", groupType, currentCategoryLst);
+
+                            tx.Commit();
+                        }
+                        if (parametersToCreate.Any(a => a.isInstance == true))
+                        {
+                            using (Transaction tx = new Transaction(doc))
+                            {
+                                tx.Start("Update instance parameters");
+
+                                Parameters.SetInstanceParameterVaryBetweenGroups(doc, parametersToCreate, true);
+
+                                tx.Commit();
+                            }
+                        }
+
+
+                        using (Transaction tx = new Transaction(doc))
+                        {
+                            tx.Start("Set parameters");
+
+                            //Set all parameters
+                            Parameters.SetElementTypeParameters(elementType, parametersToSet);
+
+                            tx.Commit();
+                        }
                     }
                 }
                 catch (Exception e)
@@ -133,37 +210,59 @@ namespace BsddRevitPlugin.Logic.Model
         /// Highlight/select the elements in Revit
         /// </summary>
         /// <param name="uidoc"></param>
-        /// <param name="ifcEntity"></param>
-        public static void SelectElementsWithIfcData(UIDocument uidoc, List<IfcEntity> ifcEntity)
+        /// <param name="ifcEntityLst"></param>
+        public static void SelectElementsWithIfcData(UIDocument uidoc, List<IfcEntity> ifcEntityLst)
         {
             Logger logger = LogManager.GetCurrentClassLogger();
 
-            logger.Info($"Element json {JsonConvert.SerializeObject(ifcEntity)}");
+            logger.Info($"Element json {JsonConvert.SerializeObject(ifcEntityLst)}");
             Document doc = uidoc.Document;
 
             try
             {
+
                 List<ElementId> allElementIds = new List<ElementId>();
-                foreach (IfcEntity ifcElement in ifcEntity)
+                foreach (IfcEntity ifcEntity in ifcEntityLst)
                 {
-                    //Get the elementType
-                    int idInt = Convert.ToInt32(ifcElement.Tag);
-                    ElementId typeId = new ElementId(idInt);
-                    ElementType elementType = doc.GetElement(typeId) as ElementType;
 
-                    //Get all instances of the elementtype
-                    FilteredElementCollector collector = new FilteredElementCollector(doc);
-                    var elements = collector
-                        .WhereElementIsNotElementType()
-                        .Where(e => e.GetTypeId() == elementType.Id)
-                        .ToList();
+                    ParameterDataManagement parameterDataManagement = new ParameterDataManagement();
+                    if (ifcEntity.Name == parameterDataManagement._areaName)
+                    {
+                        // Select all areas
+                        FilteredElementCollector collector = new FilteredElementCollector(doc);
+                        var areas = collector.OfCategory(BuiltInCategory.OST_Areas).WhereElementIsNotElementType().ToList();
+                        allElementIds.AddRange(areas.Select(a => a.Id));
+                    }
+                    else if (ifcEntity.Name == parameterDataManagement._roomName)
+                    {
+                        // Select all rooms
+                        FilteredElementCollector collector = new FilteredElementCollector(doc);
+                        var rooms = collector.OfCategory(BuiltInCategory.OST_Rooms).WhereElementIsNotElementType().ToList();
+                        allElementIds.AddRange(rooms.Select(r => r.Id));
+                    }
+                    else
+                    {
 
-                    //Get element ids
-                    List<ElementId> elementIds = elements.Select(e => e.Id).ToList();
+                        //Get the elementType
+                        int idInt = Convert.ToInt32(ifcEntity.Tag);
+                        ElementId typeId = new ElementId(idInt);
+                        ElementType elementType = doc.GetElement(typeId) as ElementType;
 
-                    allElementIds.AddRange(elementIds);
+                        //Get all instances of the elementtype
+                        FilteredElementCollector collector = new FilteredElementCollector(doc);
+                        var elements = collector
+                            .WhereElementIsNotElementType()
+                            .Where(e => e.GetTypeId() == elementType.Id)
+                            .ToList();
+
+                        //Get element ids
+                        List<ElementId> elementIds = elements.Select(e => e.Id).ToList();
+
+                        allElementIds.AddRange(elementIds);
+                    }
+
                 }
-                
+
 
 
                 try
