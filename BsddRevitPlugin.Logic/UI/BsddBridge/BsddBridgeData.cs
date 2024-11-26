@@ -58,6 +58,6 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         public List<IfcEntity> IfcData { get; set; }
 
         [JsonProperty("propertyIsInstanceMap")]
-        public Dictionary<string, bool> PropertyIsInstanceMap { get; set; }
+        public Dictionary<string, bool> PropertyIsInstanceMap { get; set; } //string = propertyset/property - for now just property
     }
 }

@@ -3,6 +3,7 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Media.Animation;
 
 namespace BsddRevitPlugin.Logic.Utilities
 {
@@ -28,6 +29,7 @@ namespace BsddRevitPlugin.Logic.Utilities
     }
     public static class Parameters
     {
+        //This class is based on https://github.com/DynamoDS/DynamoRevit/blob/master/src/Libraries/RevitNodes/Elements/Parameter.cs
 
         #region Shared Parameters
 
@@ -351,7 +353,6 @@ namespace BsddRevitPlugin.Logic.Utilities
             //TransactionManager.Instance.TransactionTaskDone();
         }
 
-
         #endregion
 
         /// <summary>
@@ -401,7 +402,38 @@ namespace BsddRevitPlugin.Logic.Utilities
             return categories;
         }
 
+        public static void SetInstanceParameterVaryBetweenGroups(Document doc, List<ParameterCreation> parametersToCreate, bool value)
+        {
 
+            Logger logger = LogManager.GetCurrentClassLogger();
+            BindingMap bindingMap = doc.ParameterBindings;
+            DefinitionBindingMapIterator it = bindingMap.ForwardIterator();
+
+            while (it.MoveNext())
+            {
+                if (it.Key is InternalDefinition def)
+                {
+                    if(it.Current is InstanceBinding instanceBinding)
+                    {
+                        if (parametersToCreate.Any(x => x.parameterName == def.Name))
+                        {
+                            try
+                            {
+                                def.SetAllowVaryBetweenGroups(doc, value);
+
+                            }
+                            catch (Exception e)
+                            {
+                                logger.Error($"Failed to SetAllowVaryBetweenGroups for parameter '{def.Name}': {e.Message}");
+
+                            }
+
+                        }
+                    }
+                }
+            }
+
+        }
         public static bool ExistingProjectParameter(Document doc, string paramName)
         {
             BindingMap bindingMap = doc.ParameterBindings;
@@ -449,6 +481,7 @@ namespace BsddRevitPlugin.Logic.Utilities
                         }
                         break;
                     }
+                   
                 }
             }
             catch (Exception e)
