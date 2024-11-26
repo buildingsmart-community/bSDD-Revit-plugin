@@ -405,6 +405,7 @@ namespace BsddRevitPlugin.Logic.Utilities
         public static void SetInstanceParameterVaryBetweenGroups(Document doc, List<ParameterCreation> parametersToCreate, bool value)
         {
 
+            Logger logger = LogManager.GetCurrentClassLogger();
             BindingMap bindingMap = doc.ParameterBindings;
             DefinitionBindingMapIterator it = bindingMap.ForwardIterator();
 
@@ -416,7 +417,16 @@ namespace BsddRevitPlugin.Logic.Utilities
                     {
                         if (parametersToCreate.Any(x => x.parameterName == def.Name))
                         {
-                            def.SetAllowVaryBetweenGroups(doc, value);
+                            try
+                            {
+                                def.SetAllowVaryBetweenGroups(doc, value);
+
+                            }
+                            catch (Exception e)
+                            {
+                                logger.Error($"Failed to SetAllowVaryBetweenGroups for parameter '{def.Name}': {e.Message}");
+
+                            }
 
                         }
                     }
