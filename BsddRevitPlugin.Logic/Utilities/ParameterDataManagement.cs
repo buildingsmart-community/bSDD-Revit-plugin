@@ -166,13 +166,23 @@ namespace BsddRevitPlugin.Logic.Utilities
                             value = GetParameterValueInCorrectDatatype(enumerationValue);
                             specType = GetParameterTypeFromProperty(enumerationValue);
                         }
+
                         //check if instance or type
-                        //string propertyName = propertySet.Name + "/" + property.Name;
+                        bool isInstance = false;
                         string propertyName = property.Name;
-                        bool isInstance = _propertyIsInstanceMap.TryGetValue(propertyName, out bool isInstanceValue);
+                        string propertySetPropertyName = propertySet.Name + "/" + property.Name;
+
+                        if (_propertyIsInstanceMap.ContainsKey(propertyName))
+                        {
+                             isInstance = _propertyIsInstanceMap.TryGetValue(propertyName, out bool valueExists);
+                        }
+                        else if (_propertyIsInstanceMap.ContainsKey(propertySetPropertyName))
+                        {
+                            isInstance = _propertyIsInstanceMap.TryGetValue(propertyName, out bool valueExists);
+                        }
 
                         bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property);
-                        parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType, Parameters.ExistingProjectParameter(doc, bsddParameterName), isInstanceValue));
+                        parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType, Parameters.ExistingProjectParameter(doc, bsddParameterName), isInstance));
                         parametersToSet.Add(bsddParameterName, value);
                     }
                 }
@@ -460,8 +470,8 @@ namespace BsddRevitPlugin.Logic.Utilities
                     }
                     else if (parameterName.StartsWith("bsdd/prop/"))
                     {
-                        //string parameterPropertyName = parameterName.Replace("bsdd/prop/", "");
-                        string parameterPropertyName = parameterName.Substring(parameterName.LastIndexOf('/') + 1);
+                        string parameterPropertyName = parameterName.Replace("bsdd/prop/", "");
+                        //string parameterPropertyName = parameterName.Substring(parameterName.LastIndexOf('/') + 1);
 
                         if (it.Current is InstanceBinding)
                         {

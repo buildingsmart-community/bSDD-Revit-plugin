@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace BsddRevitPlugin.Logic.Model
+namespace BsddRevitPlugin.Logic.Utilities
 {
     public static class IfcParameterMappings
     {
