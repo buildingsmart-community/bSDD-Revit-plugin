@@ -167,7 +167,8 @@ namespace BsddRevitPlugin.Logic.Utilities
                             specType = GetParameterTypeFromProperty(enumerationValue);
                         }
                         //check if instance or type
-                        string propertyName = propertySet.Name +"/"+ property.Name;
+                        //string propertyName = propertySet.Name + "/" + property.Name;
+                        string propertyName = property.Name;
                         bool isInstance = _propertyIsInstanceMap.TryGetValue(propertyName, out bool isInstanceValue);
 
                         bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property);
@@ -459,7 +460,9 @@ namespace BsddRevitPlugin.Logic.Utilities
                     }
                     else if (parameterName.StartsWith("bsdd/prop/"))
                     {
-                        string parameterPropertyName = parameterName.Replace("bsdd/prop/", "");
+                        //string parameterPropertyName = parameterName.Replace("bsdd/prop/", "");
+                        string parameterPropertyName = parameterName.Substring(parameterName.LastIndexOf('/') + 1);
+
                         if (it.Current is InstanceBinding)
                         {
                             isInstance = true;
