@@ -121,7 +121,7 @@ namespace BsddRevitPlugin.Logic.UI.Services
 
             if (ifcVersion == IFCVersion.IFC4x3 && exportQuantities)
             {
-                //Find the UDPS -Quantities-4x3.txt file to export Quantities in IFC 4x3
+                //Find the UDPS-Quantities-4x3.txt file to export Quantities in IFC 4x3
                 string currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 string settingsFilePath = currentPath + "\\Resources\\UDPS-Quantities-4x3.txt";
 
@@ -130,7 +130,7 @@ namespace BsddRevitPlugin.Logic.UI.Services
             }
             else if (exportQuantities)
             {
-                //Find the UDPS -Quantities-4x3.txt file to export Quantities in IFC 4x3
+                //Find the UDPS-Quantities.txt file to export Quantities for IfcCovering
                 string currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 string settingsFilePath = currentPath + "\\Resources\\UDPS-Quantities.txt";
 
