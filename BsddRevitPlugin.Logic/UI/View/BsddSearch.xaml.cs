@@ -111,10 +111,10 @@ namespace BsddRevitPlugin.Logic.UI.View
             _inputBsddBridgeData = bsddBridgeData;
         }
 
-        public void UpdateSelection(BsddBridgeData ifcData)
+        public void UpdateEditSelection(BsddBridgeData ifcData)
         {
             var jsonString = JsonConvert.SerializeObject(ifcData);
-            var jsFunctionCall = $"updateSelection({jsonString});";
+            var jsFunctionCall = $"updateEditSelection({jsonString});";
 
             if (_browserService.IsBrowserInitialized)
             {
