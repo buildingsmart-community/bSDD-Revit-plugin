@@ -312,6 +312,10 @@ namespace BsddRevitPlugin.Logic.Model
                 {
                     continue;
                 }
+                if(parameterName == "Category" && parameter.IsReadOnly == true)
+                {
+                    continue;
+                } 
 
                 string[] parameterParts = parameterName.StartsWith("bsdd/prop/", StringComparison.Ordinal)
                     ? parameterName.Remove(0, 10).Split('/')
