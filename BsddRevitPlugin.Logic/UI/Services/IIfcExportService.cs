@@ -10,6 +10,6 @@ namespace BsddRevitPlugin.Logic.UI.Services
         IFCExportConfiguration GetOrSetBsddConfiguration(Autodesk.Revit.DB.Document document);
         IList<Parameter> GetAllBsddParameters(Autodesk.Revit.DB.Document document);
         Dictionary<string, IList<Parameter>> RearrageParamatersForEachPropertySet(IList<Parameter> parameters);
-        string GetBsddPropertiesAsParameterfile(Document document, string mappingParameterFilePath, IFCVersion ifcVersion);
+        string GetBsddPropertiesAsParameterfile(Document document, string mappingParameterFilePath, IFCExportConfiguration bsddIFCExportConfiguration);
     }
 }

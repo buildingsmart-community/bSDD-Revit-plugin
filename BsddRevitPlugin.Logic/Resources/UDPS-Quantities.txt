@@ -1,0 +1,16 @@
+##
+## Export to IFC4x3
+## Provided by Arons en Gelauff architecten
+## The current Revit exporter is still experimental and does not export BaseQuantities.
+##
+## Qto_BodyGeometryValidation applies to IfcProduct.
+## Add Entities when needed. Only for Loadable Families.
+##
+PropertySet:	Qto_CoveringBaseQuantities	I/T	IfcCovering, IfcCoveringType
+	GrossArea	Area	GrossArea
+	NetArea	Area	Area
+	Width	Length	Width
+PropertySet:	eQto_CoveringBaseQuantities	I/T	IfcCovering, IfcCoveringType
+	NetVolume	Volume	Volume
+	NetWeight	Number	NetWeight
+##

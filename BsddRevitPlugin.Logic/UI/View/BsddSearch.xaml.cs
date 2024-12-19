@@ -68,6 +68,7 @@ namespace BsddRevitPlugin.Logic.UI.View
             //_browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/v1.4.0/bsdd_search/";
             _browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/v1.6.0/bsdd_search/";
             _browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/main/bsdd_search/";
+            _browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/v1.7.2/bsdd_search/";
             var bridgeSearch = new BsddSearchBridge(bsddBridgeData, _bsddLastSelectionEvent);
             bridgeSearch.SetParentWindow(this);
             _browserService.RegisterJsObject("bsddBridge", bridgeSearch, true);
@@ -111,10 +112,10 @@ namespace BsddRevitPlugin.Logic.UI.View
             _inputBsddBridgeData = bsddBridgeData;
         }
 
-        public void UpdateSelection(BsddBridgeData ifcData)
+        public void UpdateEditSelection(BsddBridgeData ifcData)
         {
             var jsonString = JsonConvert.SerializeObject(ifcData);
-            var jsFunctionCall = $"updateSelection({jsonString});";
+            var jsFunctionCall = $"updateEditSelection({jsonString});";
 
             if (_browserService.IsBrowserInitialized)
             {
