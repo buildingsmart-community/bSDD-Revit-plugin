@@ -64,8 +64,11 @@ namespace BsddRevitPlugin.Logic.UI.Services
         /// <param name="document">The Revit document.</param>
         /// <param name="mappingParameterFilePath">The file path of the active mapping parameter file.</param>
         /// <returns>The file path of the combined parameter file.</returns>
-        public string GetBsddPropertiesAsParameterfile(Document document, string mappingParameterFilePath, IFCVersion ifcVersion)
+        public string GetBsddPropertiesAsParameterfile(Document document, string mappingParameterFilePath, IFCExportConfiguration bsddIFCExportConfiguration)
         {
+            IFCVersion ifcVersion = bsddIFCExportConfiguration.IFCVersion;
+            bool exportQuantities = bsddIFCExportConfiguration.ExportBaseQuantities;
+
             // Initialize a string to hold all parameters starting with bsdd for the Export User Defined Propertysets
             string add_BSDD_UDPS = null;
 
@@ -116,11 +119,20 @@ namespace BsddRevitPlugin.Logic.UI.Services
                 }
             }
 
-            if (ifcVersion == IFCVersion.IFC4x3)
+            if (ifcVersion == IFCVersion.IFC4x3 && exportQuantities)
             {
-                //Find the UDPS -Quantities-4x3.txt file to export Quantities in IFC 4x3
+                //Find the UDPS-Quantities-4x3.txt file to export Quantities in IFC 4x3
                 string currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 string settingsFilePath = currentPath + "\\Resources\\UDPS-Quantities-4x3.txt";
+
+                // Add all text from the settingsfilepath file to the add_BSDD_UDPS string
+                add_BSDD_UDPS += File.ReadAllText(settingsFilePath);
+            }
+            else if (exportQuantities)
+            {
+                //Find the UDPS-Quantities.txt file to export Quantities for IfcCovering
+                string currentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                string settingsFilePath = currentPath + "\\Resources\\UDPS-Quantities.txt";
 
                 // Add all text from the settingsfilepath file to the add_BSDD_UDPS string
                 add_BSDD_UDPS += File.ReadAllText(settingsFilePath);

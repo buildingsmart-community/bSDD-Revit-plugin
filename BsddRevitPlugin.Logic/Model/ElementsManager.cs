@@ -73,7 +73,7 @@ namespace BsddRevitPlugin.Logic.Model
             return ifcEntities;
         }
         /// <summary>
-        /// Set the IFC data from the bSDD UI to the correct Revit element.
+        /// Set the IFC data from the bSDD UI to the correct   Revit element.
         /// </summary>
         /// <param name="doc"></param>
         /// <param name="ifcEntity"></param>

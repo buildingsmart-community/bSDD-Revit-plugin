@@ -51,7 +51,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         /// <returns>The serialized IFC data, in JSON format.</returns>
         public string bsddSearch(string ifcJsonData)
         {
-            //Get List<IfcEntity>
+            //Get List<IfcEntity> from UI component
 
             Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -68,7 +68,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             _eventHandlerBsddSearch.setBsddBridgeData(bsddBridgeData);
             _eventHandlerBsddSearch.Raise("openSearch");
 
-            //Send BsddBridgeData
+            //Send BsddBridgeData to the next window
 
             return JsonConvert.SerializeObject(ifcEntity);
         }
