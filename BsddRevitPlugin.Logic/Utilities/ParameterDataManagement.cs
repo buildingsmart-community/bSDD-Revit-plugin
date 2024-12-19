@@ -465,22 +465,28 @@ namespace BsddRevitPlugin.Logic.Utilities
                         {
                             isInstance = true;
                         }
-                        projectParameterTypes.Add(parameterName, isInstance);
-
+                        if (!projectParameterTypes.ContainsKey(parameterName))
+                        {
+                            projectParameterTypes.Add(parameterName, isInstance);
+                        }
                     }
                     else if (parameterName.StartsWith("bsdd/prop/"))
                     {
-                        string parameterPropertyName = parameterName.Replace("bsdd/prop/", "");
-                        //string parameterPropertyName = parameterName.Substring(parameterName.LastIndexOf('/') + 1);
+                        string parameterPropertyName = parameterName.Substring(parameterName.LastIndexOf('/') + 1);
 
                         if (it.Current is InstanceBinding)
                         {
                             isInstance = true;
                         }
-                        projectParameterTypes.Add(parameterPropertyName, isInstance);
+                        if (!projectParameterTypes.ContainsKey(parameterPropertyName))
+                        {
+                            projectParameterTypes.Add(parameterPropertyName, isInstance);
+                        }
                     }
                 }
             }
+            //Disable name to be editable in UI:
+            projectParameterTypes.Add("Attributes/Name", true);
 
             return projectParameterTypes;
         }
