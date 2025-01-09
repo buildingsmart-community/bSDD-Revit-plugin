@@ -35,6 +35,33 @@ namespace BsddRevitPlugin.Logic.IfcExport
             Logger logger = LogManager.GetCurrentClassLogger();
             Stopwatch stopwatch = Stopwatch.StartNew();
 
+            FilteredElementCollector elementTypes = new FilteredElementCollector(doc).OfClass(typeof(ElementType));
+            
+            foreach (ElementType elementType in elementTypes)
+            {
+                if (elementType != null)
+                {
+                    var elementTypeAssociations = ElementsManagerLogic.GetElementTypeAssociations(elementType);
+                    foreach (var association in elementTypeAssociations)
+                    {
+                        var classificationData = GetClassificationReferencePostprocesData(association.Key, association.Value);
+                        if (classificationData != null)
+                        {
+                            classificationReferencesPostprocesData.Add(classificationData);
+                        }
+                    }
+                }
+            }
+            stopwatch.Stop();
+            logger.Info($"CollectIfcClassifications executed in {stopwatch.ElapsedMilliseconds} ms");
+        }
+
+        // #TODO Remove if good tested
+        public void CollectIfcClassificationsOld(Document doc)
+        {
+            Logger logger = LogManager.GetCurrentClassLogger();
+            Stopwatch stopwatch = Stopwatch.StartNew();
+
             FilteredElementCollector collector = new FilteredElementCollector(doc).OfClass(typeof(ElementType));
             IList<Element> elements = collector.ToElements();
 
