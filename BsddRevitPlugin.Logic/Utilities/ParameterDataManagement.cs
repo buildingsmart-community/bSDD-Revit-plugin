@@ -213,6 +213,13 @@ namespace BsddRevitPlugin.Logic.Utilities
 
                 }
             }
+            if (ifcEntity.Description != null)
+            {
+                if (ifcEntity.Description != "...")
+                {
+                    parametersToSet.Add("Description", ifcEntity.Description);
+                }
+            }
             ParameterDataManagement parameterDataManagement = new ParameterDataManagement();
             if (ifcEntity.Name == parameterDataManagement._areaName || ifcEntity.Name == parameterDataManagement._roomName)
             {
