@@ -140,11 +140,6 @@ namespace BsddRevitPlugin.Logic.Utilities
                 {
                     foreach (var property in propertySet.HasProperties)
                     {
-
-                        if (property.Name == "Bouwblok")
-                        {
-                            string asfdasdf = "";
-                        }
                         if (property.Type == null)
                         {
                             continue;
