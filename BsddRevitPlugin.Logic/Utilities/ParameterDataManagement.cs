@@ -183,7 +183,12 @@ namespace BsddRevitPlugin.Logic.Utilities
 
                         bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property);
                         parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType, Parameters.ExistingProjectParameter(doc, bsddParameterName), isInstance));
-                        parametersToSet.Add(bsddParameterName, value);
+                        
+                        //Never set instance parameters untill IfcValue is implemented
+                        if (!isInstance)
+                        {
+                            parametersToSet.Add(bsddParameterName, value);
+                        }
                     }
                 }
             }
