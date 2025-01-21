@@ -150,27 +150,34 @@ namespace BsddRevitPlugin.Logic.Utilities
                             var propertySingleValue = property as IfcPropertySingleValue;
                             if (propertySingleValue.NominalValue == null)
                             {
-                                continue;
                             }
-                            value = GetParameterValueInCorrectDatatype(propertySingleValue.NominalValue);
-                            specType = GetParameterTypeFromProperty(propertySingleValue.NominalValue);
+                            else
+                            {
+                                value = GetParameterValueInCorrectDatatype(propertySingleValue.NominalValue);
+                                specType = GetParameterTypeFromProperty(propertySingleValue.NominalValue);
+
+                            }
                         }
                         else if (property.Type == "IfcPropertyEnumeratedValue")
                         {
                             var propertyEnumeratedValue = property as IfcPropertyEnumeratedValue;
                             if (propertyEnumeratedValue.EnumerationValues == null || propertyEnumeratedValue.EnumerationValues.Count == 0)
                             {
-                                continue;
                             }
-                            var enumerationValue = propertyEnumeratedValue.EnumerationValues.First();
-                            value = GetParameterValueInCorrectDatatype(enumerationValue);
-                            specType = GetParameterTypeFromProperty(enumerationValue);
+                            else
+                            {
+                                var enumerationValue = propertyEnumeratedValue.EnumerationValues.First();
+                                value = GetParameterValueInCorrectDatatype(enumerationValue);
+                                specType = GetParameterTypeFromProperty(enumerationValue);
+
+                            }
                         }
 
                         //check if instance or type
                         bool isInstance = false;
                         string propertyName = property.Name;
                         string propertySetPropertyName = propertySet.Name + "/" + property.Name;
+
 
                         if (_propertyIsInstanceMap.ContainsKey(propertyName))
                         {
