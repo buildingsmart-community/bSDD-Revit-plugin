@@ -10,7 +10,7 @@
       "description": "",
       "location": "https://identifier.buildingsmart.org/uri/volkerwesselsbvgo/basis_bouwproducten_oene/0.1"
     },
-    "parameterMapping": "Description"
+    "parameterMapping": ""
   },
   "ifcDictionary": {
     "ifcClassification": {
@@ -28,12 +28,12 @@
     {
       "ifcClassification": {
         "type": "IfcClassification",
-        "source": "nlsfb",
-        "edition": "2.2",
-        "editionDate": "2005-01-01T00:00:00Z",
-        "name": "NL-SfB 2005",
+        "source": "Ketenstandaard",
+        "edition": "2021",
+        "editionDate": "0001-01-01T00:00:00",
+        "name": "NL-SfB Tabel 1",
         "description": "",
-        "location": "https://identifier.buildingsmart.org/uri/nlsfb/nlsfb2005/2.2"
+        "location": "https://data.ketenstandaard.nl/publications/nlsfb/2021"
       },
       "parameterMapping": "Assembly Code"
     }

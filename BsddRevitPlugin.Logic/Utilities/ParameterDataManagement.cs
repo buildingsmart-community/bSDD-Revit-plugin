@@ -183,7 +183,12 @@ namespace BsddRevitPlugin.Logic.Utilities
 
                         bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property);
                         parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType, Parameters.ExistingProjectParameter(doc, bsddParameterName), isInstance));
-                        parametersToSet.Add(bsddParameterName, value);
+                        
+                        //Never set instance parameters untill IfcValue is implemented
+                        if (!isInstance)
+                        {
+                            parametersToSet.Add(bsddParameterName, value);
+                        }
                     }
                 }
             }
@@ -211,6 +216,13 @@ namespace BsddRevitPlugin.Logic.Utilities
                 {
                     parametersToSet.Add("Type IFC Predefined Type", "");
 
+                }
+            }
+            if (ifcEntity.Description != null)
+            {
+                if (ifcEntity.Description != "...")
+                {
+                    parametersToSet.Add("Description", ifcEntity.Description);
                 }
             }
             ParameterDataManagement parameterDataManagement = new ParameterDataManagement();
