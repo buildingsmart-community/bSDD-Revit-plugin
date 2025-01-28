@@ -509,8 +509,13 @@ namespace BsddRevitPlugin.Logic.Model
             }
 
             //krijg category van element
-            Category elemCategory = elem.Category;
-            String cat = elemCategory.Name.ToString();
+            String cat = "null";
+            if (elem.Category != null)
+            {
+                Category elemCategory = elem.Category;
+                cat = elemCategory.Name.ToString();
+            }
+            
 
             /* Vind alle subcategories van de categorie
             if (elemCategory != null)
