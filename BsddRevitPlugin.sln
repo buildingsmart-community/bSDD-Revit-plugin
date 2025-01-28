@@ -31,7 +31,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BsddRevitPlugin.Logic", "Bs
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BsddRevitPlugin.2024", "BsddRevitPlugin.2024\BsddRevitPlugin.2024.csproj", "{DCF53DDF-4D42-4766-84B9-80060EEABF8F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTesting", "..\..\UnitTesting\UnitTesting.csproj", "{B4779B92-EACD-4377-832B-6182AF867CA0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTesting", "UnitTesting\UnitTesting.csproj", "{B4779B92-EACD-4377-832B-6182AF867CA0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
