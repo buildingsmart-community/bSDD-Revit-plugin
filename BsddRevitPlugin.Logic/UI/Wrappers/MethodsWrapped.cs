@@ -188,7 +188,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             var uidoc = uiapp.ActiveUIDocument;
             var doc = uidoc.Document;
 
-            
+
             SetIfcDataToRevitElement(doc, bsddBridgeData);
 
 
