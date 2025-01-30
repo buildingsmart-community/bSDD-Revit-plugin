@@ -1,6 +1,5 @@
 ﻿using ASRR.Core.Log;
 using Autodesk.Revit.UI;
-using BsddRevitPlugin.Logic.UI.View;
 using NLog;
 using System.Diagnostics;
 using System.IO;
