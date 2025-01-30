@@ -12,12 +12,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
 using BsddRevitPlugin.Logic.Model;
+using BsddRevitPlugin.Logic.UI.Wrappers;
 using System;
 using Moq;
 using System.Reflection;
 using System.IO;
 using Newtonsoft.Json;
 using BsddRevitPlugin.Logic.IfcJson;
+using System.Runtime.InteropServices;
 
 //Enable to test Revit 2024
 //[assembly: System.Reflection.AssemblyMetadata("NUnit.Version", "2024")]
@@ -91,6 +93,38 @@ namespace UnitTesting_BSDD_Revit_Plugin
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => ElementsManager.SelectionToIfcJson(null, elemList));
             Assert.Throws<ArgumentNullException>(() => ElementsManager.SelectionToIfcJson(doc, null));
+        }
+
+        [Test]
+        public void Test_SetIfcDataToRevitElement()
+        {
+            // Arrange
+            //RevitEventWrapper<string> wrapper = RevitEventWrapper<string>;
+            //wrapper.Execute(uiapp);
+            List<ElementType> elemList = new List<ElementType>();
+            Element elem = elemList[0];
+            Object _lock;
+            _lock = new object();
+
+            // Maak een stub voor DataFetcher
+            //var fetcherStub = new Mock<DataFetcher>();
+            //fetcherStub.Setup(f => f.FetchData()).Returns("stub data");
+
+            //TType _savedArgs;
+            //TType args;
+
+            //lock (_lock)
+            //{
+            //    args = _savedArgs;
+            //    _savedArgs = default;
+            //}
+
+            // Act
+            //ElementsManager.SetIfcDataToRevitElement(doc, bsddBrigeData);
+
+            // Assert
+            //Assert.Throws<ArgumentNullException>(() => ElementsManager.SelectionToIfcJson(null, elemList));
+            //Assert.Throws<ArgumentNullException>(() => ElementsManager.SelectionToIfcJson(doc, null));
         }
     }
 }

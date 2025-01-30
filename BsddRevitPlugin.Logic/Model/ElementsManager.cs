@@ -206,6 +206,137 @@ namespace BsddRevitPlugin.Logic.Model
 
             propertyIsInstanceMap.Clear();
         }
+
+
+
+
+
+
+        public static void SetIfcDataToRevitElement_new(Document doc, BsddBridgeData bsddBridgeData)
+        {
+            var bsddSettings = new BsddSettings();
+            var logger = LogManager.GetCurrentClassLogger();
+            var ifcEntityList = bsddBridgeData.IfcData;
+            var propertyIsInstanceMap = bsddBridgeData.PropertyIsInstanceMap;
+            var parameterDataManagement = new ParameterDataManagement();
+
+            foreach (var ifcEntity in ifcEntityList)
+            {
+                logger.Info($"Element json {JsonConvert.SerializeObject(ifcEntity)}");
+
+                try
+                {
+                    var dictionaryCollection = new HashSet<IfcClassification>();
+                    var groupType = GroupTypeId.Ifc;
+                    parameterDataManagement.GetParametersToCreateAndSet(doc, ifcEntity, dictionaryCollection, propertyIsInstanceMap, out var parametersToCreate, out var parametersToSet);
+
+                    if (ifcEntity.Name == parameterDataManagement._areaName || ifcEntity.Name == parameterDataManagement._roomName)
+                    {
+                        HandleAreaOrRoomParameters(doc, ifcEntity, parameterDataManagement, parametersToCreate);
+                    }
+                    else
+                    {
+                        HandleElementTypeParameters(doc, ifcEntity, parametersToCreate, parametersToSet);
+                    }
+                }
+                catch (Exception e)
+                {
+                    logger.Info($"Failed to set element data: {e.Message}");
+                    throw;
+                }
+            }
+
+            propertyIsInstanceMap.Clear();
+        }
+
+        private static void HandleAreaOrRoomParameters(Document doc, IfcEntity ifcEntity, ParameterDataManagement parameterDataManagement, List<ParameterCreation> parametersToCreate)
+        {
+            using (var tx = new Transaction(doc, "Create or edit parameters"))
+            {
+                tx.Start();
+                var currentCategoryList = new List<Category>
+        {
+            ifcEntity.Name == parameterDataManagement._areaName
+                ? doc.Settings.Categories.get_Item(BuiltInCategory.OST_Areas)
+                : doc.Settings.Categories.get_Item(BuiltInCategory.OST_Rooms)
+        };
+                Parameters.CreateProjectParameters(doc, parametersToCreate, "tempGroupName", GroupTypeId.Ifc, currentCategoryList);
+                tx.Commit();
+            }
+
+            if (parametersToCreate.Any(a => a.isInstance))
+            {
+                using (var tx = new Transaction(doc, "Update instance parameters"))
+                {
+                    tx.Start();
+                    Parameters.SetInstanceParameterVaryBetweenGroups(doc, parametersToCreate, true);
+                    tx.Commit();
+                }
+            }
+        }
+
+        private static void HandleElementTypeParameters(Document doc, IfcEntity ifcEntity, List<ParameterCreation> parametersToCreate, Dictionary<string, object> parametersToSet)
+        {
+            var typeId = new ElementId(Convert.ToInt32(ifcEntity.Tag));
+            var elementType = doc.GetElement(typeId) as ElementType;
+
+            using (var tx = new Transaction(doc, "Set IfcEntity"))
+            {
+                tx.Start();
+                SetIfcEntityToElementDataStorage(ifcEntity, elementType);
+                tx.Commit();
+            }
+
+            using (var tx = new Transaction(doc, "Create or edit parameters"))
+            {
+                tx.Start();
+                var currentCategoryList = new List<Category> { elementType.Category };
+                Parameters.CreateProjectParameters(doc, parametersToCreate, "tempGroupName", GroupTypeId.Ifc, currentCategoryList);
+                tx.Commit();
+            }
+
+            if (parametersToCreate.Any(a => a.isInstance))
+            {
+                using (var tx = new Transaction(doc, "Update instance parameters"))
+                {
+                    tx.Start();
+                    Parameters.SetInstanceParameterVaryBetweenGroups(doc, parametersToCreate, true);
+                    tx.Commit();
+                }
+            }
+
+            using (var tx = new Transaction(doc, "Set parameters"))
+            {
+                tx.Start();
+                Parameters.SetElementTypeParameters(elementType, parametersToSet);
+                tx.Commit();
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         /// <summary>
         /// Highlight/select the elements in Revit
         /// </summary>
