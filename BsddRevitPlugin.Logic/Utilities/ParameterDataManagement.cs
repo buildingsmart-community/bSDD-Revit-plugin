@@ -150,27 +150,34 @@ namespace BsddRevitPlugin.Logic.Utilities
                             var propertySingleValue = property as IfcPropertySingleValue;
                             if (propertySingleValue.NominalValue == null)
                             {
-                                continue;
                             }
-                            value = GetParameterValueInCorrectDatatype(propertySingleValue.NominalValue);
-                            specType = GetParameterTypeFromProperty(propertySingleValue.NominalValue);
+                            else
+                            {
+                                value = GetParameterValueInCorrectDatatype(propertySingleValue.NominalValue);
+                                specType = GetParameterTypeFromProperty(propertySingleValue.NominalValue);
+
+                            }
                         }
                         else if (property.Type == "IfcPropertyEnumeratedValue")
                         {
                             var propertyEnumeratedValue = property as IfcPropertyEnumeratedValue;
                             if (propertyEnumeratedValue.EnumerationValues == null || propertyEnumeratedValue.EnumerationValues.Count == 0)
                             {
-                                continue;
                             }
-                            var enumerationValue = propertyEnumeratedValue.EnumerationValues.First();
-                            value = GetParameterValueInCorrectDatatype(enumerationValue);
-                            specType = GetParameterTypeFromProperty(enumerationValue);
+                            else
+                            {
+                                var enumerationValue = propertyEnumeratedValue.EnumerationValues.First();
+                                value = GetParameterValueInCorrectDatatype(enumerationValue);
+                                specType = GetParameterTypeFromProperty(enumerationValue);
+
+                            }
                         }
 
                         //check if instance or type
                         bool isInstance = false;
                         string propertyName = property.Name;
                         string propertySetPropertyName = propertySet.Name + "/" + property.Name;
+
 
                         if (_propertyIsInstanceMap.ContainsKey(propertyName))
                         {
@@ -183,7 +190,12 @@ namespace BsddRevitPlugin.Logic.Utilities
 
                         bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property);
                         parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType, Parameters.ExistingProjectParameter(doc, bsddParameterName), isInstance));
-                        parametersToSet.Add(bsddParameterName, value);
+                        
+                        //Never set instance parameters untill IfcValue is implemented
+                        if (!isInstance)
+                        {
+                            parametersToSet.Add(bsddParameterName, value);
+                        }
                     }
                 }
             }
@@ -211,6 +223,13 @@ namespace BsddRevitPlugin.Logic.Utilities
                 {
                     parametersToSet.Add("Type IFC Predefined Type", "");
 
+                }
+            }
+            if (ifcEntity.Description != null)
+            {
+                if (ifcEntity.Description != "...")
+                {
+                    parametersToSet.Add("Description", ifcEntity.Description);
                 }
             }
             ParameterDataManagement parameterDataManagement = new ParameterDataManagement();
@@ -465,22 +484,28 @@ namespace BsddRevitPlugin.Logic.Utilities
                         {
                             isInstance = true;
                         }
-                        projectParameterTypes.Add(parameterName, isInstance);
-
+                        if (!projectParameterTypes.ContainsKey(parameterName))
+                        {
+                            projectParameterTypes.Add(parameterName, isInstance);
+                        }
                     }
                     else if (parameterName.StartsWith("bsdd/prop/"))
                     {
-                        string parameterPropertyName = parameterName.Replace("bsdd/prop/", "");
-                        //string parameterPropertyName = parameterName.Substring(parameterName.LastIndexOf('/') + 1);
+                        string parameterPropertyName = parameterName.Substring(parameterName.LastIndexOf('/') + 1);
 
                         if (it.Current is InstanceBinding)
                         {
                             isInstance = true;
                         }
-                        projectParameterTypes.Add(parameterPropertyName, isInstance);
+                        if (!projectParameterTypes.ContainsKey(parameterPropertyName))
+                        {
+                            projectParameterTypes.Add(parameterPropertyName, isInstance);
+                        }
                     }
                 }
             }
+            //Disable name to be editable in UI:
+            projectParameterTypes.Add("Attributes/Name", true);
 
             return projectParameterTypes;
         }
