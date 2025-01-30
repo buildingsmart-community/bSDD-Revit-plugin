@@ -174,10 +174,6 @@
       <Project>{8404f487-dc2e-4e21-a29d-a164a94e0920}</Project>
       <Name>BsddRevitPlugin.2023</Name>
     </ProjectReference>
-    <ProjectReference Include="..\BsddRevitPlugin.Logic\BsddRevitPlugin.Logic.csproj">
-      <Project>{4adb19d3-24d7-4410-bdcb-19dbfe6908eb}</Project>
-      <Name>BsddRevitPlugin.Logic</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
