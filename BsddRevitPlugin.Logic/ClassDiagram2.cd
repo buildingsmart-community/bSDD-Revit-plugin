@@ -1,0 +1,380 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="BsddRevitPlugin.Logic.UI.Wrappers.UpdateUIonSave">
+    <Position X="7.5" Y="23" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAIAAAQCAAAAAAAAAAAAAAAAAAAAAAAAQAA=</HashCode>
+      <FileName>UI\Wrappers\MethodsWrapped.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="browser" />
+      <Field Name="logger" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="BsddRevitPlugin.Logic.UI.Wrappers.EventRevitSelection">
+    <Position X="3.75" Y="14.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAIAAAAAAAQCAAAAAAAAAAAAAAAAAABAAAQAQAA=</HashCode>
+      <FileName>UI\Wrappers\MethodsWrapped.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="browser" />
+      <Field Name="logger" />
+      <Field Name="Selectorlist" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="BsddRevitPlugin.Logic.UI.Wrappers.EventMakeSelection">
+    <Position X="7.25" Y="17.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAA=</HashCode>
+      <FileName>UI\Wrappers\MethodsWrapped.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BsddRevitPlugin.Logic.UI.Wrappers.EventSelectAll">
+    <Position X="5" Y="17.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAA=</HashCode>
+      <FileName>UI\Wrappers\MethodsWrapped.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BsddRevitPlugin.Logic.UI.Wrappers.EventSelectView">
+    <Position X="0.5" Y="17.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAA=</HashCode>
+      <FileName>UI\Wrappers\MethodsWrapped.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BsddRevitPlugin.Logic.UI.Wrappers.EventUseLastSelection">
+    <Position X="2.75" Y="17.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAA=</HashCode>
+      <FileName>UI\Wrappers\MethodsWrapped.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BsddRevitPlugin.Logic.UI.Wrappers.UpdateElementsWithIfcData" Collapsed="true">
+    <Position X="21.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQCAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>UI\Wrappers\MethodsWrapped.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BsddRevitPlugin.Logic.UI.Wrappers.SelectElementsWithIfcData" Collapsed="true">
+    <Position X="23.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQCAAAAAAAgAAAIAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>UI\Wrappers\MethodsWrapped.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BsddRevitPlugin.Logic.UI.Wrappers.UpdateSettings" Collapsed="true">
+    <Position X="23.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQCAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>UI\Wrappers\MethodsWrapped.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BsddRevitPlugin.Logic.UI.Wrappers.EventHandlerBsddSearch" Collapsed="true">
+    <Position X="21.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACAAAAAAAAAAAYCAAAAAAAABAAAAAAAAAAAAAABQAA=</HashCode>
+      <FileName>UI\Wrappers\MethodsWrapped.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NLog.Logger">
+    <Position X="13" Y="14" Width="1.5" />
+    <TypeIdentifier />
+    <ShowAsAssociation>
+      <Property Name="Factory" />
+      <Property Name="IsDebugEnabled" />
+      <Property Name="IsErrorEnabled" />
+      <Property Name="IsFatalEnabled" />
+      <Property Name="IsInfoEnabled" />
+      <Property Name="IsTraceEnabled" />
+      <Property Name="IsWarnEnabled" />
+      <Property Name="Name" />
+      <Property Name="Properties" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="BsddRevitPlugin.Logic.UI.DockablePanel.Select">
+    <Position X="5" Y="12" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAAAAAACAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAA=</HashCode>
+      <FileName>UI\DockablePanel\Selectors.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BsddRevitPlugin.Logic.UI.View.BsddSelection">
+    <Position X="5" Y="19.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>REEAAqAAACAAAAgAgAgAAEAAAEQAAAAEAAAAACIYiTI=</HashCode>
+      <FileName>UI\View\BsddSelection.xaml.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="SelectEHMS" />
+      <Field Name="SelectEHSA" />
+      <Field Name="SelectEHSV" />
+      <Field Name="SelectEEMS" />
+      <Field Name="_browserService" />
+      <Field Name="_inputBsddBridgeData" />
+      <Field Name="eventUseLastSelection" />
+      <Field Name="m_bottom" />
+      <Field Name="m_left" />
+      <Field Name="m_position" />
+      <Field Name="m_right" />
+      <Field Name="m_targetGuid" />
+      <Field Name="m_top" />
+      <Field Name="SelectEESA" />
+      <Field Name="SelectEESV" />
+      <Field Name="SelectEULS" />
+      <Field Name="updateUIEvent" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Autodesk.Revit.UI.ExternalEvent">
+    <Position X="5" Y="26.25" Width="1.5" />
+    <TypeIdentifier />
+    <ShowAsAssociation>
+      <Property Name="IsPending" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="BsddRevitPlugin.Logic.UI.BsddBridge.BsddBridgeData">
+    <Position X="9.5" Y="12" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAgABAAAAAAAA=</HashCode>
+      <FileName>UI\BsddBridge\BsddBridgeData.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="IfcData" />
+      <Property Name="PropertyIsInstanceMap" />
+      <Property Name="Settings" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="NLog.LogFactory">
+    <Position X="16.25" Y="15" Width="1.5" />
+    <TypeIdentifier />
+    <ShowAsAssociation>
+      <Property Name="AutoShutdown" />
+      <Property Name="Configuration" />
+      <Property Name="CurrentAppDomain" />
+      <Property Name="DefaultCultureInfo" />
+      <Property Name="GlobalThreshold" />
+      <Property Name="KeepVariablesOnReload" />
+      <Property Name="ServiceRepository" />
+      <Property Name="ThrowConfigExceptions" />
+      <Property Name="ThrowExceptions" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="System.String">
+    <Position X="10.25" Y="1.25" Width="1.5" />
+    <TypeIdentifier />
+    <ShowAsAssociation>
+      <Field Name="Empty" />
+      <Property Name="Length" />
+      <Property Name="this[System.Int32]" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="System.Collections.Generic.List&lt;T&gt;">
+    <Position X="13.75" Y="21.75" Width="1.5" />
+    <NestedTypes>
+      <Struct Name="System.Collections.Generic.List&lt;T&gt;.Enumerator" Collapsed="true">
+        <TypeIdentifier />
+        <Lollipop Position="0.2" />
+      </Struct>
+    </NestedTypes>
+    <TypeIdentifier />
+    <ShowAsAssociation>
+      <Property Name="Capacity" />
+      <Property Name="Count" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="System.Collections.Generic.Dictionary&lt;TKey, TValue&gt;">
+    <Position X="10" Y="23.75" Width="1.5" />
+    <NestedTypes>
+      <Struct Name="System.Collections.Generic.Dictionary&lt;TKey, TValue&gt;.Enumerator" Collapsed="true">
+        <TypeIdentifier />
+        <Lollipop Position="0.2" />
+      </Struct>
+      <Class Name="System.Collections.Generic.Dictionary&lt;TKey, TValue&gt;.KeyCollection" Collapsed="true">
+        <TypeIdentifier />
+        <Lollipop Position="0.2" />
+      </Class>
+      <Class Name="System.Collections.Generic.Dictionary&lt;TKey, TValue&gt;.ValueCollection" Collapsed="true">
+        <TypeIdentifier />
+        <Lollipop Position="0.2" />
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier />
+    <ShowAsAssociation>
+      <Property Name="Comparer" />
+      <Property Name="Count" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="BsddRevitPlugin.Logic.UI.BsddBridge.BsddSettings">
+    <Position X="0.5" Y="12" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAACAAAAAAAAAAAgAAAACAAAAAAAAAAAIAAIAA=</HashCode>
+      <FileName>UI\BsddBridge\BsddBridgeData.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="BsddApiEnvironment" />
+      <Property Name="FilterDictionaries" />
+      <Property Name="IfcDictionary" />
+      <Property Name="IncludeTestDictionaries" />
+      <Property Name="Language" />
+      <Property Name="MainDictionary" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="BsddRevitPlugin.Logic.UI.BsddBridge.BsddDictionary">
+    <Position X="2.75" Y="12" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAA=</HashCode>
+      <FileName>UI\BsddBridge\BsddBridgeData.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="IfcClassification" />
+      <Property Name="ParameterMapping" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="System.Object">
+    <Position X="5" Y="8.75" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="NLog.Config.LoggingConfiguration" Collapsed="true">
+    <Position X="19.25" Y="17.25" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="System.Globalization.CultureInfo" Collapsed="true">
+    <Position X="18.25" Y="13.25" Width="1.5" />
+    <TypeIdentifier />
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="NLog.LogLevel">
+    <Position X="15.25" Y="10.75" Width="1.5" />
+    <TypeIdentifier />
+    <ShowAsAssociation>
+      <Field Name="Debug" />
+      <Field Name="Error" />
+      <Field Name="Fatal" />
+      <Field Name="Info" />
+      <Field Name="Off" />
+      <Field Name="Trace" />
+      <Field Name="Warn" />
+      <Property Name="AllLevels" />
+      <Property Name="AllLoggingLevels" />
+      <Property Name="Name" />
+      <Property Name="Ordinal" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="NLog.Config.ServiceRepository">
+    <Position X="16.25" Y="21.25" Width="1.5" />
+    <TypeIdentifier />
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="BsddRevitPlugin.Logic.IfcJson.IfcClassification" Collapsed="true">
+    <Position X="7.25" Y="12" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAAAAAAgAgAAAAAAIAAAQAAAAAAAAAAQAAQAAAAAA=</HashCode>
+      <FileName>IfcJson\IfcJson.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="System.Int32">
+    <Position X="10.5" Y="20.75" Width="1.5" />
+    <TypeIdentifier />
+    <ShowAsAssociation>
+      <Field Name="MaxValue" />
+      <Field Name="MinValue" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Struct>
+  <Struct Name="System.Guid">
+    <Position X="2" Y="19.75" Width="1.5" />
+    <TypeIdentifier />
+    <ShowAsAssociation>
+      <Field Name="Empty" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Struct>
+  <Struct Name="System.Boolean">
+    <Position X="12.5" Y="8.75" Width="1.5" />
+    <TypeIdentifier />
+    <ShowAsAssociation>
+      <Field Name="FalseString" />
+      <Field Name="TrueString" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Struct>
+  <Struct Name="System.Char">
+    <Position X="7.25" Y="0.75" Width="1.5" />
+    <TypeIdentifier />
+    <ShowAsAssociation>
+      <Field Name="MaxValue" />
+      <Field Name="MinValue" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Struct>
+  <Interface Name="BsddRevitPlugin.Logic.UI.Services.IBrowserService">
+    <Position X="7.5" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAABAAAIAAAAEAAAAIAAAgAAAAAAACBAAAAIAEAAA=</HashCode>
+      <FileName>UI\Services\IBrowserService.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Address" />
+      <Property Name="BrowserControl" />
+      <Property Name="BrowserInstance" />
+      <Property Name="IsBrowserInitialized" />
+    </ShowAsAssociation>
+  </Interface>
+  <Interface Name="System.Collections.Generic.IDictionary&lt;TKey, TValue&gt;">
+    <Position X="10.25" Y="16.75" Width="1.5" />
+    <TypeIdentifier />
+    <ShowAsAssociation>
+      <Property Name="Keys" />
+      <Property Name="Values" />
+    </ShowAsAssociation>
+  </Interface>
+  <Interface Name="System.Collections.Generic.ICollection&lt;T&gt;">
+    <Position X="10.25" Y="13.75" Width="1.5" />
+    <TypeIdentifier />
+    <ShowAsAssociation>
+      <Property Name="Count" />
+      <Property Name="IsReadOnly" />
+    </ShowAsAssociation>
+  </Interface>
+  <Interface Name="BsddRevitPlugin.Logic.UI.Services.ICustomBrowserControl">
+    <Position X="7.5" Y="9.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAA=</HashCode>
+      <FileName>UI\Services\ICustomBrowserControl.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="NLog.Internal.Fakeables.IAppDomain">
+    <Position X="12.5" Y="5.75" Width="1.5" />
+    <TypeIdentifier />
+    <ShowAsAssociation>
+      <Property Name="BaseDirectory" />
+      <Property Name="ConfigurationFile" />
+      <Property Name="FriendlyName" />
+      <Property Name="Id" />
+      <Property Name="PrivateBinPath" />
+    </ShowAsAssociation>
+  </Interface>
+  <Interface Name="System.Collections.Generic.IEnumerable&lt;T&gt;">
+    <Position X="12.25" Y="11.75" Width="1.5" />
+    <TypeIdentifier />
+  </Interface>
+  <Interface Name="System.Collections.Generic.IEqualityComparer&lt;T&gt;" Collapsed="true">
+    <Position X="10" Y="28.5" Width="1.5" />
+    <TypeIdentifier />
+  </Interface>
+  <Enum Name="Autodesk.Revit.UI.DockPosition">
+    <Position X="8" Y="20.5" Width="1.5" />
+    <TypeIdentifier />
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

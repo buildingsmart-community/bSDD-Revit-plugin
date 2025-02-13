@@ -424,7 +424,7 @@ namespace BsddRevitPlugin.Logic.Model
 
                 if (elementType?.LookupParameter(parameterName) != null)
                 {
-                    return _getParameterValueByCorrectStorageType2(elementType.LookupParameter(parameterName));
+                    return getParameterStorageType(elementType.LookupParameter(parameterName));
                 }
 
                 return null;
@@ -434,7 +434,7 @@ namespace BsddRevitPlugin.Logic.Model
                 return null;
             }
         }
-        public static dynamic _getParameterValueByCorrectStorageType2(Parameter parameter)
+        public static dynamic getParameterStorageType(Parameter parameter)
         {
             switch (parameter.StorageType)
             {
@@ -452,58 +452,7 @@ namespace BsddRevitPlugin.Logic.Model
                     return "";
             };
         }
-        public static string GetMaterialName(Element e, Document DbDoc)
-        {
-            string materialName = "not defined1";
-            Autodesk.Revit.DB.Material firstMaterial = null;
-
-            // Reference to the Revit API Document
-            Document doc = DbDoc;
-
-            // Reference to the element you are interested in
-            ElementId elementId = e.GetTypeId();
-            //Element element = doc.GetElement(elementId);
-
-            //// Get the Material Id of the element
-            //ICollection<ElementId> materialIds = element.GetMaterialIds(false);
-            //foreach (ElementId materialId in materialIds)
-            //{
-            //    firstMaterial = doc.GetElement(materialId) as Autodesk.Revit.DB.Material;
-            if (firstMaterial != null)
-            {
-                // Found the first material, break out of the loop
-                //        break;
-            }
-            //}
-
-            if (firstMaterial != null)
-            {
-                //                materialName = firstMaterial.Name;
-                // You can access other properties of the material here
-                // For example, firstMaterial.Color, firstMaterial.Transparency, etc.
-            }
-            else
-            {
-                materialName = "No material found1";
-            }
-
-            return materialName;
-        }
-        public static Uri GetLocationParam(string domain, Element element)
-        {
-            Uri paramValue = new Uri(domain);
-
-            foreach (Parameter parameter in element.Parameters)
-            {
-                if (parameter.Definition.Name == "location")
-                {
-                    paramValue = new Uri(parameter.ToString(), UriKind.Absolute);
-                }
-            }
-
-            return paramValue;
-        }
-
+        
         public static String IFCMappingValue(Document doc, Element elem)
         {
             if (elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS)?.AsString() != null &&

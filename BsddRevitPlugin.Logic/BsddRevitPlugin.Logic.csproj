@@ -172,6 +172,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="ClassDiagram1.cd" />
+    <None Include="ClassDiagram2.cd" />
     <None Include="packages.config" />
     <None Include="Resources\IFC Shared Parameters - bSDD Revit Plugin.xlsx" />
     <None Include="Resources\ifcDataFromBsddExample.json" />

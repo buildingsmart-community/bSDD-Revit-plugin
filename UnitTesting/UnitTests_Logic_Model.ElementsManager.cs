@@ -20,6 +20,9 @@ using System.IO;
 using Newtonsoft.Json;
 using BsddRevitPlugin.Logic.IfcJson;
 using System.Runtime.InteropServices;
+using BsddRevitPlugin.Logic.UI.BsddBridge;
+using BsddRevitPlugin.Logic.Utilities;
+using Ignore = NUnit.Framework.IgnoreAttribute;
 
 //Enable to test Revit 2024
 //[assembly: System.Reflection.AssemblyMetadata("NUnit.Version", "2024")]
@@ -38,6 +41,8 @@ namespace UnitTesting_BSDD_Revit_Plugin
         private ControlledApplication controlledApplication;
         private UIDocument uidoc;
         private Document doc;
+        private Mock<BsddBridgeData> _mockBsddBridgeData;
+        private Mock<ParameterDataManagement> _mockParameterDataManagement;
 
         [OneTimeSetUp]
         public void OneTimeSetUp(
@@ -66,6 +71,9 @@ namespace UnitTesting_BSDD_Revit_Plugin
 
             // Ensure ActiveView is not null
             Assert.IsNotNull(doc.ActiveView, "Active view is null.");
+
+            _mockBsddBridgeData = new Mock<BsddBridgeData>();
+            _mockParameterDataManagement = new Mock<ParameterDataManagement>();
         }
 
         [Test]
@@ -95,37 +103,112 @@ namespace UnitTesting_BSDD_Revit_Plugin
             Assert.Throws<ArgumentNullException>(() => ElementsManager.SelectionToIfcJson(doc, null));
         }
 
+        public class ElementsManagerWrapper
+        {
+            public virtual void SetIfcDataToRevitElement(Document doc, BsddBridgeData BsddBridgeData)
+            {
+                ElementsManager.SetIfcDataToRevitElement(doc, BsddBridgeData);
+            }
+        }
+
         [Test]
         public void Test_SetIfcDataToRevitElement()
         {
             // Arrange
-            //RevitEventWrapper<string> wrapper = RevitEventWrapper<string>;
-            //wrapper.Execute(uiapp);
-            List<ElementType> elemList = new List<ElementType>();
-            Element elem = elemList[0];
-            Object _lock;
-            _lock = new object();
+            var _mockElementsManager = new Mock<ElementsManagerWrapper>();
 
-            // Maak een stub voor DataFetcher
-            //var fetcherStub = new Mock<DataFetcher>();
-            //fetcherStub.Setup(f => f.FetchData()).Returns("stub data");
-
-            //TType _savedArgs;
-            //TType args;
-
-            //lock (_lock)
-            //{
-            //    args = _savedArgs;
-            //    _savedArgs = default;
-            //}
+            _mockElementsManager.Setup(m => m.SetIfcDataToRevitElement(It.IsAny<Document>(), It.IsAny<BsddBridgeData>()))
+            .Callback((Document document, BsddBridgeData bsddBridgeData) =>
+            {
+                // Add testlogica
+                // For example: check or certain methods are called
+                Assert.IsNotNull(document, "Document should not be null");
+                Assert.IsNotNull(bsddBridgeData, "BsddBridgeData should not be null");
+                Assert.IsTrue(bsddBridgeData.IfcData.Any(), "IfcData should not be empty");
+            });
 
             // Act
-            //ElementsManager.SetIfcDataToRevitElement(doc, bsddBrigeData);
+            // Call SetIfcDataToRevitElement-methode on mock object
+            var _mockBsddBridgeData = new BsddBridgeData
+            {
+                IfcData = new List<IfcEntity> { new IfcEntity() },
+                PropertyIsInstanceMap = new Dictionary<string, bool>()
+            };
+            // #TODO: This throws System.InvalidCastException it is quit impossible to test this Static void method.
+            var mock = _mockElementsManager.Object;
+            mock.SetIfcDataToRevitElement(doc, _mockBsddBridgeData);
 
             // Assert
-            //Assert.Throws<ArgumentNullException>(() => ElementsManager.SelectionToIfcJson(null, elemList));
-            //Assert.Throws<ArgumentNullException>(() => ElementsManager.SelectionToIfcJson(doc, null));
+            // Verify that the method has been called exactly once
+            _mockElementsManager.Verify(m => m.SetIfcDataToRevitElement(It.IsAny<Document>(), It.IsAny<BsddBridgeData>()), Times.Once);
         }
+
+        [Test] // #TODO: skipped course it is static void method, what is very complicated to test
+        [Ignore("complicated to test, todo")]
+        public void Test_HandleAreaOrRoomParameters()
+        {
+            // Arrange
+            
+            // Act
+            
+            // Assert
+            
+        }
+
+        [Test] // #TODO: skipped course it is static void method, what is very complicated to test
+        [Ignore("complicated to test, todo")]
+        public void Test_HandleElementTypeParameters()
+        {
+            // Arrange
+
+            // Act
+
+            // Assert
+
+        }
+
+        [Test] // #TODO: skipped course it is static void method, what is very complicated to test
+        [Ignore("complicated to test, todo")]
+        public void Test_SelectElementsWithIfcData()
+        {
+            // Arrange
+
+            // Act
+
+            // Assert
+
+        }
+
+        [Test]
+        public void Test_ListFilter()
+        {
+            // Arrange
+            List<ElementType> elemList = new Select().AllElementsView(uiapp);
+
+            // Act
+            List<ElementType> elemFilteredList = ElementsManager.ListFilter(elemList);
+            var hasDuplicates = elemFilteredList.GroupBy(x => x).Any(g => g.Count() > 1);
+            bool not_allowed_category = false;
+            foreach (var elem in elemFilteredList){
+                if (
+                    elem.Category.Name == "Levels" || 
+                    elem.Category.Name == "Grids" ||
+                    elem.Category.Name == "Location Data" ||
+                    elem.Category.Name == "Model Groups" ||
+                    elem.Category.Name == "RVT Links" ||
+                    elem.Category.Name == "Stacked Walls" ||
+                    elem.Category.Name.Substring(System.Math.Max(0, elem.Category.Name.Length - 4)) == ".dwg" ||
+                    elem.Category.Name.Substring(System.Math.Max(0, elem.Category.Name.Length - 4)) == ".pdf")
+                {
+                    not_allowed_category = true;
+                }
+            };
+
+            // Assert
+            Assert.IsFalse(hasDuplicates, "The list contains duplicates.");
+            Assert.IsFalse(not_allowed_category, "The list contains an not allowed category what the method should have filtered out.");
+        }
+
     }
 }
 

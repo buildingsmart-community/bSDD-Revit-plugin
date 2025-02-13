@@ -72,158 +72,26 @@ namespace BsddRevitPlugin.Logic.Model
 
             return ifcEntities;
         }
+        
         /// <summary>
-        /// Set the IFC data from the bSDD UI to the correct   Revit element.
+        /// Set the IFC data from the bSDD UI to the correct Revit element.
         /// </summary>
         /// <param name="doc"></param>
         /// <param name="ifcEntity"></param>
         public static void SetIfcDataToRevitElement(Document doc, BsddBridgeData bsddBridgeData)
         {
-            BsddSettings bsddSettings = new BsddSettings();
-
-            Dictionary<string, bool> keyValuePairs = new Dictionary<string, bool>();
-            //TODO: Let this work with full settings (and aditional project parameters)
-
-            Logger logger = LogManager.GetCurrentClassLogger();
-
-            List<IfcEntity> ifcEntityLst = bsddBridgeData.IfcData;
-
-            //TODO: make sure parameters are being made instance/type according to list below
-            Dictionary<string, bool> propertyIsInstanceMap = bsddBridgeData.PropertyIsInstanceMap;
-
-            ParameterDataManagement parameterDataManagement = new ParameterDataManagement();
-
-            foreach (var ifcEntity in ifcEntityLst)
-            {
-                logger.Info($"Element json {JsonConvert.SerializeObject(ifcEntity)}");
-
-                try
-                {
-
-                    // Create a classification set in which every dictionary will be collected
-                    HashSet<IfcClassification> dictionaryCollection = new HashSet<IfcClassification>();
-
-                    ForgeTypeId groupType = GroupTypeId.Ifc;
-
-                    List<ParameterCreation> parametersToCreate = new List<ParameterCreation>();
-                    Dictionary<string, object> parametersToSet = new Dictionary<string, object>();
-
-                    parameterDataManagement.GetParametersToCreateAndSet(doc, ifcEntity, dictionaryCollection, propertyIsInstanceMap, out parametersToCreate, out parametersToSet);
-
-                    if (ifcEntity.Name == parameterDataManagement._areaName || ifcEntity.Name == parameterDataManagement._roomName)
-                    {
-                        //TODO: No SetIfcEntityToElementDataStorage for instance parameters (yet), needs UI
-
-                        using (Transaction tx = new Transaction(doc))
-                        {
-                            tx.Start("Create or edit parameters");
-
-                            //First create all parameters at once (in Release creating parameters seperately sometimes fails)
-                            List<Category> currentCategoryLst = new List<Category>();
-                            if (ifcEntity.Name == parameterDataManagement._areaName)
-                            {
-                                // add Area category
-                                currentCategoryLst.Add(doc.Settings.Categories.get_Item(BuiltInCategory.OST_Areas));
-                            }
-                            else
-                            {
-                                // add Room category
-                                currentCategoryLst.Add(doc.Settings.Categories.get_Item(BuiltInCategory.OST_Rooms));
-                            }
-                            Parameters.CreateProjectParameters(doc, parametersToCreate, "tempGroupName", groupType, currentCategoryLst);
-
-                            tx.Commit();
-                        }
-                        if (parametersToCreate.Any(a => a.isInstance == true))
-                        {
-                            using (Transaction tx = new Transaction(doc))
-                            {
-                                tx.Start("Update instance parameters");
-
-                                Parameters.SetInstanceParameterVaryBetweenGroups(doc, parametersToCreate, true);
-
-                                tx.Commit();
-                            }
-                        }   
-                        //TODO: No SetElementTypeParameters for instance parameters (yet), needs UI
-                    }
-                    else
-                    {
-                        //Get the elementType
-                        int idInt = Convert.ToInt32(ifcEntity.Tag);
-                        ElementId typeId = new ElementId(idInt);
-                        ElementType elementType = doc.GetElement(typeId) as ElementType;
-                        using (Transaction tx = new Transaction(doc))
-                        {
-                            tx.Start("SetIfcEntity");
-
-                            //Set IfcEntity to the Elements DataStorage
-                            SetIfcEntityToElementDataStorage(ifcEntity, elementType);
-
-                            tx.Commit();
-                        }
-
-                        using (Transaction tx = new Transaction(doc))
-                        {
-                            tx.Start("Create or edit parameters");
-
-                            //First create all parameters at once (in Release creating parameters seperately sometimes fails)
-                            List<Category> currentCategoryLst = new List<Category>() { elementType.Category };
-                            Parameters.CreateProjectParameters(doc, parametersToCreate, "tempGroupName", groupType, currentCategoryLst);
-
-                            tx.Commit();
-                        }
-                        if (parametersToCreate.Any(a => a.isInstance == true))
-                        {
-                            using (Transaction tx = new Transaction(doc))
-                            {
-                                tx.Start("Update instance parameters");
-
-                                Parameters.SetInstanceParameterVaryBetweenGroups(doc, parametersToCreate, true);
-
-                                tx.Commit();
-                            }
-                        }
-
-
-                        using (Transaction tx = new Transaction(doc))
-                        {
-                            tx.Start("Set parameters");
-
-                            //Set all parameters
-                            Parameters.SetElementTypeParameters(elementType, parametersToSet);
-
-                            tx.Commit();
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    logger.Info($"Failed to set elementdata: {e.Message}");
-                    throw;
-                }
-            }
-
-            propertyIsInstanceMap.Clear();
-        }
-
-
-
-
-
-
-        public static void SetIfcDataToRevitElement_new(Document doc, BsddBridgeData bsddBridgeData)
-        {
             var bsddSettings = new BsddSettings();
             var logger = LogManager.GetCurrentClassLogger();
+            //TODO: Let this work with full settings (and aditional project parameters)
             var ifcEntityList = bsddBridgeData.IfcData;
+            //TODO: make sure parameters are being made instance/type according to list below
             var propertyIsInstanceMap = bsddBridgeData.PropertyIsInstanceMap;
             var parameterDataManagement = new ParameterDataManagement();
 
             foreach (var ifcEntity in ifcEntityList)
             {
                 logger.Info($"Element json {JsonConvert.SerializeObject(ifcEntity)}");
-
+                // Create a classification set in which every dictionary will be collected
                 try
                 {
                     var dictionaryCollection = new HashSet<IfcClassification>();
@@ -251,15 +119,19 @@ namespace BsddRevitPlugin.Logic.Model
 
         private static void HandleAreaOrRoomParameters(Document doc, IfcEntity ifcEntity, ParameterDataManagement parameterDataManagement, List<ParameterCreation> parametersToCreate)
         {
+            //TODO: No SetIfcEntityToElementDataStorage for instance parameters (yet), needs UI
             using (var tx = new Transaction(doc, "Create or edit parameters"))
             {
                 tx.Start();
+                //First create all parameters at once (in Release creating parameters seperately sometimes fails)
                 var currentCategoryList = new List<Category>
-        {
-            ifcEntity.Name == parameterDataManagement._areaName
-                ? doc.Settings.Categories.get_Item(BuiltInCategory.OST_Areas)
-                : doc.Settings.Categories.get_Item(BuiltInCategory.OST_Rooms)
-        };
+                {
+                    ifcEntity.Name == parameterDataManagement._areaName
+                        // add Area category
+                        ? doc.Settings.Categories.get_Item(BuiltInCategory.OST_Areas)
+                :       // add Room category
+                        doc.Settings.Categories.get_Item(BuiltInCategory.OST_Rooms)
+                };
                 Parameters.CreateProjectParameters(doc, parametersToCreate, "tempGroupName", GroupTypeId.Ifc, currentCategoryList);
                 tx.Commit();
             }
@@ -273,16 +145,19 @@ namespace BsddRevitPlugin.Logic.Model
                     tx.Commit();
                 }
             }
+            //TODO: No SetElementTypeParameters for instance parameters (yet), needs UI
         }
 
         private static void HandleElementTypeParameters(Document doc, IfcEntity ifcEntity, List<ParameterCreation> parametersToCreate, Dictionary<string, object> parametersToSet)
         {
+            //Get the elementType
             var typeId = new ElementId(Convert.ToInt32(ifcEntity.Tag));
             var elementType = doc.GetElement(typeId) as ElementType;
 
             using (var tx = new Transaction(doc, "Set IfcEntity"))
             {
                 tx.Start();
+                //Set IfcEntity to the Elements DataStorage
                 SetIfcEntityToElementDataStorage(ifcEntity, elementType);
                 tx.Commit();
             }
@@ -290,6 +165,7 @@ namespace BsddRevitPlugin.Logic.Model
             using (var tx = new Transaction(doc, "Create or edit parameters"))
             {
                 tx.Start();
+                //First create all parameters at once (in Release creating parameters seperately sometimes fails)
                 var currentCategoryList = new List<Category> { elementType.Category };
                 Parameters.CreateProjectParameters(doc, parametersToCreate, "tempGroupName", GroupTypeId.Ifc, currentCategoryList);
                 tx.Commit();
@@ -300,6 +176,7 @@ namespace BsddRevitPlugin.Logic.Model
                 using (var tx = new Transaction(doc, "Update instance parameters"))
                 {
                     tx.Start();
+                    //Set all parameters
                     Parameters.SetInstanceParameterVaryBetweenGroups(doc, parametersToCreate, true);
                     tx.Commit();
                 }
@@ -312,30 +189,6 @@ namespace BsddRevitPlugin.Logic.Model
                 tx.Commit();
             }
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         /// <summary>
         /// Highlight/select the elements in Revit
