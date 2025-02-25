@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.Attributes;
+﻿﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.Creation;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
@@ -40,7 +40,7 @@ namespace BsddRevitPlugin.Logic.UI.DockablePanel
                     list.Add(doc.GetElement(elem.GetTypeId()) as ElementType);
                 }
             }
-            
+
             return list;
         }
 
@@ -55,7 +55,7 @@ namespace BsddRevitPlugin.Logic.UI.DockablePanel
             IList elementsAll = (IList)allElements.ToElements();
             foreach (Element elem in elementsAll)
             {
-                if (elem.Category !=  null)
+                if (elem.Category != null)
                 {
                     if (elem.Category.Name == "Stacked Walls")
                     {
@@ -95,7 +95,9 @@ namespace BsddRevitPlugin.Logic.UI.DockablePanel
             {
                 //Select elements in selection mode
                 collectionSelect = uidoc.Selection.PickObjects(ObjectType.Element);
-            } else {
+            }
+            else
+            {
                 //Get one by one the elementId's of the stored selection set and transform them into the IList<Reference> collection
                 foreach (ElementId id in elemIds)
                 {

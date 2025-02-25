@@ -58,6 +58,7 @@ namespace BsddRevitPlugin.Common.Commands
                 //// Call the OnIFCExport methods
                 //ifcCommandOverrideApplication.OnIFCExport(uiApp, commandEvent);
 
+               
                 using (Transaction transaction = new Transaction(document, "bSDD IFC export"))
                 {
                     List<IFCClassification> bsddClassifications = IfcClassificationManager.GetAllIfcClassificationsInProject();
@@ -74,6 +75,7 @@ namespace BsddRevitPlugin.Common.Commands
                     // Restore saved Classifications
                     IfcClassificationManager.UpdateClassifications(new Transaction(document, "Restore saved Classifications"), document, storedClassifications, false);
                 }
+               
                 return Result.Succeeded;
             }
             catch (Exception ex)
