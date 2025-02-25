@@ -31,8 +31,12 @@ namespace BsddRevitPlugin.Logic.UI.DockablePanel
             //Select all elements in view
             FilteredElementCollector allElementsInView = new FilteredElementCollector(doc, doc.ActiveView.Id);
             allElementsInView.WhereElementIsNotElementType().WhereElementIsViewIndependent();
-            
-            return ListElements((IList)allElementsInView.ToElements(), doc);
+
+            IList iList = GetGroupedElements((IList)allElementsInView.ToElements(), doc);
+            iList = GetAssembledElements(iList, doc);
+            List<ElementType> listElemType = ListElements(iList, doc);
+
+            return listElemType;
         }
 
         /// <summary>
@@ -48,8 +52,12 @@ namespace BsddRevitPlugin.Logic.UI.DockablePanel
             //Select alle elementen in document
             FilteredElementCollector allElements = new FilteredElementCollector(doc);
             allElements.WhereElementIsNotElementType().WhereElementIsViewIndependent();
-            
-            return ListElements((IList)allElements.ToElements(), doc);
+
+            IList iList = GetGroupedElements((IList)allElements.ToElements(), doc);
+            iList = GetAssembledElements(iList, doc);
+            List<ElementType> listElemType = ListElements(iList, doc);
+
+            return listElemType;
         }
 
         /// <summary>
@@ -215,13 +223,16 @@ namespace BsddRevitPlugin.Logic.UI.DockablePanel
                 }
                 else
                 {
-                    if(elem.GetTypeId() != null)
+                    if (elem != null)
                     {
-                        list.Add(doc.GetElement(elem.Id) as Element);
-                    }
-                    else
-                    {
-                        list.Add(doc.GetElement(elem.GetTypeId()) as Element);
+                        if (elem.GetTypeId() == null)
+                        {
+                            list.Add(doc.GetElement(elem.Id) as Element);
+                        }
+                        else
+                        {
+                            list.Add(doc.GetElement(elem.GetTypeId()) as Element);
+                        }
                     }
                 }
             }
