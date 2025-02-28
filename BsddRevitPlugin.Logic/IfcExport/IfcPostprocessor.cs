@@ -43,7 +43,7 @@ namespace BsddRevitPlugin.Logic.IfcExport
                 ElementType elementType = element as ElementType;
                 if (elementType != null)
                 {
-                    var elementTypeAssociations = ElementsManager.GetElementTypeAssociations(elementType);
+                    var elementTypeAssociations = ElementsManagerLogic.GetElementTypeAssociations(elementType);
                     foreach (var association in elementTypeAssociations)
                     {
 
@@ -130,11 +130,15 @@ namespace BsddRevitPlugin.Logic.IfcExport
         {
             foreach (var data in classificationReferencesPostprocesData)
             {
-                int locationIndex = line.IndexOf(data.ClassificationLocation, index);
-                int identifierIndex = line.IndexOf(data.ClassificationReferenceIdentifier, index);
-                if (locationIndex != -1 && identifierIndex != -1)
+                string combinedString = $"{data.ClassificationLocation}','{data.ClassificationReferenceIdentifier}";
+                string replacementString = $"{data.ClassificationReferenceLocation}','{data.ClassificationReferenceIdentifier}";
+
+                int combinedIndex = line.IndexOf(data.ClassificationReferenceIdentifier, index);
+
+                if (combinedIndex != -1)
                 {
-                    line = line.Replace(data.ClassificationLocation, data.ClassificationReferenceLocation);
+                    line = line.Replace(combinedString, replacementString);
+                    break;
                 }
             }
 

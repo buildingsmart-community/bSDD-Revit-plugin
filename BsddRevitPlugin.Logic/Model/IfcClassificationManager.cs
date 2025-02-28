@@ -90,7 +90,7 @@ namespace BsddRevitPlugin.Logic.Model
 
                     if (storedClassification == null)
                     {
-                        // Create new classification
+                        // Create new classification for types
                         transaction.Start("Create IFC Classification in DataStorage");
                         string classificationParameter = null;
                         if (bsddClassificationMappings != null && bsddClassificationMappings.ContainsKey(classification.ClassificationLocation))
@@ -290,10 +290,11 @@ namespace BsddRevitPlugin.Logic.Model
                     bool success = Uri.TryCreate(classification.ClassificationLocation, UriKind.Absolute, out locationUri);
                     if (success)
                     {
-                        string parameterNameFromUri = ElementsManager.CreateParameterNameFromUri(locationUri);
+                        string parameterNameFromUri = ElementsManagerLogic.CreateParameterNameFromUri(locationUri);
                         if (!string.IsNullOrEmpty(parameterNameFromUri))
                         {
                             fieldNames.Add(parameterNameFromUri);
+                            fieldNames.Add(parameterNameFromUri+"[Instance]");
                         }
                     }
 
