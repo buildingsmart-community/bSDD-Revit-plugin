@@ -21,7 +21,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
     {
 
         // Declaration of events and external events
-        UpdateElementtypeWithIfcData updateElementtypeWithIfcData;
+        UpdateElementsWithIfcData updateElementsWithIfcData;
         ExternalEvent _bsddLastSelectionEvent;
 
         private static Window _bsddSearchParent;
@@ -33,7 +33,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             _bsddBridgeData = bsddBridgeData;
             _bsddLastSelectionEvent = bsddLastSelectionEvent;
 
-            updateElementtypeWithIfcData = new UpdateElementtypeWithIfcData();
+            updateElementsWithIfcData = new UpdateElementsWithIfcData();
         }
         public void SetParentWindow(Window bsddSearchParent)
         {
@@ -46,6 +46,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         /// <returns>The response from the bSDD API.</returns>
         public string save(string ifcJsonData)
         {
+            //Get BsddBridgeData
 
             Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -54,16 +55,17 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             var converter = new IfcJsonConverter();
 
             // Deserialize the JSON data into an IfcData object using the IfcDataConverter
-            var ifcEntity = JsonConvert.DeserializeObject<IfcEntity>(ifcJsonData, converter);
-
-            updateElementtypeWithIfcData.Raise(ifcEntity);
+           // var ifcEntityLst = JsonConvert.DeserializeObject<List<IfcEntity>>(ifcJsonData, converter)
+            var bridgeData = JsonConvert.DeserializeObject<BsddBridgeData>(ifcJsonData, converter);
+            
+            updateElementsWithIfcData.Raise(bridgeData);
 
             _bsddSearchParent.Dispatcher.Invoke(() => _bsddSearchParent.Close());
 
             _bsddLastSelectionEvent.Raise();
 
             // Return the serialized JSON data for the IfcData object
-            return JsonConvert.SerializeObject(ifcEntity);
+            return JsonConvert.SerializeObject(bridgeData);
 
         }
         /// <summary>
@@ -76,7 +78,14 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             _bsddSearchParent.Dispatcher.Invoke(() => _bsddSearchParent.Close());
 
         }
-        public string loadSettings ()
+        ////public string loadSettings ()
+        ////{
+        ////    return JsonConvert.SerializeObject(_bsddBridgeData);
+        ////}
+        /// <summary>
+        /// Loads BsddBridgeData.
+        /// </summary>
+        public string loadBridgeData()
         {
             return JsonConvert.SerializeObject(_bsddBridgeData);
         }

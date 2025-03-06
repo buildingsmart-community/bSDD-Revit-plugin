@@ -138,6 +138,16 @@ namespace BsddRevitPlugin.Logic.IfcJson
         public string Description { get; set; }
 
         /// <summary>
+        /// The type denotes a particular type that indicates the object further. The use has to be established
+        /// at the level of instantiable subtypes. In particular it holds the user defined type,
+        /// if the enumeration of the attribute PredefinedType is set to USERDEFINED or when the concrete entity
+        /// instantiated does not have a PredefinedType attribute. The latter is the case in some exceptional
+        /// leaf classes and when instantiating IfcBuiltElement directly.
+        /// </summary>
+        [JsonProperty("objectType")]
+        public string ObjectType { get; set; }
+
+        /// <summary>
         /// The tag (or label) identifier at the particular instance of a product, e.g. the serial number,
         /// or the position number. It is the identifier at the occurrence level.
         /// </summary>
@@ -147,6 +157,7 @@ namespace BsddRevitPlugin.Logic.IfcJson
         /// <summary>
         /// Identifies the predefined types of an element from which the type required may be set.
         /// Not part of IfcTypeProduct, but used in many supertypes
+        /// Multiple tags can be added in the string using , as separator
         /// </summary>
         [JsonProperty("predefinedType")]
         public string PredefinedType { get; set; }

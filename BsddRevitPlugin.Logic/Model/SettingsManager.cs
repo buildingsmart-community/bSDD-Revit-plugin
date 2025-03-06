@@ -12,6 +12,8 @@ using System.Reflection;
 using ASRR.Core.Persistence;
 using System.IO;
 using Newtonsoft.Json;
+using System.Windows.Controls;
+using BsddRevitPlugin.Logic.Utilities;
 #endregion
 
 #region ============ Namespace Declaration ============
@@ -19,9 +21,9 @@ namespace BsddRevitPlugin.Logic.Model
 {
     public static class SettingsManager
     {
-        
+
         // bSDD plugin settings schema ID
-        private static Guid s_schemaId = new Guid("0D11EA95-B4DE-44DB-834E-93D9C19D02DC");
+        private static Guid s_schemaId = new Guid("F7D6DC5C-9521-49E4-B6D8-6F50252E9D73");
     private const string BsddSettingsFieldName = "BsddSettings";
 
         /// <summary>
@@ -52,7 +54,9 @@ namespace BsddRevitPlugin.Logic.Model
 
             JsonBasedPersistenceProvider jsonBasedPersistenceProvider = new JsonBasedPersistenceProvider(settingsFilePath);
 
-            return jsonBasedPersistenceProvider.Fetch<BsddSettings>();
+            BsddSettings bsddSettings = jsonBasedPersistenceProvider.Fetch<BsddSettings>();
+
+            return bsddSettings;
         }
 
         /// <summary>
@@ -179,7 +183,7 @@ namespace BsddRevitPlugin.Logic.Model
             }
 
             Entity entity = new Entity(schema);
-            
+
             var settingsJson = JsonConvert.SerializeObject(settings);
             entity.Set<string>(BsddSettingsFieldName, settingsJson);
 
@@ -226,6 +230,6 @@ namespace BsddRevitPlugin.Logic.Model
 
         }
     }
-    
+
 }
 #endregion

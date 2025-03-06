@@ -28,9 +28,24 @@ namespace BsddRevitPlugin.Logic.UI.DockablePanel
             IList elementsInView = (IList)allElementsInView.ToElements();
             foreach (Element elem in elementsInView)
             {
-                list.Add(doc.GetElement(elem.Id) as Element);
+                if (elem.Category.Name == "Stacked Walls")
+                {
+                    Wall stackedWall = elem as Wall;
+                    foreach (var instanceWallId in stackedWall.GetStackedWallMemberIds())
+                    {
+                        Element stackedWallMember = doc.GetElement(instanceWallId);
+                        if (stackedWallMember != null)
+                        {
+                            list.Add(doc.GetElement(stackedWallMember.Id()) as Element);
+                        }
+                    }
+                }
+                else
+                {
+                    list.Add(doc.GetElement(elem.Id()) as Element);
+                }
             }
-
+            
             return list;
         }
         public List<Element> AllElements(UIApplication uiapp)
@@ -44,7 +59,26 @@ namespace BsddRevitPlugin.Logic.UI.DockablePanel
             IList elementsAll = (IList)allElements.ToElements();
             foreach (Element elem in elementsAll)
             {
-                list.Add(doc.GetElement(elem.Id) as Element);
+                if (elem.Category !=  null)
+                {
+                    if (elem.Category.Name == "Stacked Walls")
+                    {
+                        Wall stackedWall = elem as Wall;
+                        foreach (var instanceWallId in stackedWall.GetStackedWallMemberIds())
+                        {
+                            Element stackedWallMember = doc.GetElement(instanceWallId);
+                            if (stackedWallMember != null)
+                            {
+                                list.Add(doc.GetElement(stackedWallMember.Id()) as Element);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        list.Add(doc.GetElement(elem.Id()) as Element);
+                    }
+                }
+
             }
             return list;
         }
@@ -83,7 +117,23 @@ namespace BsddRevitPlugin.Logic.UI.DockablePanel
             foreach (Reference element in collectionSelect)
             {
                 Element elem = doc.GetElement(element);
-                list.Add(doc.GetElement(elem.Id) as Element);
+
+                if (elem.Category.Name == "Stacked Walls")
+                {
+                    Wall stackedWall = elem as Wall;
+                    foreach (var instanceWallId in stackedWall.GetStackedWallMemberIds())
+                    {
+                        Element stackedWallMember = doc.GetElement(instanceWallId);
+                        if (stackedWallMember != null)
+                        {
+                            list.Add(doc.GetElement(stackedWallMember.Id()) as Element);
+                        }
+                    }
+                }
+                else
+                {
+                    list.Add(doc.GetElement(elem.Id()) as Element);
+                }
             }
             return list;
         }
