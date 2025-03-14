@@ -35,20 +35,13 @@ namespace BsddRevitPlugin.Logic.UI.View
     {
         private readonly IBrowserService _browserService;
 
-        private readonly Document _doc;
         public static UIApplication UiApp;
         public static UIDocument UiDoc;
         private BsddBridgeData _inputBsddBridgeData;
         private ExternalEvent _bsddLastSelectionEvent;
 
-        private static double _width = 800;
-        private static double _height = 800;
-        private static double _left = 100;
-        private static double _top = 100;
-
         public BsddSearch(BsddBridgeData bsddBridgeData, ExternalEvent bsddLastSelectionEvent)
         {
-
             _bsddLastSelectionEvent = bsddLastSelectionEvent;
             _browserService = GlobalServiceFactory.Factory.CreateBrowserService();
             InitializeComponent();

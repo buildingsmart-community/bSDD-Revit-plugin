@@ -57,10 +57,6 @@ namespace BsddRevitPlugin.Common
         }
 
         /// <summary>
-        /// The binding to the Export IFC command in Revit.
-        /// </summary>
-        private AddInCommandBinding m_ifcCommandBinding;
-        /// <summary>
         /// This method is called when the add-in is started up. It registers a dockable panel for the Revit project and adds ribbon buttons to the UI.
         /// </summary>
         /// <param name="application">The UIControlledApplication object representing the Revit application.</param>

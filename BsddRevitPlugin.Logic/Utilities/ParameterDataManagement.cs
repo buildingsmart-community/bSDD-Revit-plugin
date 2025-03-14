@@ -131,7 +131,6 @@ namespace BsddRevitPlugin.Logic.Utilities
             parametersToCreate = new List<ParameterCreation>();
             parametersToSet = new Dictionary<string, object>();
             string bsddParameterName = "";
-            string parameterMappedName = "";
 
             //Add property parameters to the list
             if (isDefinedBy != null)

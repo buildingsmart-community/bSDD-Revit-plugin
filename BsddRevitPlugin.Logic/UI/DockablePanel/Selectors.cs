@@ -36,13 +36,13 @@ namespace BsddRevitPlugin.Logic.UI.DockablePanel
                         Element stackedWallMember = doc.GetElement(instanceWallId);
                         if (stackedWallMember != null)
                         {
-                            list.Add(doc.GetElement(stackedWallMember.Id()) as Element);
+                            list.Add(doc.GetElement(stackedWallMember.Id) as Element);
                         }
                     }
                 }
                 else
                 {
-                    list.Add(doc.GetElement(elem.Id()) as Element);
+                    list.Add(doc.GetElement(elem.Id) as Element);
                 }
             }
             
@@ -69,13 +69,13 @@ namespace BsddRevitPlugin.Logic.UI.DockablePanel
                             Element stackedWallMember = doc.GetElement(instanceWallId);
                             if (stackedWallMember != null)
                             {
-                                list.Add(doc.GetElement(stackedWallMember.Id()) as Element);
+                                list.Add(doc.GetElement(stackedWallMember.Id) as Element);
                             }
                         }
                     }
                     else
                     {
-                        list.Add(doc.GetElement(elem.Id()) as Element);
+                        list.Add(doc.GetElement(elem.Id) as Element);
                     }
                 }
 
@@ -126,15 +126,19 @@ namespace BsddRevitPlugin.Logic.UI.DockablePanel
                         Element stackedWallMember = doc.GetElement(instanceWallId);
                         if (stackedWallMember != null)
                         {
-                            list.Add(doc.GetElement(stackedWallMember.Id()) as Element);
+                            list.Add(doc.GetElement(stackedWallMember.Id) as Element);
                         }
                     }
                 }
                 else
                 {
-                    list.Add(doc.GetElement(elem.Id()) as Element);
+                    list.Add(doc.GetElement(elem.Id) as Element);
                 }
             }
+
+            Selection sel = uidoc.Selection;
+            sel.SetElementIds(new List<ElementId>());
+            
             return list;
         }
     }

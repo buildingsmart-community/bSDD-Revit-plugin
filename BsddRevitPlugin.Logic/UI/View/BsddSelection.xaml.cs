@@ -46,7 +46,6 @@ namespace BsddRevitPlugin.Logic.UI.View
         EventUseLastSelection eventUseLastSelection;
         ExternalEvent SelectEEMS, SelectEESA, SelectEESV, SelectEULS;
         UpdateUIonSave updateUIEvent;
-        private BsddBridgeData _inputBsddBridgeData;
 
 
         // Data fields

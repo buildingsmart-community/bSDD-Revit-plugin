@@ -16,6 +16,7 @@ using System.Security.Principal;
 using Autodesk.Revit.DB.Mechanical;
 using System.Diagnostics;
 using System.Reflection;
+using BsddRevitPlugin.Logic.UI.Services;
 
 namespace BsddRevitPlugin.Logic.Model
 {
@@ -76,7 +77,7 @@ namespace BsddRevitPlugin.Logic.Model
             //Get Element(Type) Materials in List<Material> Materials (Parameters)
             public void GetParameterMaterials(List<ElementId> e, Document doc)
             {
-                if(GetElementMaterials(e, doc) != null)
+                if (GetElementMaterials(e, doc) != null)
                 {
                     this._associationProduct.matList = GetElementMaterials(e, doc);
                 }
@@ -416,7 +417,8 @@ namespace BsddRevitPlugin.Logic.Model
                             {
                                 Material Pmat = null;
                                 ElementId materialId = parameter.AsElementId();
-                                if (-1 == materialId.IntegerValue)
+
+                                if (GlobalServiceFactory.Factory.GetElementIdValue(materialId) < 0)
                                 {
                                     //Invalid ElementId, assume the material is "By Category"
                                     if (null != elemType.Category)
@@ -453,7 +455,7 @@ namespace BsddRevitPlugin.Logic.Model
                             {
                                 Material Pmat = null;
                                 ElementId materialId = parameter.AsElementId();
-                                if (-1 == materialId.IntegerValue)
+                                if (GlobalServiceFactory.Factory.GetElementIdValue(materialId) < 0)
                                 {
                                     //Invalid ElementId, assume the material is "By Category"
                                     if (null != elem.Category)
@@ -477,7 +479,7 @@ namespace BsddRevitPlugin.Logic.Model
                     }
                 }
             }
-            catch { }            
+            catch {}            
 
             return null;
         }
@@ -488,27 +490,31 @@ namespace BsddRevitPlugin.Logic.Model
 
             foreach (Material mat in matList)
             {
-                //get the description value
-                BuiltInParameter desiredBIP = BuiltInParameter.ALL_MODEL_DESCRIPTION;
-                string descriptionValue = "";
-
-                Parameter description = mat.get_Parameter(desiredBIP);
-                if (description != null)
+                if (mat != null)
                 {
-                    descriptionValue = description.AsString();
-                }
+                    //get the description value
+                    BuiltInParameter desiredBIP = BuiltInParameter.ALL_MODEL_DESCRIPTION;
+                    string descriptionValue = "";
 
-                // add new IfcMaterial to the dictionary based on dictionaryUri, Identification and Name
-                associationsMat[mat.Id] = new IfcMaterial
-                {
-                    Name = mat.Name,
-                    Description = descriptionValue,
-                    Category = mat.Category.Name,
-                    //HasRepresentation = mat.,
-                    //IsRelatedWith = mat.,
-                    //RelatesTo = mat.,
-                    Type = "IfcMaterial",
-                };
+                    Parameter description = mat.get_Parameter(desiredBIP);
+                    if (description != null)
+                    {
+                        descriptionValue = description.AsString();
+                    }
+
+                    // add new IfcMaterial to the dictionary based on dictionaryUri, Identification and Name
+                    associationsMat[mat.Id] = new IfcMaterial
+                    {
+                        Name = mat.Name,
+                        Description = descriptionValue,
+                        Category = mat.Category.Name,
+                        //HasRepresentation = mat.,
+                        //IsRelatedWith = mat.,
+                        //RelatesTo = mat.,
+                        Type = "IfcMaterial",
+                    };
+                }    
+                
             }
 
             return associationsMat;
@@ -568,7 +574,7 @@ namespace BsddRevitPlugin.Logic.Model
                     {
                         Material Pmat = null;
                         ElementId materialId = parameter.AsElementId();
-                        if (-1 == materialId.IntegerValue)
+                        if (GlobalServiceFactory.Factory.GetElementIdValue(materialId) < 0)
                         {
                             //Invalid ElementId, assume the material is "By Category"
                             if (null != doc.GetElement(e[0]).Category)
@@ -587,7 +593,6 @@ namespace BsddRevitPlugin.Logic.Model
                         }
                     }
                 }
-
             }
 
             for (int i = 0; i < mat.Count; i++)
@@ -859,7 +864,7 @@ namespace BsddRevitPlugin.Logic.Model
                     {
                         Material Pmat = null;
                         ElementId materialId = parameter.AsElementId();
-                        if (-1 == materialId.IntegerValue)
+                        if (GlobalServiceFactory.Factory.GetElementIdValue(materialId) < 0)
                         {
                             //Invalid ElementId, assume the material is "By Category"
                             if (null != e.Category)

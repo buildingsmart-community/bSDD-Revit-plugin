@@ -80,21 +80,19 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
 
         /// <summary>
         /// This method is exposed to JavaScript in CefSharp. 
-        /// It gets the selected elements in the UI and highlights them in Revit.
+        /// It opens the bSDD Search panel with the selected object parameters.
         /// </summary>
         /// <param name="ifcJsonData">The IFC data to search, in JSON format.</param>
         /// <returns>The serialized IFC data, in JSON format.</returns>
         public void bsddSelect(string ifcJsonData)
         {
-            //Get List<IfcEntity>
-
             Logger logger = LogManager.GetCurrentClassLogger();
 
             logger.Info($"BSDDSELECT: Trying to select ifcJsonData to Element: {ifcJsonData}");
 
             var converter = new IfcJsonConverter();
-            var ifcEntity = JsonConvert.DeserializeObject<List<IfcEntity>>(ifcJsonData, converter);
-            
+            var ifcEntity = JsonConvert.DeserializeObject<IfcEntity>(ifcJsonData, converter);
+
 
             selectElementsWithIfcData.SetIfcData(ifcEntity);
             selectElementsWithIfcData.Raise("SelectElementsInModel");

@@ -3,6 +3,7 @@
 #region ================== References ===================
 using ASRR.Core.Persistence;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Architecture;
 using Autodesk.Revit.DB.IFC;
 using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
@@ -190,21 +191,17 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
     /// <summary>
     /// Represents a class that triggers the writing of IFC data into a Revit type object.
     /// </summary>
-    public class UpdateElementsWithIfcData : RevitEventWrapper<BsddBridgeData>
+    public class UpdateElementtypeWithIfcData : RevitEventWrapper<IfcEntity>
     {
         Logger logger = LogManager.GetCurrentClassLogger();
 
-        public override void Execute(UIApplication uiapp, BsddBridgeData bsddBridgeData)
+        public override void Execute(UIApplication uiapp, IfcEntity ifcDataObject)
         {
             var uidoc = uiapp.ActiveUIDocument;
             var doc = uidoc.Document;
 
-            
-            SetIfcDataToRevitElement(doc, bsddBridgeData);
-
-
+            SetIfcDataToRevitElement(doc, ifcDataObject);
         }
-
     }
 
     /// <summary>
@@ -214,7 +211,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
     {
         Logger logger = LogManager.GetCurrentClassLogger();
 
-        List<IfcEntity> ifcData;
+        IfcEntity ifcData;
 
         public override void Execute(UIApplication uiapp, string args)
         {
@@ -223,7 +220,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
             SelectElements.SelectElementsWithIfcData(uidoc, ifcData);
         }
-        public void SetIfcData(List<IfcEntity> ifcDataObject)
+        public void SetIfcData(IfcEntity ifcDataObject)
         {
             ifcData = ifcDataObject;
         }
@@ -309,7 +306,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             try
             {
                 //Get the elementType
-                int idInt = Convert.ToInt32(ifcEntity.Tag);
+                System.Int64 idInt = Convert.ToInt32(ifcEntity.Tag);
                 ElementId typeId = new ElementId(idInt);
                 ElementType elementType = doc.GetElement(typeId) as ElementType;
                 Element element = doc.GetElement(typeId);
@@ -383,6 +380,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             elemSetType = ListGeoFilter(doc, elemSetType);
 
             List<ElementId> listItem = new List<ElementId>();
+            // #TODO Comment out this if statement if no instances is preferred
             if (elemSet != null)
             {
                 foreach (ElementId id in elemSet)

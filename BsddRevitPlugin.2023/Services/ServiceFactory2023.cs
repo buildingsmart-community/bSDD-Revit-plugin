@@ -1,4 +1,5 @@
-﻿using BsddRevitPlugin.Logic.UI.Services;
+﻿using Autodesk.Revit.DB;
+using BsddRevitPlugin.Logic.UI.Services;
 
 namespace BsddRevitPlugin.V2023.Services
 {
@@ -12,5 +13,9 @@ namespace BsddRevitPlugin.V2023.Services
         {
             return new IfcExportService2023();
         }
+        public int GetElementIdValue(ElementId e)
+        {
+            return e.IntegerValue;
+        }   
     }
 }

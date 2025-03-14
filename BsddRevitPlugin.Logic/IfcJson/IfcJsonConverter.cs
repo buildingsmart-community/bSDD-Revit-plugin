@@ -19,7 +19,30 @@ namespace BsddRevitPlugin.Logic.IfcJson
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            JObject jsonObject = JObject.Load(reader);
+            JObject jsonObject = new JObject();
+            // if reader is JArray than make it an JObject
+            if (reader.TokenType == JsonToken.StartArray)
+            {
+                JArray jsonArray = JArray.Load(reader);
+                foreach (JObject item in jsonArray)
+                {
+                    foreach (var property in item.Properties())
+                    {
+                        if (jsonObject[property.Name] != null)
+                        {
+                            jsonObject[property.Name] = property.Value;
+                        }
+                        else
+                        {
+                            jsonObject.Add(property.Name, property.Value);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                jsonObject = JObject.Load(reader);
+            }
 
             IfcEntity ifcData = new IfcEntity();
 

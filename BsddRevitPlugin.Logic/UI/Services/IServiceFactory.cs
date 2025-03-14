@@ -1,6 +1,7 @@
 ﻿//TODO comments
 
 #region ================== References ===================
+using Autodesk.Revit.DB;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,7 @@ namespace BsddRevitPlugin.Logic.UI.Services
     {
         IBrowserService CreateBrowserService();
         IIfcExportService CreateIfcExportService();
+        int GetElementIdValue(ElementId e);
     }
 }
 #endregion
