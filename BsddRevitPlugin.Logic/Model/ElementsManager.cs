@@ -144,7 +144,13 @@ namespace BsddRevitPlugin.Logic.Model
             if (elem is SpatialElement) return true;
 
             if (
-                (elem.get_Geometry(new Options()) != null && elem.Category.Name != "Cameras") ||
+                (elem.get_Geometry(new Options()) != null
+                && elem.Name != "Model Lines"
+                && !elem.Category.Name.StartsWith("Analytical")
+                && elem.Category.Name != "Guide Grid"
+                && elem.Category.Name != "Legend Components"
+                && elem.Category.Name != "Cameras") 
+                ||
                 ArrayHolder.RevitGeoCategoriesArray.Contains(elem.Category.Name)
             ) return true;
 

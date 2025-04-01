@@ -1,6 +1,7 @@
 //TODO comments
 
 #region ================== References ===================
+using Autodesk.Revit.DB;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -46,6 +47,7 @@ namespace BsddRevitPlugin.Logic.IfcJson
 
             IfcEntity ifcData = new IfcEntity();
 
+            
             if (jsonObject["type"] != null)
             {
                 ifcData.Type = (string)jsonObject["type"];
@@ -73,6 +75,19 @@ namespace BsddRevitPlugin.Logic.IfcJson
             if (jsonObject["predefinedType"] != null)
             {
                 ifcData.PredefinedType = (string)jsonObject["predefinedType"];
+            }
+            if (jsonObject["instance"] != null)
+            {
+                JToken token = jsonObject["instance"];
+                bool instance = token.Value<bool>(); 
+                if (instance)
+                {
+                    ifcData.Instance = true;
+                }
+                else
+                {
+                    ifcData.Instance = false;
+                }
             }
 
             if (jsonObject["hasAssociations"] != null)

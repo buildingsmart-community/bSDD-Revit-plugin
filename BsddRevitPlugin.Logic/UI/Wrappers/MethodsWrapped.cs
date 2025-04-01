@@ -12,6 +12,7 @@ using BsddRevitPlugin.Logic.UI.BsddBridge;
 using BsddRevitPlugin.Logic.UI.DockablePanel;
 using BsddRevitPlugin.Logic.UI.Services;
 using BsddRevitPlugin.Logic.UI.View;
+using BsddRevitPlugin.Logic.Utilities;
 using Newtonsoft.Json;
 using NLog;
 using System;
@@ -21,6 +22,7 @@ using System.Runtime;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
+using System.Windows.Media.Media3D;
 using static BsddRevitPlugin.Logic.Model.ElementsManager;
 using Document = Autodesk.Revit.DB.Document;
 #endregion
@@ -212,17 +214,30 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         Logger logger = LogManager.GetCurrentClassLogger();
 
         IfcEntity ifcData;
+        List<IfcEntity> ifcDataList;
 
         public override void Execute(UIApplication uiapp, string args)
         {
             var uidoc = uiapp.ActiveUIDocument;
             var doc = uidoc.Document;
 
-            SelectElements.SelectElementsWithIfcData(uidoc, ifcData);
+            if(ifcDataList != null)
+            {
+                SelectElements.SelectElementsWithIfcData(uidoc, ifcDataList);
+            }
+            else
+            {
+                SelectElements.SelectElementsWithIfcData(uidoc, ifcData);
+            }
+            
         }
         public void SetIfcData(IfcEntity ifcDataObject)
         {
             ifcData = ifcDataObject;
+        }
+        public void SetIfcData(List<IfcEntity> ifcDataObjectList)
+        {
+            ifcDataList = ifcDataObjectList;
         }
     }
 
@@ -288,7 +303,6 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
     }
 
-    
     public class SelectElements
     {
         /// <summary>
@@ -347,6 +361,77 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             }
         }
 
+        public static void SelectElementsWithIfcData(UIDocument uidoc, List<IfcEntity> ifcEntityList)
+        {
+            Logger logger = LogManager.GetCurrentClassLogger();
+            logger.Info($"Element json {JsonConvert.SerializeObject(ifcEntityList)}");
+
+            Document doc = uidoc.Document;
+            List<ElementId> elemSet = new List<ElementId>();
+
+            try
+            {
+                foreach (IfcEntity ifcEntity in ifcEntityList)
+                {
+                    // Create and return the ElementId
+                    ElementId elementId = new ElementId(int.Parse(ifcEntity.Tag));
+
+                    if (ifcEntity.Instance)
+                    {
+                        elemSet.Add(elementId);
+                    }
+                    else
+                    {
+                        ElementType elementType = doc.GetElement(elementId) as ElementType;
+
+                        if (elementType == null)
+                        {
+                            throw new ArgumentException("The provided ElementId does not correspond to an ElementType.");
+                        }
+
+                        // Create a FilteredElementCollector to collect all FamilyInstance elements
+                        ICollection<ElementId> AllElementId = new FilteredElementCollector(doc)
+                            .WherePasses(new ElementCategoryFilter(BuiltInCategory.OST_TextNotes, true))
+                            .WherePasses(new ElementCategoryFilter(BuiltInCategory.OST_Dimensions, true))
+                            .ToElementIds();
+
+                        foreach (ElementId id in AllElementId)
+                        {
+                            Element element = doc.GetElement(id);
+                            if(element != null)
+                            {
+                                var testelem = element.GetTypeId();
+                                var testType = elementType.Id;
+                                if(testelem.IntegerValue != -1)
+                                {
+                                    testelem = element.GetTypeId();
+                                }
+                                if (element.GetTypeId() == elementType.Id)
+                                {
+                                    elemSet.Add(id);
+                                }
+                            }
+                        }
+                    }                    
+                }
+
+                try
+                {
+                    // Select the elements in the UI
+                    uidoc.Selection.SetElementIds(elemSet);
+                }
+                catch
+                {
+                    Console.WriteLine("Could not select any elements");
+                }
+            }
+            catch (Exception e)
+            {
+                logger.Info(e.Message);
+                throw;
+            }
+        }
+
         /// Transforms selected Revit types into a bSDD-compatible ifcJSON structure.
         /// </summary>
         /// <param name="doc">The active Revit document.</param>
@@ -374,7 +459,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
                     elemSetType.Add(typeId);
                 }
             }
-            //elemSet.AddRange(elemSetType);
+            
             //Check or is Geometrie
             elemSet = ListGeoFilter(doc, elemSet);
             elemSetType = ListGeoFilter(doc, elemSetType);
@@ -391,6 +476,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
                     listItem.Clear();
                 }
             }
+            //till here
 
             if (elemSetType != null)
             {
@@ -403,6 +489,32 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
                 }
             }
 
+            // #TODO Comment out this if statement if instances is preferred
+            /*//SHOULD ONLY BE IF THEY ARE IN SELECTION OR ALL IN VIEW OR ALL IN DOCUMENT
+            ParameterDataManagement parameterDataManagement = new ParameterDataManagement();
+            //Add type for all Rooms
+            var roomEntity = new IfcEntity
+            {
+                Name = parameterDataManagement._roomName,
+                Type = "Rooms & Area's",
+                Description = "Rooms & Area's",
+                ObjectType = "Rooms & Area's",
+                PredefinedType = "Rooms & Area's"
+            };
+            ifcEntities.Add(roomEntity);
+
+            //Add type for all Area's
+            var areaEntity = new IfcEntity
+            {
+                Name = parameterDataManagement._areaName,
+                Type = "Rooms & Area's",
+                Description = "Rooms & Area's",
+                ObjectType = "Rooms & Area's",
+                PredefinedType = "Rooms & Area's"
+
+            };
+            ifcEntities.Add(areaEntity);
+            *///till here
 
             var provider = new JsonBasedPersistenceProvider("C://temp");
             provider.Persist(ifcEntities);

@@ -13,6 +13,7 @@ using BsddRevitPlugin.Logic.Utilities;
 using Newtonsoft.Json;
 using NLog;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -91,12 +92,10 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             logger.Info($"BSDDSELECT: Trying to select ifcJsonData to Element: {ifcJsonData}");
 
             var converter = new IfcJsonConverter();
-            var ifcEntity = JsonConvert.DeserializeObject<IfcEntity>(ifcJsonData, converter);
-
-
-            selectElementsWithIfcData.SetIfcData(ifcEntity);
+            var ifcEntityList = JsonConvert.DeserializeObject<List<IfcEntity>>(ifcJsonData, converter);
+            
+            selectElementsWithIfcData.SetIfcData(ifcEntityList);
             selectElementsWithIfcData.Raise("SelectElementsInModel");
-
         }
 
         /// <summary>
