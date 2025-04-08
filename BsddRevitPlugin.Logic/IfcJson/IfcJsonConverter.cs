@@ -44,48 +44,52 @@ namespace BsddRevitPlugin.Logic.IfcJson
             else
             {
                 jsonObject = JObject.Load(reader);
-                Console.WriteLine(jsonObject.ToString()); // Print the entire JSON object
+                Console.WriteLine(jsonObject.ToString());
+
+                if(jsonObject["ifcData"] != null)
+                {
+                    JObject newJObject = new JObject();
+                    foreach (var item in jsonObject["ifcData"])
+                    {
+                        foreach (var property in item.Children<JProperty>())
+                        {
+                            newJObject[property.Name] = property.Value;
+                        }
+                    }
+                    jsonObject = newJObject;
+                    Console.WriteLine(jsonObject.ToString());
+                }
             }
 
             IfcEntity ifcData = new IfcEntity();
-            JObject firstElement = null;
-
-            // Access the ifcData array            
-            if ((JArray)jsonObject["ifcData"] != null)
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!   
+            if (jsonObject["type"] != null && jsonObject["type"].Type != JTokenType.Null)
             {
-                JArray ifcDataArray = (JArray)jsonObject["ifcData"];
-                firstElement = (JObject)ifcDataArray[0];
+                ifcData.Type = (string)jsonObject["type"];
             }
-            
-
-
-            if (jsonObject["type"] != null || firstElement["type"] != null)
+            if (jsonObject["name"] != null)
             {
-                ifcData.Type = jsonObject["type"] != null ? (string)jsonObject["type"] : (string)firstElement["type"];
+                ifcData.Name = (string)jsonObject["name"];
             }
-            if (jsonObject["name"] != null || firstElement["name"] != null)
+            if (jsonObject["typeId"] != null)
             {
-                ifcData.Name = (string)jsonObject["name"] != null ? (string)jsonObject["name"] : (string)firstElement["name"];
+                ifcData.Tag = (string)jsonObject["typeId"];
             }
-            if (jsonObject["typeId"] != null || firstElement["typeId"] != null)
+            if (jsonObject["description"] != null)
             {
-                ifcData.Tag = (string)jsonObject["typeId"] != null ? (string)jsonObject["typeId"] : (string)firstElement["typeId"];
+                ifcData.Description = (string)jsonObject["description"];
             }
-            if (jsonObject["description"] != null || firstElement["description"] != null)
+            if (jsonObject["objectType"] != null)
             {
-                ifcData.Description = (string)jsonObject["description"] != null ? (string)jsonObject["description"] : (string)firstElement["description"];
+                ifcData.ObjectType = (string)jsonObject["objectType"];
             }
-            if (jsonObject["objectType"] != null || firstElement["objectType"] != null)
+            if (jsonObject["tag"] != null)
             {
-                ifcData.ObjectType = (string)jsonObject["objectType"] != null ? (string)jsonObject["objectType"] : (string)firstElement["objectType"];
+                ifcData.Tag = (string)jsonObject["tag"];
             }
-            if (jsonObject["tag"] != null || firstElement["tag"] != null)
+            if (jsonObject["predefinedType"] != null)
             {
-                ifcData.Tag = (string)jsonObject["tag"] != null ? (string)jsonObject["tag"] : (string)firstElement["tag"];
-            }
-            if (jsonObject["predefinedType"] != null || firstElement["predefinedType"] != null)
-            {
-                ifcData.PredefinedType = (string)jsonObject["predefinedType"] != null ? (string)jsonObject["predefinedType"] : (string)firstElement["predefinedType"];
+                ifcData.PredefinedType = (string)jsonObject["predefinedType"];
             }
             if (jsonObject["instance"] != null)
             {
