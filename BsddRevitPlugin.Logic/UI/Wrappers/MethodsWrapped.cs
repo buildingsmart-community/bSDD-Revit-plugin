@@ -320,7 +320,8 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             try
             {
                 //Get the elementType
-                System.Int64 idInt = Convert.ToInt32(ifcEntity.Tag);
+                //System.Int64
+                int idInt = Convert.ToInt32(ifcEntity.Tag);
                 ElementId typeId = new ElementId(idInt);
                 ElementType elementType = doc.GetElement(typeId) as ElementType;
                 Element element = doc.GetElement(typeId);
@@ -466,7 +467,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
             List<ElementId> listItem = new List<ElementId>();
             // #TODO Comment out this if statement if no instances is preferred
-            if (elemSet != null)
+            /*if (elemSet != null)
             {
                 foreach (ElementId id in elemSet)
                 {
@@ -476,7 +477,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
                     listItem.Clear();
                 }
             }
-            //till here
+            //till here*/
 
             if (elemSetType != null)
             {
@@ -490,7 +491,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             }
 
             // #TODO Comment out this if statement if instances is preferred
-            /*//SHOULD ONLY BE IF THEY ARE IN SELECTION OR ALL IN VIEW OR ALL IN DOCUMENT
+            //SHOULD ONLY BE IF THEY ARE IN SELECTION OR ALL IN VIEW OR ALL IN DOCUMENT
             ParameterDataManagement parameterDataManagement = new ParameterDataManagement();
             //Add type for all Rooms
             var roomEntity = new IfcEntity
@@ -514,7 +515,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
             };
             ifcEntities.Add(areaEntity);
-            *///till here
+            //*///till here
 
             var provider = new JsonBasedPersistenceProvider("C://temp");
             provider.Persist(ifcEntities);

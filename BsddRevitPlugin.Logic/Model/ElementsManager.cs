@@ -775,8 +775,8 @@ namespace BsddRevitPlugin.Logic.Model
                     HashSet<IfcClassification> dictionaryCollection = new HashSet<IfcClassification>();
 
                     //Get the elementType or element
-                    System.Int64 idInt = Convert.ToInt32(ifcEntity.Tag);
-                    ElementId typeId = new ElementId(idInt);
+                    int idInt = Convert.ToInt32(ifcEntity.Tag); // Convert to Int32
+                    ElementId typeId = new ElementId(idInt); // Use Int32 constructor
                     Element elementI = null;
                     ElementType elementT = null;
                     if (doc.GetElement(typeId) as ElementType != null)
