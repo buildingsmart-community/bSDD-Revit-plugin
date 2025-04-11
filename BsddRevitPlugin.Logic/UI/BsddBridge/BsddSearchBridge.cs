@@ -22,6 +22,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
 
         // Declaration of events and external events
         UpdateElementtypeWithIfcData updateElementtypeWithIfcData;
+        //#TODO UpdateElementWithIfcData updateElementWithIfcData; for instances
         ExternalEvent _bsddLastSelectionEvent;
 
         private static Window _bsddSearchParent;
