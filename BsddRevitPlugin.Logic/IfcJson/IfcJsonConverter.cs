@@ -44,8 +44,8 @@ namespace BsddRevitPlugin.Logic.IfcJson
             else
             {
                 jsonObject = JObject.Load(reader);
-                Console.WriteLine(jsonObject.ToString());
-
+                
+                // #TODO voorheen werkte dit zonder dit if statement. Waarom is dit nu (soms) nodig?
                 if(jsonObject["ifcData"] != null)
                 {
                     JObject newJObject = new JObject();
@@ -61,8 +61,7 @@ namespace BsddRevitPlugin.Logic.IfcJson
                 }
             }
 
-            IfcEntity ifcData = new IfcEntity();
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!   
+            IfcEntity ifcData = new IfcEntity(); 
             if (jsonObject["type"] != null && jsonObject["type"].Type != JTokenType.Null)
             {
                 ifcData.Type = (string)jsonObject["type"];
@@ -153,7 +152,7 @@ namespace BsddRevitPlugin.Logic.IfcJson
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException(); 
         }
     }
 }

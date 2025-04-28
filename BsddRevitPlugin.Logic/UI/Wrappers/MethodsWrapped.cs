@@ -193,16 +193,16 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
     /// <summary>
     /// Represents a class that triggers the writing of IFC data into a Revit type object.
     /// </summary>
-    public class UpdateElementtypeWithIfcData : RevitEventWrapper<IfcEntity>
+    public class UpdateElementtypeWithIfcData : RevitEventWrapper<BsddBridgeData>
     {
         Logger logger = LogManager.GetCurrentClassLogger();
 
-        public override void Execute(UIApplication uiapp, IfcEntity ifcDataObject)
+        public override void Execute(UIApplication uiapp, BsddBridgeData bsddBridgeData)
         {
             var uidoc = uiapp.ActiveUIDocument;
             var doc = uidoc.Document;
 
-            SetIfcDataToRevitElement(doc, ifcDataObject);
+            SetIfcDataToRevitElement(doc, bsddBridgeData);
         }
     }
 
@@ -492,29 +492,29 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
             // #TODO Comment out this if statement if instances is preferred
             //SHOULD ONLY BE IF THEY ARE IN SELECTION OR ALL IN VIEW OR ALL IN DOCUMENT
-            ParameterDataManagement parameterDataManagement = new ParameterDataManagement();
-            //Add type for all Rooms
-            var roomEntity = new IfcEntity
-            {
-                Name = parameterDataManagement._roomName,
-                Type = "Rooms & Area's",
-                Description = "Rooms & Area's",
-                ObjectType = "Rooms & Area's",
-                PredefinedType = "Rooms & Area's"
-            };
-            ifcEntities.Add(roomEntity);
+            //ParameterDataManagement parameterDataManagement = new ParameterDataManagement();
+            ////Add type for all Rooms
+            //var roomEntity = new IfcEntity
+            //{
+            //    Name = parameterDataManagement._roomName,
+            //    Type = "Rooms & Area's",
+            //    Description = "Rooms & Area's",
+            //    ObjectType = "Rooms & Area's",
+            //    PredefinedType = "Rooms & Area's"
+            //};
+            //ifcEntities.Add(roomEntity);
 
-            //Add type for all Area's
-            var areaEntity = new IfcEntity
-            {
-                Name = parameterDataManagement._areaName,
-                Type = "Rooms & Area's",
-                Description = "Rooms & Area's",
-                ObjectType = "Rooms & Area's",
-                PredefinedType = "Rooms & Area's"
+            ////Add type for all Area's
+            //var areaEntity = new IfcEntity
+            //{
+            //    Name = parameterDataManagement._areaName,
+            //    Type = "Rooms & Area's",
+            //    Description = "Rooms & Area's",
+            //    ObjectType = "Rooms & Area's",
+            //    PredefinedType = "Rooms & Area's"
 
-            };
-            ifcEntities.Add(areaEntity);
+            //};
+            //ifcEntities.Add(areaEntity);
             //*///till here
 
             var provider = new JsonBasedPersistenceProvider("C://temp");

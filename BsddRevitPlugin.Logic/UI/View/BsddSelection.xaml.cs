@@ -46,7 +46,7 @@ namespace BsddRevitPlugin.Logic.UI.View
         EventUseLastSelection eventUseLastSelection;
         ExternalEvent SelectEEMS, SelectEESA, SelectEESV, SelectEULS;
         UpdateUIonSave updateUIEvent;
-
+        private BsddBridgeData _inputBsddBridgeData;
 
         // Data fields
         private Guid m_targetGuid = new Guid("D7C963CE-B3CA-426A-8D51-6E8254D21158");

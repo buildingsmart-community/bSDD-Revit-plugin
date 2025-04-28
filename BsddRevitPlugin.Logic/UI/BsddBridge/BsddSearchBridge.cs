@@ -57,16 +57,17 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             var converter = new IfcJsonConverter();
 
             // Deserialize the JSON data into an IfcData object using the IfcDataConverter
-            var ifcEntity = JsonConvert.DeserializeObject<IfcEntity>(ifcJsonData, converter);
+            var bridgeData = JsonConvert.DeserializeObject<BsddBridgeData>(ifcJsonData, converter);
+            //var bridgeData = JsonConvert.DeserializeObject<BsddBridgeData>(ifcJsonData, converter);
 
-            updateElementtypeWithIfcData.Raise(ifcEntity);
+            updateElementtypeWithIfcData.Raise(bridgeData);
 
             _bsddSearchParent.Dispatcher.Invoke(() => _bsddSearchParent.Close());
 
             _bsddLastSelectionEvent.Raise();
 
             // Return the serialized JSON data for the IfcData object
-            return JsonConvert.SerializeObject(ifcEntity);
+            return JsonConvert.SerializeObject(bridgeData);
         }
 
         /// <summary>

@@ -120,7 +120,7 @@ namespace BsddRevitPlugin.Logic.UI.View
                 _browserService.ExecuteScriptAsync(jsFunctionCall);
             }
         }
-
+        
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             BrowserContainer.Children.Add((UIElement)_browserService.BrowserControl);
