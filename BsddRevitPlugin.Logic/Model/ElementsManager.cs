@@ -441,6 +441,18 @@ namespace BsddRevitPlugin.Logic.Model
             }
 
             associations = builder.GetResult().SetAssociations(associations);
+            foreach (var refAss in associationsRef)
+            {
+                associations.Add(new IfcClassificationReference
+                {
+                    Type = refAss.Value.Type,
+                    Name = refAss.Value.Name,
+                    Location = refAss.Value.Location,
+                    Identification = refAss.Value.Identification,
+                    ReferencedSource = refAss.Value.ReferencedSource
+
+                });
+            }
             #endregion
 
             return associations;
