@@ -458,7 +458,7 @@ namespace BsddRevitPlugin.Logic.Model
             return associations;
         }
 
-        public static List<Association> GetElementAssociations(List<ElementId> elemSet, Document doc)
+        public static List<Association> GetElementAssociations(List<ElementId> elemSet, Document doc, out Dictionary<Uri, IfcClassificationReference> associationsRef)
         {
             Element element = null;
             try
@@ -474,7 +474,7 @@ namespace BsddRevitPlugin.Logic.Model
             var associations = new List<Association>();
 
             Logger logger = LogManager.GetCurrentClassLogger();
-            var associationsRef = new Dictionary<Uri, IfcClassificationReference>();
+            associationsRef = new Dictionary<Uri, IfcClassificationReference>();
             var activeDictionaryData = GetClassificationDataFromSettings(element);
 
             foreach (var associationR in getElemClassRefFromExtensibleStorage(element))
@@ -535,6 +535,17 @@ namespace BsddRevitPlugin.Logic.Model
             // #TODO Ifc4 out of scope: director.BuildMaterialConstituentSet();
 
             associations = builder.GetResult().SetAssociations(associations);
+            foreach (var refAss in associationsRef)
+            {
+                associations.Add(new IfcClassificationReference
+                {
+                    Type = refAss.Value.Type,
+                    Name = refAss.Value.Name,
+                    Location = refAss.Value.Location,
+                    Identification = refAss.Value.Identification,
+                    ReferencedSource = refAss.Value.ReferencedSource
+                });
+            }
             #endregion
 
             return associations;
@@ -834,9 +845,14 @@ namespace BsddRevitPlugin.Logic.Model
                     var field = schema.GetField(s_IfcClassificationData);
                     try
                     {
-                        Entity entity = new Entity(schema);
-                        entity.Set(field, JsonConvert.SerializeObject(ifcEntity.HasAssociations));
-                        element.SetEntity(entity);
+                        using (Transaction tx = new Transaction(doc))
+                        {
+                            tx.Start("Set Entity");
+                            Entity entity = new Entity(schema);
+                            entity.Set(field, JsonConvert.SerializeObject(ifcEntity.HasAssociations));
+                            element.SetEntity(entity);
+                            tx.Commit();
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -893,47 +909,50 @@ namespace BsddRevitPlugin.Logic.Model
                         int idInt2 = Convert.ToInt32(ifcEntity.Tag);
                         ElementId typeId2 = new ElementId(idInt2);
                         ElementType elementType = doc.GetElement(typeId2) as ElementType;
-                        using (Transaction tx = new Transaction(doc))
-                        {
-                            tx.Start("SetIfcEntity");
-
-                            //Set IfcEntity to the Elements DataStorage
-                            SetIfcEntityToElementDataStorage(ifcEntity, elementType);
-
-                            tx.Commit();
-                        }
-
-                        using (Transaction tx = new Transaction(doc))
-                        {
-                            tx.Start("Create or edit parameters");
-
-                            //First create all parameters at once (in Release creating parameters seperately sometimes fails)
-                            List<Category> currentCategoryLst = new List<Category>() { elementType.Category };
-                            Parameters.CreateProjectParameters(doc, parametersToCreate, "tempGroupName", groupType, currentCategoryLst);
-
-                            tx.Commit();
-                        }
-                        if (parametersToCreate.Any(a => a.isInstance == true))
+                        if (elementType != null)
                         {
                             using (Transaction tx = new Transaction(doc))
                             {
-                                tx.Start("Update instance parameters");
+                                tx.Start("SetIfcEntity");
 
-                                Parameters.SetInstanceParameterVaryBetweenGroups(doc, parametersToCreate, true);
+                                //Set IfcEntity to the Elements DataStorage
+                                SetIfcEntityToElementDataStorage(ifcEntity, elementType);
 
                                 tx.Commit();
                             }
-                        }
+
+                            using (Transaction tx = new Transaction(doc))
+                            {
+                                tx.Start("Create or edit parameters");
+
+                                //First create all parameters at once (in Release creating parameters seperately sometimes fails)
+                                List<Category> currentCategoryLst = new List<Category>() { elementType.Category };
+                                Parameters.CreateProjectParameters(doc, parametersToCreate, "tempGroupName", groupType, currentCategoryLst);
+
+                                tx.Commit();
+                            }
+                            if (parametersToCreate.Any(a => a.isInstance == true))
+                            {
+                                using (Transaction tx = new Transaction(doc))
+                                {
+                                    tx.Start("Update instance parameters");
+
+                                    Parameters.SetInstanceParameterVaryBetweenGroups(doc, parametersToCreate, true);
+
+                                    tx.Commit();
+                                }
+                            }
 
 
-                        using (Transaction tx = new Transaction(doc))
-                        {
-                            tx.Start("Set parameters");
+                            using (Transaction tx = new Transaction(doc))
+                            {
+                                tx.Start("Set parameters");
 
-                            //Set all parameters
-                            Parameters.SetElementTypeParameters(elementType, parametersToSet);
+                                //Set all parameters
+                                Parameters.SetElementTypeParameters(elementType, parametersToSet);
 
-                            tx.Commit();
+                                tx.Commit();
+                            }
                         }
                     }
                 }

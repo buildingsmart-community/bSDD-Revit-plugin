@@ -115,6 +115,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
                 }
             }
 
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! hier pakt het de instance ipv de type, als je een type geselecteerd hebt in de dockable window!!!!!
             // Pack data into json format
             List<ElementId> elemSet = new List<ElementId>();
             foreach(Element elem in GlobalSelection.LastSelectedElementsWithDocs[doc.PathName])
@@ -467,7 +468,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
             List<ElementId> listItem = new List<ElementId>();
             // #TODO Comment out this if statement if no instances is preferred
-            /*if (elemSet != null)
+            if (elemSet != null)
             {
                 foreach (ElementId id in elemSet)
                 {
@@ -477,7 +478,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
                     listItem.Clear();
                 }
             }
-            //till here*/
+            //till here
 
             if (elemSetType != null)
             {
@@ -565,7 +566,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
                 string ifcType = IFCMappingValue(doc, element);
                 string ifcPredefinedType = element.get_Parameter(BuiltInParameter.IFC_EXPORT_PREDEFINEDTYPE_TYPE)?.AsString();
                 //string materials = GetElementMaterials(elem, doc);
-                var associations = GetElementAssociations(elemSet, doc);
+                var associations = GetElementAssociations(elemSet, doc, out Dictionary<Uri, IfcClassificationReference> a);
 
                 //Create IfcEntity by IfcEntityBuilder
                 IfcEntity ifcEntity = new IfcEntityBuilder()
@@ -612,7 +613,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
 
             return null;
         }
-
+          
         /// <summary>
         /// Retrieves the IfcDefinition filled with the parameters who starts with bsdd/prop/ of the given element type.
         /// </summary>
