@@ -116,7 +116,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
                 }
             }
 
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! hier pakt het de instance ipv de type, als je een type geselecteerd hebt in de dockable window!!!!!
+            // #TODO hier pakt het de instance ipv de type, als je een type geselecteerd hebt in de dockable window!!!!!
             // Pack data into json format
             List<ElementId> elemSet = new List<ElementId>();
             foreach(Element elem in GlobalSelection.LastSelectedElementsWithDocs[doc.PathName])
@@ -629,7 +629,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             IfcValue nominalValue = new IfcValue();
             string[] promptArr = null;
             List<string> pSetDone = new List<string>();
-
+            
             foreach (Parameter parameter in elem.Parameters)
             {
                 if (parameter.HasValue == true)
@@ -1317,7 +1317,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             //set in propertysets = isDefinedBy
             IfcPropertySet ifcPropSetDefault = new IfcPropertySet();
             ifcPropSetDefault.Type = "IfcPropertySet";
-            ifcPropSetDefault.Name = "PropertySet";
+            ifcPropSetDefault.Name = "";
             ifcPropSetDefault.HasProperties = new List<IfcProperty>();
             isDefinedBy.Add(ifcPropSetDefault);
 
@@ -1350,7 +1350,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
                 {
                     foreach (IfcPropertySet ifcPropSet in isDefinedBy)
                     {
-                        if (ifcPropSet.Name == "PropertySet")
+                        if (ifcPropSet.Name == "")
                         {
                             ifcPropSet.HasProperties.Add(PropValue);
                         }

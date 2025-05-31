@@ -10,6 +10,7 @@ using Autodesk.Revit.UI.Selection;
 using Revit.IFC.Import.Core;
 using System.Collections;
 using System.Collections.Generic;
+using System.Windows;
 using System.Xml.Linq;
 #endregion
 
@@ -128,6 +129,23 @@ namespace BsddRevitPlugin.Logic.UI.DockablePanel
                         if (stackedWallMember != null)
                         {
                             list.Add(doc.GetElement(stackedWallMember.Id) as Element);
+                        }
+                    }
+                }
+                else if (elem is AssemblyInstance assemblyInstance)
+                {
+                    // Add the assembly itself
+                    list.Add(assemblyInstance);
+                    MessageBox.Show("Element Info", $"Name: {elem.Name}\nCategory: {elem.Category?.Name}\nType: {elem.GetType().Name}");
+
+                    // Add all member elements of the assembly
+                    ICollection<ElementId> memberIds = assemblyInstance.GetMemberIds();
+                    foreach (ElementId memberId in memberIds)
+                    {
+                        Element member = doc.GetElement(memberId);
+                        if (member != null)
+                        {
+                            list.Add(member);
                         }
                     }
                 }

@@ -210,9 +210,6 @@ namespace BsddRevitPlugin.Logic.UI.View
             if (((ComboBoxItem)(((ComboBox)sender).SelectedItem)).Content.ToString() == "Make selection")
             {
                 SelectEEMS.Raise();
-                //testExEvent.Raise
-                //testExEvent2.Raise();
-
 
                 ////Main.Instance.ShowbSDDSelector(commandData.Application);
             }

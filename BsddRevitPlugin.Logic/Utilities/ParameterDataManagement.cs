@@ -270,7 +270,9 @@ namespace BsddRevitPlugin.Logic.Utilities
                         value = TryConvertValue(value, new Func<dynamic, dynamic>(v => Convert.ToInt32(v)), 0);
                         break;
                     case "IfcReal":
-                        value = CoordinateUtilities.ConvertMmToFeet(TryConvertValue(value, new Func<dynamic, dynamic>(v => Convert.ToDouble(v)), 0));
+                        //Prevented to change the input in mm to inch
+                        //value = CoordinateUtilities.ConvertMmToFeet(TryConvertValue(value, new Func<dynamic, dynamic>(v => Convert.ToDouble(v)), 0));
+                        value = TryConvertValue(value, new Func<dynamic, dynamic>(v => Convert.ToDouble(v)), 0.0);
                         break;
                     case "IfcDate":
                     case "IfcDateTime":
