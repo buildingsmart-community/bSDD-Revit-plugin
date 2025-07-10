@@ -16,7 +16,7 @@ namespace BsddRevitPlugin.Logic.UI.Services
     {
         IBrowserService CreateBrowserService();
         IIfcExportService CreateIfcExportService();
-        int GetElementIdValue(ElementId e);
+        //int GetElementIdValue(ElementId e);
     }
 }
 #endregion

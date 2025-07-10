@@ -418,7 +418,7 @@ namespace BsddRevitPlugin.Logic.Model
                                 Material Pmat = null;
                                 ElementId materialId = parameter.AsElementId();
 
-                                if (GlobalServiceFactory.Factory.GetElementIdValue(materialId) < 0)
+                                if (materialId.IntegerValue < 0)
                                 {
                                     //Invalid ElementId, assume the material is "By Category"
                                     if (null != elemType.Category)
@@ -455,7 +455,7 @@ namespace BsddRevitPlugin.Logic.Model
                             {
                                 Material Pmat = null;
                                 ElementId materialId = parameter.AsElementId();
-                                if (GlobalServiceFactory.Factory.GetElementIdValue(materialId) < 0)
+                                if (materialId.IntegerValue < 0)
                                 {
                                     //Invalid ElementId, assume the material is "By Category"
                                     if (null != elem.Category)
@@ -574,7 +574,7 @@ namespace BsddRevitPlugin.Logic.Model
                     {
                         Material Pmat = null;
                         ElementId materialId = parameter.AsElementId();
-                        if (GlobalServiceFactory.Factory.GetElementIdValue(materialId) < 0)
+                        if (materialId.IntegerValue < 0)
                         {
                             //Invalid ElementId, assume the material is "By Category"
                             if (null != doc.GetElement(e[0]).Category)

@@ -10,7 +10,7 @@ namespace BsddRevitPlugin.V2024.Services
 
         public BrowserControl2024()
         {
-            this.ChromiumWebBrowser = new ChromiumWebBrowser();
+            this.ChromiumWebBrowser = new CefSharp.Wpf.ChromiumWebBrowser();
         }
 
         public void Navigate(string url)

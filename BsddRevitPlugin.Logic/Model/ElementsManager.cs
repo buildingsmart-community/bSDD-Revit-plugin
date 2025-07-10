@@ -215,7 +215,7 @@ namespace BsddRevitPlugin.Logic.Model
             switch (parameter.StorageType)
             {
                 case StorageType.ElementId:
-                    return GlobalServiceFactory.Factory.GetElementIdValue(parameter.AsElementId());
+                    return parameter.AsElementId().IntegerValue;
                 case StorageType.Integer:
                     return parameter.AsInteger();
                 case StorageType.None:

@@ -13,7 +13,7 @@ namespace BsddRevitPlugin.V2023.Services
         protected override void SetActiveViewId(IFCExportConfiguration configuration, Autodesk.Revit.DB.Document document)
         {
             ElementId elementId = document.ActiveView.Id;
-            configuration.ActiveViewId = GlobalServiceFactory.Factory.GetElementIdValue(elementId);
+            configuration.ActiveViewId = (int)elementId.Value;
         }
         protected override void SetActivePhaseId(IFCExportConfiguration configuration)
         {
