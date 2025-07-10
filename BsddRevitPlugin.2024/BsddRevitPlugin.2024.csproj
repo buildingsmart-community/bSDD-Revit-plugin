@@ -170,7 +170,6 @@
   <PropertyGroup>
     <PostBuildEvent>if $(ConfigurationName) == Debug xcopy /Y /E "$(TargetDir)" "$(AppData)\Autodesk\Revit\Addins\2024\BsddRevitPlugin\"
 if $(ConfigurationName) == Debug xcopy /Y /E "$(ProjectDir)\BsddRevitPlugin.addin" "$(AppData)\Autodesk\Revit\Addins\2024\"
-call "$(ProjectDir)copy_cefsharp_files.bat" "$(TargetDir)"
 </PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
