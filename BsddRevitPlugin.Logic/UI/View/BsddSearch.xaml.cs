@@ -1,4 +1,7 @@
-﻿using Autodesk.Revit.DB;
+﻿//TODO comments
+
+#region ================== References ===================
+using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using System;
 using System.Collections.Generic;
@@ -20,7 +23,9 @@ using System.Reflection;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
 using BsddRevitPlugin.Logic.UI.Services;
 using System.Windows.Forms;
+#endregion
 
+#region ============ Namespace Declaration ============
 namespace BsddRevitPlugin.Logic.UI.View
 {
     /// <summary>
@@ -30,20 +35,13 @@ namespace BsddRevitPlugin.Logic.UI.View
     {
         private readonly IBrowserService _browserService;
 
-        private readonly Document _doc;
         public static UIApplication UiApp;
         public static UIDocument UiDoc;
         private BsddBridgeData _inputBsddBridgeData;
         private ExternalEvent _bsddLastSelectionEvent;
 
-        private static double _width = 800;
-        private static double _height = 800;
-        private static double _left = 100;
-        private static double _top = 100;
-
         public BsddSearch(BsddBridgeData bsddBridgeData, ExternalEvent bsddLastSelectionEvent)
         {
-
             _bsddLastSelectionEvent = bsddLastSelectionEvent;
             _browserService = GlobalServiceFactory.Factory.CreateBrowserService();
             InitializeComponent();
@@ -68,7 +66,7 @@ namespace BsddRevitPlugin.Logic.UI.View
             //_browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/v1.4.0/bsdd_search/";
             //_browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/v1.6.0/bsdd_search/";
             _browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/main/bsdd_search/";
-            _browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/v1.7.3/bsdd_search/";
+            //_browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/v1.7.3/bsdd_search/";
             var bridgeSearch = new BsddSearchBridge(bsddBridgeData, _bsddLastSelectionEvent);
             bridgeSearch.SetParentWindow(this);
             _browserService.RegisterJsObject("bsddBridge", bridgeSearch, true);
@@ -160,3 +158,4 @@ namespace BsddRevitPlugin.Logic.UI.View
         }
     }
 }
+#endregion

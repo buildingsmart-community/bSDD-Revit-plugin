@@ -248,51 +248,7 @@ namespace BsddRevitPlugin.Logic.Model
             return activeDictionaries;
         }
 
-
-        // TODO: IFC type should also be read from the mapping files when not present in the revit typeEntity
-
-        /// <summary>
-        /// Transforms a Revit element type into an IFC entity.
-        /// </summary>
-        public static IfcEntity CreateIfcEntity(ElementType elem, Document doc)
-        {
-            string familyName = GetElementTypeFamilyName(elem, GetTypeParameterValueByElementType(elem, "IfcName"));
-            string typeName = GetElementTypeName(elem, GetTypeParameterValueByElementType(elem, "IfcType"));
-            string ifcTag = elem.Id.ToString();
-            string typeDescription = GetTypeParameterValueByElementType(elem, "Description");
-            string ifcType = IFCMappingValue(doc, elem);
-            string ifcPredefinedType = elem.get_Parameter(BuiltInParameter.IFC_EXPORT_PREDEFINEDTYPE_TYPE)?.AsString();
-            string objectType = GetTypeParameterValueByElementType(elem, "IfcObjectType[Type]");
-
-            var ifcEntity = new IfcEntity
-            {
-                Type = ifcType,
-                Name = $"{familyName} - {typeName}",
-                Tag = ifcTag,
-                Description = string.IsNullOrWhiteSpace(typeDescription) ? null : typeDescription,
-                PredefinedType = ifcPredefinedType,
-                ObjectType = objectType,
-            };
-
-            //embed propertysets bsdd/prop/ in Ifc Defenition
-            List<IfcPropertySet> propertySets = IfcDefinition(elem);
-            if (propertySets != null && propertySets.Count > 0)
-            {
-                ifcEntity.IsDefinedBy = propertySets;
-            }
-
-            var associations = GetElementTypeAssociations(elem);
-            if (associations != null && associations.Count > 0)
-            {
-                ifcEntity.HasAssociations = associations.Values.ToList<Association>();
-            }
-
-            //Embed Ifc Definition Ifc Entity
-            //ifcEntity.IsDefinedBy = isDefinedBy;
-
-            return ifcEntity;
-        }
-
+        // #TODO can be removed include referencesif agreed IfcDefinition in MethodsWrapped.cs furfills job in right way
         /// <summary>
         /// Retrieves the IfcDefinition filled with the parameters who starts with bsdd/prop/ of the given element type.
         /// </summary>
@@ -312,10 +268,10 @@ namespace BsddRevitPlugin.Logic.Model
                 {
                     continue;
                 }
-                if(parameterName == "Category" && parameter.IsReadOnly == true)
+                if (parameterName == "Category" && parameter.IsReadOnly == true)
                 {
                     continue;
-                } 
+                }
 
                 string[] parameterParts = parameterName.StartsWith("bsdd/prop/", StringComparison.Ordinal)
                     ? parameterName.Remove(0, 10).Split('/')
@@ -439,7 +395,7 @@ namespace BsddRevitPlugin.Logic.Model
             switch (parameter.StorageType)
             {
                 case StorageType.ElementId:
-                    return parameter.AsElementId().IntegerValue;
+                    return parameter.AsElementId().Value;
                 case StorageType.Integer:
                     return parameter.AsInteger();
                 case StorageType.None:
@@ -574,7 +530,7 @@ namespace BsddRevitPlugin.Logic.Model
                 //Needed due to mappingtable not containing certain categories such as "Runs".
                 result = mappingTable[cat + "\t"];
             }
-            catch (Exception e)
+            catch
             {
                 result = "";
             }

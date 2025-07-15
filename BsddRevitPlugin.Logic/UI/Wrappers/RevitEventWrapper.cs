@@ -1,6 +1,18 @@
-﻿
-using Autodesk.Revit.UI;
+﻿//TODO comments
 
+/**
+ * File summary:
+ * - File name: RevitEventWrapper.cs
+ * - Description: 
+ * - Development history: 
+ * - Copyright:
+*/
+
+#region ================== References ===================
+using Autodesk.Revit.UI;
+#endregion
+
+#region ============ Namespace Declaration ============
 namespace BsddRevitPlugin.Logic.UI.Wrappers
 {
     /// <summary>
@@ -13,6 +25,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         private TType _savedArgs;
         private readonly ExternalEvent _revitEvent;
 
+        #region ================= Constructor =================
         /// <summary>
         /// Class for wrapping methods for execution within a "valid" Revit API context.
         /// </summary>
@@ -21,6 +34,7 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
             _revitEvent = ExternalEvent.Create(this);
             _lock = new object();
         }
+        #endregion
 
         /// <summary>
         /// Wraps the "Execution" method in a valid Revit API context.
@@ -70,3 +84,4 @@ namespace BsddRevitPlugin.Logic.UI.Wrappers
         public abstract void Execute(UIApplication app, TType args);
     }
 }
+#endregion

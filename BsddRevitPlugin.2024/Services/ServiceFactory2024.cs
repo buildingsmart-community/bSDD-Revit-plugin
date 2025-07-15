@@ -1,4 +1,5 @@
-﻿using BIM.IFC.Export.UI;
+﻿using Autodesk.Revit.DB;
+//using BIM.IFC.Export.UI;
 using BsddRevitPlugin.Logic.UI.Services;
 
 namespace BsddRevitPlugin.V2024.Services
@@ -13,5 +14,9 @@ namespace BsddRevitPlugin.V2024.Services
         {
             return new IfcExportService2024();
         }
+        //public int GetElementIdValue(ElementId e)
+        //{
+        //    return e.IntegerValue;
+        //}
     }
 }

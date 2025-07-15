@@ -17,6 +17,5 @@ namespace BsddRevitPlugin.V2024.Services
         {
             this.ChromiumWebBrowser.Address = url;
         }
-
     }
 }

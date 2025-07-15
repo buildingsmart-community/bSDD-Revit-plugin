@@ -57,10 +57,6 @@ namespace BsddRevitPlugin.Common
         }
 
         /// <summary>
-        /// The binding to the Export IFC command in Revit.
-        /// </summary>
-        private AddInCommandBinding m_ifcCommandBinding;
-        /// <summary>
         /// This method is called when the add-in is started up. It registers a dockable panel for the Revit project and adds ribbon buttons to the UI.
         /// </summary>
         /// <param name="application">The UIControlledApplication object representing the Revit application.</param>
@@ -199,17 +195,22 @@ namespace BsddRevitPlugin.Common
             SelectEULS.Raise();
 
 
-            List<ElementType> types = new List<ElementType>();
+            List<Element> elem = new List<Element>();
+            List<ElementId> elemSet = new List<ElementId>();
             try
             {
-                types.AddRange(GlobalSelection.LastSelectedElementsWithDocs[doc.PathName]);
+                elem.AddRange(GlobalSelection.LastSelectedElementsWithDocs[doc.PathName]);
+                foreach (Element e in elem)
+                {
+                    elemSet.Add(e.Id);
+                }
             }
             catch (System.Exception)
             {
 
             }
             // Pack data into json format
-            List<IfcEntity> selectionData = BsddRevitPlugin.Logic.Model.ElementsManager.SelectionToIfcJson(doc, types);
+            List<IfcEntity> selectionData = SelectElements.SelectionToIfcJson(doc, elemSet);
 
             // Send MainData to BsddSelection html
             eventUseLastSelection.UpdateBsddSelection(selectionData);

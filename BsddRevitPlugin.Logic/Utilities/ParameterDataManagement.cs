@@ -71,7 +71,7 @@ namespace BsddRevitPlugin.Logic.Utilities
             _propertyIsInstanceMap.Clear();
         }
 
-        private static void CollectParametersAndValuesFromAssociations(Document doc,IfcEntity ifcEntity, HashSet<IfcClassification> dictionaryCollection, List<Association> associations, ForgeTypeId specType, out List<ParameterCreation> parametersToCreate, out Dictionary<string, object> parametersToSet)
+        private static void CollectParametersAndValuesFromAssociations(Document doc, IfcEntity ifcEntity, HashSet<IfcClassification> dictionaryCollection, List<Association> associations, ForgeTypeId specType, out List<ParameterCreation> parametersToCreate, out Dictionary<string, object> parametersToSet)
         {
             //Initialize parameters
             parametersToCreate = new List<ParameterCreation>();
@@ -105,7 +105,7 @@ namespace BsddRevitPlugin.Logic.Utilities
                                 parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType, Parameters.ExistingProjectParameter(doc, bsddParameterName), false));
                             }
                             parametersToSet.Add(bsddParameterName, ifcClassificationReference.Identification + ":" + ifcClassificationReference.Name);
-                            
+
                             dictionaryCollection.Add(ifcClassificationReference.ReferencedSource);
 
                             //Get mapped parametername (stored in the documents DataStorage)
@@ -131,7 +131,6 @@ namespace BsddRevitPlugin.Logic.Utilities
             parametersToCreate = new List<ParameterCreation>();
             parametersToSet = new Dictionary<string, object>();
             string bsddParameterName = "";
-            string parameterMappedName = "";
 
             //Add property parameters to the list
             if (isDefinedBy != null)
@@ -181,7 +180,7 @@ namespace BsddRevitPlugin.Logic.Utilities
 
                         if (_propertyIsInstanceMap.ContainsKey(propertyName))
                         {
-                             _propertyIsInstanceMap.TryGetValue(propertyName, out isInstance);
+                            _propertyIsInstanceMap.TryGetValue(propertyName, out isInstance);
                         }
                         else if (_propertyIsInstanceMap.ContainsKey(propertySetPropertyName))
                         {
@@ -190,7 +189,7 @@ namespace BsddRevitPlugin.Logic.Utilities
 
                         bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, property);
                         parametersToCreate.Add(new ParameterCreation(bsddParameterName, specType, Parameters.ExistingProjectParameter(doc, bsddParameterName), isInstance));
-                        
+
                         //Never set instance parameters untill IfcValue is implemented
                         if (!isInstance)
                         {
@@ -271,7 +270,9 @@ namespace BsddRevitPlugin.Logic.Utilities
                         value = TryConvertValue(value, new Func<dynamic, dynamic>(v => Convert.ToInt32(v)), 0);
                         break;
                     case "IfcReal":
-                        value = CoordinateUtilities.ConvertMmToFeet(TryConvertValue(value, new Func<dynamic, dynamic>(v => Convert.ToDouble(v)), 0));
+                        //Prevented to change the input in mm to inch
+                        //value = CoordinateUtilities.ConvertMmToFeet(TryConvertValue(value, new Func<dynamic, dynamic>(v => Convert.ToDouble(v)), 0));
+                        value = TryConvertValue(value, new Func<dynamic, dynamic>(v => Convert.ToDouble(v)), 0.0);
                         break;
                     case "IfcDate":
                     case "IfcDateTime":
@@ -452,7 +453,7 @@ namespace BsddRevitPlugin.Logic.Utilities
             return null;
         }
 
-        public static Dictionary<string,bool> GetProjectParameterTypes(Document doc)
+        public static Dictionary<string, bool> GetProjectParameterTypes(Document doc)
         {
             Dictionary<string, bool> projectParameterTypes = new Dictionary<string, bool>();
 

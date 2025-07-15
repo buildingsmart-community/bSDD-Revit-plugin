@@ -1,4 +1,7 @@
-﻿using Autodesk.Revit.DB;
+﻿//TODO comments
+
+#region ================== References ===================
+using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Events;
 using BsddRevitPlugin.Logic.IfcJson;
@@ -10,10 +13,13 @@ using BsddRevitPlugin.Logic.Utilities;
 using Newtonsoft.Json;
 using NLog;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+#endregion
 
+#region ============ Namespace Declaration ============
 namespace BsddRevitPlugin.Logic.UI.BsddBridge
 {
 
@@ -40,7 +46,7 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
 
             selectElementsWithIfcData = new SelectElementsWithIfcData();
 
-            _updateUIEvent = updateUIEvent; 
+            _updateUIEvent = updateUIEvent;
         }
 
         /// <summary>
@@ -75,25 +81,21 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
 
         /// <summary>
         /// This method is exposed to JavaScript in CefSharp. 
-        /// It gets the selected elements in the UI and highlights them in Revit.
+        /// It opens the bSDD Search panel with the selected object parameters.
         /// </summary>
         /// <param name="ifcJsonData">The IFC data to search, in JSON format.</param>
         /// <returns>The serialized IFC data, in JSON format.</returns>
         public void bsddSelect(string ifcJsonData)
         {
-            //Get List<IfcEntity>
-
             Logger logger = LogManager.GetCurrentClassLogger();
 
             logger.Info($"BSDDSELECT: Trying to select ifcJsonData to Element: {ifcJsonData}");
 
             var converter = new IfcJsonConverter();
-            var ifcEntity = JsonConvert.DeserializeObject<List<IfcEntity>>(ifcJsonData, converter);
-            
+            var ifcEntityList = JsonConvert.DeserializeObject<List<IfcEntity>>(ifcJsonData, converter);
 
-            selectElementsWithIfcData.SetIfcData(ifcEntity);
+            selectElementsWithIfcData.SetIfcData(ifcEntityList);
             selectElementsWithIfcData.Raise("SelectElementsInModel");
-
         }
 
         /// <summary>
@@ -130,3 +132,4 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         }
     }
 }
+#endregion

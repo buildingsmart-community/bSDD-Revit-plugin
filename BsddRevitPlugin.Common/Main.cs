@@ -28,7 +28,7 @@ namespace BsddRevitPlugin.Common
         {
             get
             {
-                lock(InstanceLock)
+                lock (InstanceLock)
                 {
                     return _instance ?? (_instance = new Main());
                 }

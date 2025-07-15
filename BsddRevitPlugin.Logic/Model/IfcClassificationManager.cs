@@ -1,4 +1,7 @@
-﻿using Autodesk.Revit.DB.ExtensibleStorage;
+﻿//TODO comments
+
+#region ================== References ===================
+using Autodesk.Revit.DB.ExtensibleStorage;
 using Autodesk.Revit.DB;
 using System;
 using System.Collections.Generic;
@@ -6,7 +9,9 @@ using System.Linq;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
 using Revit.IFC.Common.Extensions;
 using BsddRevitPlugin.Logic.IfcJson;
+#endregion
 
+#region ============ Namespace Declaration ============
 namespace BsddRevitPlugin.Logic.Model
 {
     public class IfcClassificationManager
@@ -245,7 +250,7 @@ namespace BsddRevitPlugin.Logic.Model
                 revitIfcClassifications.Add(ConvertToRevitIfcClassification(ifcJsonClassification));
             }
             return revitIfcClassifications;
-        }   
+        }
 
         private static IfcClassification ConvertFromRevitIfcClassification(IFCClassification revitIfcClassification)
         {
@@ -294,7 +299,7 @@ namespace BsddRevitPlugin.Logic.Model
                         if (!string.IsNullOrEmpty(parameterNameFromUri))
                         {
                             fieldNames.Add(parameterNameFromUri);
-                            fieldNames.Add(parameterNameFromUri+"[Instance]");
+                            fieldNames.Add(parameterNameFromUri + "[Instance]");
                         }
                     }
 
@@ -360,3 +365,4 @@ namespace BsddRevitPlugin.Logic.Model
 
     }
 }
+#endregion

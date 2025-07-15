@@ -1,8 +1,15 @@
+//TODO comments
+
+#region ================== References ===================
+using Autodesk.Revit.DB;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+#endregion
 
+#region ============ Namespace Declaration ============
 namespace BsddRevitPlugin.Logic.IfcJson
 {
     public class IfcJsonConverter : JsonConverter
@@ -14,11 +21,48 @@ namespace BsddRevitPlugin.Logic.IfcJson
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            JObject jsonObject = JObject.Load(reader);
+            JObject jsonObject = new JObject();
+            // if reader is JArray than make it an JObject
+            if (reader.TokenType == JsonToken.StartArray)
+            {
+                JArray jsonArray = JArray.Load(reader);
+                foreach (JObject item in jsonArray)
+                {
+                    foreach (var property in item.Properties())
+                    {
+                        if (jsonObject[property.Name] != null)
+                        {
+                            jsonObject[property.Name] = property.Value;
+                        }
+                        else
+                        {
+                            jsonObject.Add(property.Name, property.Value);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                jsonObject = JObject.Load(reader);
+
+                // #TODO voorheen werkte dit zonder dit if statement. Waarom is dit nu (soms) nodig?
+                if (jsonObject["ifcData"] != null)
+                {
+                    JObject newJObject = new JObject();
+                    foreach (var item in jsonObject["ifcData"])
+                    {
+                        foreach (var property in item.Children<JProperty>())
+                        {
+                            newJObject[property.Name] = property.Value;
+                        }
+                    }
+                    jsonObject = newJObject;
+                    Console.WriteLine(jsonObject.ToString());
+                }
+            }
 
             IfcEntity ifcData = new IfcEntity();
-
-            if (jsonObject["type"] != null)
+            if (jsonObject["type"] != null && jsonObject["type"].Type != JTokenType.Null)
             {
                 ifcData.Type = (string)jsonObject["type"];
             }
@@ -46,6 +90,19 @@ namespace BsddRevitPlugin.Logic.IfcJson
             {
                 ifcData.PredefinedType = (string)jsonObject["predefinedType"];
             }
+            if (jsonObject["instance"] != null)
+            {
+                JToken token = jsonObject["instance"];
+                bool instance = token.Value<bool>();
+                if (instance)
+                {
+                    ifcData.Instance = true;
+                }
+                else
+                {
+                    ifcData.Instance = false;
+                }
+            }
 
             if (jsonObject["hasAssociations"] != null)
             {
@@ -63,7 +120,7 @@ namespace BsddRevitPlugin.Logic.IfcJson
                     }
                 }
             }
-            
+
             if (jsonObject["isDefinedBy"] != null)
             {
                 ifcData.IsDefinedBy = new List<IfcPropertySet>();
@@ -99,3 +156,4 @@ namespace BsddRevitPlugin.Logic.IfcJson
         }
     }
 }
+#endregion

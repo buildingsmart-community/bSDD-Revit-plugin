@@ -1,4 +1,7 @@
-﻿using Autodesk.Revit.DB.Events;
+﻿//TODO comments
+
+#region ================== References ===================
+using Autodesk.Revit.DB.Events;
 using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
 using BsddRevitPlugin.Logic.UI.View;
@@ -8,7 +11,9 @@ using NLog;
 using System.Collections.Generic;
 using System.Windows;
 using static BsddRevitPlugin.Logic.UI.View.BsddSearch;
+#endregion
 
+#region ============ Namespace Declaration ============
 namespace BsddRevitPlugin.Logic.UI.BsddBridge
 {
 
@@ -16,7 +21,8 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
     {
 
         // Declaration of events and external events
-        UpdateElementsWithIfcData updateElementsWithIfcData;
+        UpdateElementtypeWithIfcData updateElementtypeWithIfcData;
+        //#TODO UpdateElementWithIfcData updateElementWithIfcData; for instances
         ExternalEvent _bsddLastSelectionEvent;
 
         private static Window _bsddSearchParent;
@@ -28,12 +34,14 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             _bsddBridgeData = bsddBridgeData;
             _bsddLastSelectionEvent = bsddLastSelectionEvent;
 
-            updateElementsWithIfcData = new UpdateElementsWithIfcData();
+            updateElementtypeWithIfcData = new UpdateElementtypeWithIfcData();
         }
+
         public void SetParentWindow(Window bsddSearchParent)
         {
             _bsddSearchParent = bsddSearchParent;
         }
+
         /// <summary>
         /// Saves the data returned from the bSDD API.
         /// </summary>
@@ -41,7 +49,6 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         /// <returns>The response from the bSDD API.</returns>
         public string save(string ifcJsonData)
         {
-            //Get BsddBridgeData
 
             Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -50,10 +57,10 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             var converter = new IfcJsonConverter();
 
             // Deserialize the JSON data into an IfcData object using the IfcDataConverter
-           // var ifcEntityLst = JsonConvert.DeserializeObject<List<IfcEntity>>(ifcJsonData, converter)
             var bridgeData = JsonConvert.DeserializeObject<BsddBridgeData>(ifcJsonData, converter);
-            
-            updateElementsWithIfcData.Raise(bridgeData);
+            //var bridgeData = JsonConvert.DeserializeObject<BsddBridgeData>(ifcJsonData, converter);
+
+            updateElementtypeWithIfcData.Raise(bridgeData);
 
             _bsddSearchParent.Dispatcher.Invoke(() => _bsddSearchParent.Close());
 
@@ -61,8 +68,8 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
 
             // Return the serialized JSON data for the IfcData object
             return JsonConvert.SerializeObject(bridgeData);
-
         }
+
         /// <summary>
         /// Closes UI 
         /// </summary>
@@ -87,3 +94,4 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
     }
 
 }
+#endregion

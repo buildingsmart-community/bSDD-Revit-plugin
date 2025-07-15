@@ -1,20 +1,33 @@
-﻿using Autodesk.Revit.DB;
+﻿//TODO comments
+
+#region ================== References ===================
+using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+#endregion
 
+#region ============ Namespace Declaration ============
 namespace BsddRevitPlugin.Logic.UI.BsddBridge
 {
     public static class GlobalSelection
     {
         // This list will store the last selected elements
-        public static Dictionary<string, List<ElementType>> LastSelectedElementsWithDocs { get; private set; } = new Dictionary<string, List<ElementType>>();
+        public static Dictionary<string, List<Element>> LastSelectedElementsWithDocs { get; private set; } = new Dictionary<string, List<Element>>();
 
     }
+
     public static class GlobalDocument
     {
         public static Document currentDocument;
     }
+
+    public static class GlobalUIDocument
+    {
+        public static Autodesk.Revit.UI.UIDocument currentUIDocument;
+    }
+
     public static class GlobalBsddSettings
     {
         public static BsddSettings bsddsettings = new BsddSettings();
@@ -61,3 +74,4 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
         public Dictionary<string, bool> PropertyIsInstanceMap { get; set; } //string = propertyset/property - for now just property
     }
 }
+#endregion

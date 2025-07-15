@@ -1,4 +1,18 @@
-﻿using ASRR.Core.Persistence;
+﻿//TODO comments
+
+//
+
+/**
+ * File summary:
+ * - File name: 
+ * - Description: 
+ * - Development history: 
+ * - Copyright: Open Source
+*/
+
+
+#region ================== References ===================
+
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using BsddRevitPlugin.Logic.IfcJson;
@@ -9,86 +23,786 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.IO;
+using System.Security.Cryptography;
+using Revit.IFC.Export.Exporter.PropertySet;
+using Revit.IFC.Import.Utility;
+using BsddRevitPlugin.Logic.UI.DockablePanel;
+using Revit.IFC.Export.Toolkit;
+using Revit.IFC.Import.Data;
+using Autodesk.Revit.DB.IFC;
+using Autodesk.Revit.DB.Architecture;
+using Material = Autodesk.Revit.DB.Material;
+using Document = Autodesk.Revit.DB.Document;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Windows.Media.Media3D;
+using System.Windows.Media;
+using Autodesk.Revit.Creation;
+using System.Xml.Linq;
+using Autodesk.Revit.DB.Structure;
+using System.Windows.Controls;
+using Autodesk.Revit.DB.Mechanical;
+using System.Collections;
+using Autodesk.Revit.DB.Visual;
+using Revit.IFC.Export.Utility;
+using System.Reflection;
+using System.Windows.Input;
+using BsddRevitPlugin.Logic;
+using Autodesk.Revit.DB.Events;
+using BsddRevitPlugin.Logic.UI;
+using System.Security.Principal;
+using Autodesk.Internal.InfoCenter;
+using System.ComponentModel;
+using static BsddRevitPlugin.Logic.Model.MaterialRelAssociatesBuilder;
 using static BsddRevitPlugin.Logic.Model.ElementsManagerLogic;
+using BsddRevitPlugin.Logic.Model;
+using System.Windows.Documents;
+using System.Windows.Forms.Design;
+using Autodesk.Revit.DB.ExtensibleStorage;
+using BsddRevitPlugin.Logic.UI.Services;
+#endregion
 
-
+#region ============ Namespace Declaration ============
 namespace BsddRevitPlugin.Logic.Model
 {
+    #region ============== Global Variables ==============
+    #endregion
+
+    #region =================== Classes ===================
+    #region ============ Class: ElementManager ============
+    /// <summary>
+    /// 
+    /// </summary>
     public static class ElementsManager
     {
-        /// <summary>
-        /// Transforms selected Revit types into a bSDD-compatible ifcJSON structure.
-        /// </summary>
-        /// <param name="doc">The active Revit document.</param>
-        /// <param name="elemList">The list of selected Revit element types.</param>
-        /// <returns>A IfcData object representing the ifcJSON structure.</returns>
-        public static List<IfcEntity> SelectionToIfcJson(Document doc, List<ElementType> elemList)
+        #region =============== Class Variables ===============
+        // Element IFCClassification schema
+        private static Guid s_schemaId = new Guid("79717CB2-D47B-4EC0-8E74-83A43E7D9F0A");
+        private const string s_IfcClassificationData = "IfcClassificationData";
+        #endregion //Class Variables
+
+        #region ================= Constructor =================
+        #endregion //Constructor
+
+        #region ================ Class methods ================
+        // Element IFCClassification schema
+        private static Schema GetBsddDataSchema()
         {
-            if (doc == null || elemList == null)
+            Schema schema = Schema.Lookup(s_schemaId);
+            if (schema == null)
             {
-                throw new ArgumentNullException(doc == null ? nameof(doc) : nameof(elemList));
+                SchemaBuilder classificationBuilder = new SchemaBuilder(s_schemaId);
+                classificationBuilder.SetSchemaName("BsddData");
+                classificationBuilder.AddSimpleField(s_IfcClassificationData, typeof(string));
+                schema = classificationBuilder.Finish();
+            }
+            return schema;
+        }
+
+        /// <summary>
+        /// #elements and elementTypes: Filters a list with element types to only types with geometry (no camera's)
+        /// ID string generated is M: BsddRevitPlugin.Logic.Model.ElementManager.#
+        /// </summary>
+        /// <param name="elemSet">List of elements to be filtered.</param>
+        /// <returns>Filtered list of geometrical elements (types or instances)</returns>
+        public static List<ElementId> ListGeoFilter(Document doc, List<ElementId> elemSet)
+        {
+            Logger logger = LogManager.GetCurrentClassLogger();
+
+            //Make output class solids with as result only Geometry elements
+            List<ElementId> solids = new List<ElementId>();
+
+
+            Element elem;
+            foreach (ElementId id in elemSet)
+            {
+                elem = doc.GetElement(id);
+                if (IsGeometrical(elem))
+                {
+                    solids.Add(elem.Id);
+                }
             }
 
-            var ifcEntities = new List<IfcEntity>();
+            logger.Info($"ListGeoFilter: Number of Geometrical elements: {solids.Count}");
 
-            foreach (ElementType elem in elemList)
+            return solids;
+        }
+
+        /// <summary>
+        /// Checks or the given element is an geometrical element
+        /// </summary>
+        /// <param name="elem">Element to be checked</param>
+        /// <returns></returns>
+        public static bool IsGeometrical(Element elem)
+        {
+            if (elem == null || elem.Category == null) return false;
+
+            //Add all Rooms an Area's
+            if (elem is SpatialElement) return true;
+
+            if (
+                (elem.get_Geometry(new Options()) != null
+                && elem.Name != "Model Lines"
+                && !elem.Category.Name.StartsWith("Analytical")
+                && elem.Category.Name != "Guide Grid"
+                && elem.Category.Name != "Legend Components"
+                && elem.Category.Name != "Cameras")
+                ||
+                ArrayHolder.RevitGeoCategoriesArray.Contains(elem.Category.Name)
+            ) return true;
+
+            return false;
+        }
+
+        #region =========== CM: Collect parameters ===========
+        /// <summary>
+        /// Try to find a parameter of a element type based on the parameter name
+        /// </summary>
+        /// <param name="elementType">The Element Type where is searched on</param>
+        /// <param name="parameterName">Name of the parameter what is whished to find</param>
+        /// <returns>Value of the parameter if found</returns>
+        public static dynamic GetParameterValueByElement(ElementType elementType, string parameterName)
+        {
+            try
             {
-                if (elem == null)
+                if (elementType?.LookupParameter(parameterName) != null)
                 {
-                    continue;
+                    return GetParameterValueByCorrectStorageType(elementType.LookupParameter(parameterName));
                 }
 
-                var ifcData = CreateIfcEntity(elem, doc);
-                ifcEntities.Add(ifcData);
+                return null;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Try to find a parameter of a element instance based on the parameter name
+        /// </summary>
+        /// <param name="elementType">The Element instance where is searched on</param>
+        /// <param name="parameterName">Name of the parameter what is whished to find</param>
+        /// <returns>Value of the parameter if found</returns>
+        public static dynamic GetParameterValueByElement(Element element, string parameterName)
+        {
+            try
+            {
+                if (element?.LookupParameter(parameterName) != null)
+                {
+                    return GetParameterValueByCorrectStorageType(element.LookupParameter(parameterName));
+                }
+
+                return null;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Convert the found parameter of "GetParameterValueByElement" to the correct datatype
+        /// </summary>
+        /// <param name="parameter">Found parameter in "GetParameterValueByElement"</param>
+        /// <returns>parameter in specific datatype</returns>
+        private static dynamic GetParameterValueByCorrectStorageType(Parameter parameter)
+        {
+            //get the datatype of the parameter and return it as the found type
+            switch (parameter.StorageType)
+            {
+                case StorageType.ElementId:
+                    return parameter.AsElementId().IntegerValue;
+                case StorageType.Integer:
+                    return parameter.AsInteger();
+                case StorageType.None:
+                    return parameter.AsString();
+                case StorageType.Double:
+                    return parameter.AsDouble();
+                case StorageType.String:
+                    return parameter.AsValueString();
+                default:
+                    return "";
+            };
+        }
+
+        /// <summary>
+        /// Checks the IFC_EXPORT_ELEMENT_TYPE_AS parameter. If not filled it looks to the IfcExport categorie defined in the Ifc Export Classes of the Revit Ifc Export Options
+        /// </summary>
+        /// <param name="doc">Open document</param>
+        /// <param name="elem">Selected element</param>
+        /// <returns>The Ifc category defined to the Revit Category in the table</returns>
+        public static String IFCMappingValue(Document doc, Element elem)
+        {
+            Logger logger = LogManager.GetCurrentClassLogger();
+
+            //If the override value Ifc_Export_Element_Type_As is filled, return this value
+            if (!string.IsNullOrEmpty(elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS)?.AsString()))
+            {
+                return elem.get_Parameter(BuiltInParameter.IFC_EXPORT_ELEMENT_TYPE_AS)?.AsString();
             }
 
-            //SHOULD ONLY BE IF THEY ARE IN SELECTION OR ALL IN VIEW OR ALL IN DOCUMENT
-            ParameterDataManagement parameterDataManagement = new ParameterDataManagement();
-            //Add type for all Rooms
-            var roomEntity = new IfcEntity
+            //Get the category name of the element
+            Category elemCategory = elem.Category;
+            String cat = elemCategory.Name.ToString();
+
+            //Get the file path of the Ifc Export Classes of the Revit Ifc Export Options
+            //txt construction by line: Category<tab> Subcategory<tab> Layer name <tab> Color number<tab>
+            String exportCategoryTableFilePath = doc.Application.ExportIFCCategoryTable;
+
+            if (string.IsNullOrEmpty(exportCategoryTableFilePath))
             {
-                Name = parameterDataManagement._roomName,
-                Type = "Rooms & Area's",
-                Description = "Rooms & Area's",
-                ObjectType = "Rooms & Area's",
-                PredefinedType = "Rooms & Area's"
-            };
-            ifcEntities.Add(roomEntity);
+                logger.Error($"IFCMappingValue: exportCategoryTableFilePath not found");
+            }
 
-            //Add type for all Area's
-            var areaEntity = new IfcEntity
+            // Dictionary to store the mapping between Revit categories and IFC class names
+            Dictionary<string, string> mappingTable = new Dictionary<string, string>();
+
+            String line;
+            try
             {
-                Name = parameterDataManagement._areaName,
-                Type = "Rooms & Area's",
-                Description = "Rooms & Area's",
-                ObjectType = "Rooms & Area's",
-                PredefinedType = "Rooms & Area's"
-
+                //Pass the file path and file name to the StreamReader constructor
+                StreamReader sr = new StreamReader(exportCategoryTableFilePath);
+                line = sr.ReadLine();
+                String sep = "\t";
+                while (line != null)
+                {
+                    if (!line.StartsWith("#") && line != "")
+                    {
+                        string[] splitContent = line.Split(sep.ToCharArray());
+                        if (
+                            !string.IsNullOrEmpty(splitContent[0]) &&
+                            !string.IsNullOrEmpty(splitContent[2])
+                        )
+                        {
+                            // Add to dictionary (category, subcategory and layer name)
+                            // #TODO streamliner: how this interacts with subcategorie? splitContent[1]
+                            mappingTable.Add(splitContent[0] + "\t" + splitContent[1], splitContent[2]);
+                        }
+                    }
+                    ////Read the next line
+                    line = sr.ReadLine();
+                }
+                //close the file
+                sr.Close();
+            }
+            catch (Exception e)
+            {
+                logger.Error($"Exception IFCMappingValue: Streamreader failed: {e}");
             };
-            ifcEntities.Add(areaEntity);
 
-            var provider = new JsonBasedPersistenceProvider("C://temp");
-            provider.Persist(ifcEntities);
-
-            return ifcEntities;
+            try
+            {
+                // #TODO streamliner: part if todo streamliner: logger.Error($"Mapping table: {mappingTable[cat + "\t"]}");
+                return mappingTable[cat + "\t"];
+            }
+            catch (Exception e)
+            {
+                logger.Error($"Exception IFCMappingValue: mappingTable[cat + \"\\t\"] didnt work: {e}");
+                mappingTable.Add(cat + "\t", "Not Exported");
+                return mappingTable[cat + "\t"];
+            }
         }
+
+        #region ========== CM: Material association ==========
         /// <summary>
-        /// Set the IFC data from the bSDD UI to the correct   Revit element.
+        /// Retrieves the associations from the extended storage for an entity.
         /// </summary>
-        /// <param name="doc"></param>
-        /// <param name="ifcEntity"></param>
+        /// <param name="entity">The entity from which to retrieve the associations.</param>
+        /// <returns>A dictionary of associations with the location as the key.</returns>        
+        public static List<Association> GetElementTypeAssociations(List<ElementId> elemSet, Document doc, out Dictionary<Uri, IfcClassificationReference> associationsRef)
+        {
+            Logger logger = LogManager.GetCurrentClassLogger();
+
+            ElementType elementType = null;
+            try
+            {
+                foreach (ElementId id in elemSet)
+                {
+                    elementType = (ElementType)doc.GetElement(id);
+                    break; // Exit the loop after the first element
+                }
+            }
+            catch { }
+
+
+            //Make list of assosiations to return
+            var associations = new List<Association>();
+
+            //make new dictionary to store the Associations
+            associationsRef = new Dictionary<Uri, IfcClassificationReference>();
+
+            //Get the classification data mapped to the current settings
+            var activeDictionaryData = GetClassificationDataFromSettings(elementType);
+
+            //Get associations from storrage
+            foreach (var association in getElemClassRefFromExtensibleStorage(elementType))
+            {
+                if (association is IfcClassificationReference ifcClassificationReference)
+                {
+                    associationsRef[ifcClassificationReference.ReferencedSource.Location] = ifcClassificationReference;
+                }
+            }
+
+            foreach (var entry in activeDictionaryData)
+            {
+                //store the keys of the dictionary
+                Uri dictionaryUri = entry.Key;
+                //store the values of the dictionary
+                (string Identification, string Name) value = entry.Value;
+
+                if (!associationsRef.TryGetValue(dictionaryUri, out var association))
+                {
+                    // add new IfcClassificationReference to the dictionary based on dictionaryUri, Identification and Name
+                    associationsRef[dictionaryUri] = new IfcClassificationReference
+                    {
+                        Type = "IfcClassificationReference",
+                        Identification = value.Identification,
+                        Name = value.Name,
+                        ReferencedSource = new IfcClassification
+                        {
+                            Type = "IfcClassification",
+                            Location = dictionaryUri,
+                        }
+                    };
+
+                }
+                else
+                {
+                    //update the existing IfcClassificationReference with the new values from the revit typeEntity
+                    var ifcClassificationReference = (IfcClassificationReference)association;
+                    ifcClassificationReference.Identification = value.Identification;
+                    ifcClassificationReference.Name = value.Name;
+                }
+            }
+
+
+            #region =================== Builder ====================
+            // The client code creates a builder object, passes it to the
+            // director and then initiates the construction process. The end
+            // result is retrieved from the builder object.
+            var director = new Director();
+            var builder = new MatRelAssociatesBuilder();
+            director.Builder = builder;
+
+            //If Element or ElementType is not Profile based and schema = Ifc2x3
+            if (
+                elementType != null &&
+                elementType.Category.Name != "Structural Beam Systems" &&
+                elementType.Category.Name != "Structural Columns" &&
+                elementType.Category.Name != "Structural Framing" &&
+                elementType.Category.Name != "Structural Trusses"
+                //#TODO Ifc4 out of scope: && elementType.Category.Name != Ifc4
+                )
+            {
+                director.BuildMaterial(elemSet, doc);
+            }
+
+
+            //If Element or ElementType is not Profile based and schema = Ifc4
+            // #TODO Ifc4 out of scope: director.BuildMaterialConstituentSet();
+            /*if (
+                elementType != null &&
+                elementType.Category.Name != "Structural Beam Systems" ||
+                elementType.Category.Name != "Structural Columns" ||
+                elementType.Category.Name != "Structural Framing" ||
+                elementType.Category.Name != "Structural Trusses" &&
+                elementType.Category.Name == Ifc4
+                )
+            {
+                director.BuildMaterialConstituentSet();
+            }*/
+
+            //If ElementType is Profile
+            if (
+                elementType != null &&
+                elementType.Category.Name == "Structural Beam Systems" ||
+                elementType.Category.Name == "Structural Columns" ||
+                elementType.Category.Name == "Structural Framing" ||
+                elementType.Category.Name == "Structural Trusses"
+                )
+            {
+                director.BuildMaterialProfileSet(elemSet, doc);
+            }
+
+            //If ElementType has layers
+            if (
+                elementType != null &&
+                elementType.Category.Name == "Ceilings" ||
+                elementType.Category.Name == "Roofs" ||
+                elementType.Category.Name == "Walls" ||
+                elementType.Category.Name == "Floors"
+                )
+            {
+                director.BuildMaterialLayerSet(elemSet, doc);
+            }
+
+            associations = builder.GetResult().SetAssociations(associations);
+            foreach (var refAss in associationsRef)
+            {
+                associations.Add(new IfcClassificationReference
+                {
+                    Type = refAss.Value.Type,
+                    Name = refAss.Value.Name,
+                    Location = refAss.Value.Location,
+                    Identification = refAss.Value.Identification,
+                    ReferencedSource = refAss.Value.ReferencedSource
+
+                });
+            }
+            #endregion
+
+            return associations;
+        }
+
+        public static List<Association> GetElementAssociations(List<ElementId> elemSet, Document doc, out Dictionary<Uri, IfcClassificationReference> associationsRef)
+        {
+            Element element = null;
+            try
+            {
+                foreach (ElementId id in elemSet)
+                {
+                    element = doc.GetElement(id);
+                    break; // Exit the loop after the first element
+                }
+            }
+            catch { }
+
+            var associations = new List<Association>();
+
+            Logger logger = LogManager.GetCurrentClassLogger();
+            associationsRef = new Dictionary<Uri, IfcClassificationReference>();
+            var activeDictionaryData = GetClassificationDataFromSettings(element);
+
+            foreach (var associationR in getElemClassRefFromExtensibleStorage(element))
+            {
+                if (associationR is IfcClassificationReference ifcClassificationReference)
+                {
+                    associationsRef[ifcClassificationReference.ReferencedSource.Location] = ifcClassificationReference;
+                }
+            }
+
+            foreach (var entry in activeDictionaryData)
+            {
+                Uri dictionaryUri = entry.Key;
+                (string Identification, string Name) value = entry.Value;
+
+                if (!associationsRef.TryGetValue(dictionaryUri, out var associationR))
+                {
+                    // add new IfcClassificationReference to the dictionary based on dictionaryUri, Identification and Name
+                    associationsRef[dictionaryUri] = new IfcClassificationReference
+                    {
+                        Type = "IfcClassificationReference",
+                        Identification = value.Identification,
+                        Name = value.Name,
+                        ReferencedSource = new IfcClassification
+                        {
+                            Type = "IfcClassification",
+                            Location = dictionaryUri,
+                        }
+                    };
+                }
+                else
+                {
+                    //update the existing IfcClassificationReference with the new values from the revit typeEntity
+                    var ifcClassificationReference = (IfcClassificationReference)associationR;
+                    ifcClassificationReference.Identification = value.Identification;
+                    ifcClassificationReference.Name = value.Name;
+                }
+            }
+
+            #region =================== Builder ====================
+            // Creates a builder object, passes it to the director and then initiates the construction process.
+            // The end result is retrieved from the builder object.
+            var director = new Director();
+            var builder = new MatRelAssociatesBuilder();
+            director.Builder = builder;
+
+
+            //If Element or ElementType is not Profile based and schema = Ifc2x3
+            if (
+                element != null
+                )
+            {
+                director.BuildMaterial(elemSet, doc);
+            }
+
+
+            //If Element or ElementType is not Profile based and schema = Ifc4
+            // #TODO Ifc4 out of scope: director.BuildMaterialConstituentSet();
+
+            associations = builder.GetResult().SetAssociations(associations);
+            foreach (var refAss in associationsRef)
+            {
+                associations.Add(new IfcClassificationReference
+                {
+                    Type = refAss.Value.Type,
+                    Name = refAss.Value.Name,
+                    Location = refAss.Value.Location,
+                    Identification = refAss.Value.Identification,
+                    ReferencedSource = refAss.Value.ReferencedSource
+                });
+            }
+            #endregion
+
+            return associations;
+        }
+
+        /// <summary>
+        /// Retrieves the classification data mapped to the current settings for a given element type.
+        /// </summary>
+        /// <param name="elementType">The element type.</param>
+        /// <returns>A dictionary containing the classification data, where the key is the dictionary URI and the value is a tuple of the identification and name.</returns>
+        public static Dictionary<Uri, (string Identification, string Name)> GetClassificationDataFromSettings(ElementType elementType)
+        {
+            Logger logger = LogManager.GetCurrentClassLogger();
+
+            //Make new dictionary to return the classification data settings
+            var classificationData = new Dictionary<Uri, (string Identification, string Name)>();
+            //Get active dictionaries and leave empty if there is non
+            var activeDictionaries = GetActiveDictionaries();
+
+            //fill dictionary if valid name and Id is found
+            foreach (var dictionary in activeDictionaries)
+            {
+                string bsddParameterValue = "";
+                string mappedParameterValue = "";
+                // #TODO: sometimes values come back as null, how does this look in the IFC?
+                try
+                {
+                    bsddParameterValue = GetParameterValueByElement(elementType, CreateParameterNameFromUri(dictionary.IfcClassification.Location));
+                }
+                catch (Exception e)
+                {
+                    logger.Error($"GetElementAssociations elemType: bsddParameterValue could not be set: {e}");
+                }
+                try
+                {
+
+                    mappedParameterValue = GetParameterValueByElement(elementType, dictionary.ParameterMapping);
+                }
+                catch (Exception e)
+                {
+
+                    logger.Error($"GetElementAssociations elemType: mappedParameterValue could not be set: {e}");
+                }
+
+                string identification = null;
+                string name = null;
+
+                if (!string.IsNullOrEmpty(bsddParameterValue))
+                {
+                    //Get Id and name out of location value
+                    var splitValue = bsddParameterValue.Split(':');
+                    identification = splitValue[0];
+                    name = splitValue.Length > 1 ? splitValue[1] : splitValue[0];
+                }
+                if (!string.IsNullOrEmpty(mappedParameterValue))
+                {
+                    //Get Id and name out of Parameter mapping value
+                    var splitValue = mappedParameterValue.Split(':');
+                    identification = splitValue[0];
+                    //Do if name is not already filled by location value 
+                    if (string.IsNullOrEmpty(name))
+                    {
+                        name = splitValue.Length > 1 ? splitValue[1] : splitValue[0];
+                    }
+                    else
+                    {
+                        if (splitValue.Length > 1)
+                        {
+                            name = splitValue[1];
+                        }
+                    }
+                }
+
+                //If both Id and Name are defined fill classificationdata dictionary with uri and location dictionary
+                if (!string.IsNullOrEmpty(identification) || !string.IsNullOrEmpty(name))
+                {
+                    classificationData[dictionary.IfcClassification.Location] = (identification, name);
+                }
+            }
+
+            //If there is no active dictionary it is left empty
+            return classificationData;
+        }
+
+        /// <summary>
+        /// Retrieves the classification data mapped to the current settings for a given element.
+        /// </summary>
+        /// <param name="element">The element</param>
+        /// <returns>A dictionary containing the classification data, where the key is the dictionary URI and the value is a tuple of the identification and name.</returns>
+        public static Dictionary<Uri, (string Identification, string Name)> GetClassificationDataFromSettings(Element element)
+        {
+            Logger logger = LogManager.GetCurrentClassLogger();
+
+            //Make new dictionary to return the classification data settings
+            var classificationData = new Dictionary<Uri, (string Identification, string Name)>();
+            //Get active dictionaries and leave empty if there is non
+            var activeDictionaries = GetActiveDictionaries();
+
+            //fill dictionary if valid name and Id is found
+            foreach (var dictionary in activeDictionaries)
+            {
+                string bsddParameterValue = "";
+                string mappedParameterValue = "";
+                string bsddParameterName = CreateParameterNameFromUri(dictionary.IfcClassification.Location);
+                // #TODO: sometimes values come back as null, how does this look in the IFC?
+                try
+                {
+                    bsddParameterValue = GetParameterValueByElement(element, CreateParameterNameFromUri(dictionary.IfcClassification.Location));
+                }
+                catch (Exception e)
+                {
+                    logger.Error($"GetElementAssociations elem: bsddParameterValue could not be set: {e}");
+                }
+                try
+                {
+
+                    mappedParameterValue = GetParameterValueByElement(element, dictionary.ParameterMapping);
+                }
+                catch (Exception e)
+                {
+
+                    logger.Error($"GetElementAssociations elem: mappedParameterValue could not be set: {e}");
+                }
+
+                string identification = null;
+                string name = null;
+
+                if (!string.IsNullOrEmpty(bsddParameterValue))
+                {
+                    //Get Id and name out of location value
+                    var splitValue = bsddParameterValue.Split(':');
+                    identification = splitValue[0];
+                    name = splitValue.Length > 1 ? splitValue[1] : splitValue[0];
+                }
+                if (!string.IsNullOrEmpty(mappedParameterValue))
+                {
+                    //Get Id and name out of Parameter mapping value
+                    var splitValue = mappedParameterValue.Split(':');
+                    identification = splitValue[0];
+                    //Do if name is not already filled by location value
+                    if (string.IsNullOrEmpty(name))
+                    {
+                        name = splitValue.Length > 1 ? splitValue[1] : splitValue[0];
+                    }
+                    else
+                    {
+                        if (splitValue.Length > 1)
+                        {
+                            name = splitValue[1];
+                        }
+                    }
+                }
+
+                //If both Id and Name are defined fill classificationdata dictionary with uri and location dictionary
+                if (!string.IsNullOrEmpty(identification) || !string.IsNullOrEmpty(name))
+                {
+                    classificationData[dictionary.IfcClassification.Location] = (identification, name);
+                }
+            }
+
+            //If there is no active dictionary it is left empty
+            return classificationData;
+        }
+
+        /// <summary>
+        /// Retrieves the combined list of main and filter dictionaries from the global settings.
+        /// If the MainDictionary is null, it is left out.
+        /// </summary>
+        public static IEnumerable<BsddDictionary> GetActiveDictionaries()
+        {
+            // Create a list of BsDD Dictionaries to return as Enum
+            var activeDictionaries = new List<BsddDictionary>();
+
+            //If settings found in main dictionary of the global BsDD settings return this
+            if (GlobalBsddSettings.bsddsettings.MainDictionary != null)
+            {
+                activeDictionaries.Add(GlobalBsddSettings.bsddsettings.MainDictionary);
+            }
+
+            //Remove double dictionaries
+            if (GlobalBsddSettings.bsddsettings.FilterDictionaries != null)
+            {
+                activeDictionaries = activeDictionaries.Concat(GlobalBsddSettings.bsddsettings.FilterDictionaries).ToList();
+            }
+
+            return activeDictionaries;
+        }
+
+        /// <summary>
+        /// Creates a Revit bSDD parameter name for the from the given URI.
+        /// </summary>
+        /// <param name="uri">The URI to create the parameter name from.</param>
+        /// <returns>The parameter name created from the URI.</returns>
+        public static string CreateParameterNameFromUri(Uri uri)
+        {
+            string parameterName = $"bsdd/class/{uri.Host}{uri.PathAndQuery}";
+            return parameterName;
+        }
+
+        /// <summary>
+        /// get the element classification reference from extensible storage
+        /// </summary>
+        /// <param name="element">Element</param>
+        /// <returns>Deserialized object from the JSON string</returns>
+        private static IEnumerable<Association> getElemClassRefFromExtensibleStorage(Element element)
+        {
+            //Get the current IfcSchema
+            Schema schema = GetBsddDataSchema();
+            var storageEntity = element.GetEntity(schema);
+
+            if (storageEntity.Schema != null)
+            {
+                var field = schema.GetField(s_IfcClassificationData);
+                var jsonString = storageEntity.Get<string>(field);
+
+                if (!string.IsNullOrEmpty(jsonString))
+                {
+                    return JsonConvert.DeserializeObject<List<IfcClassificationReference>>(jsonString);
+                }
+            }
+
+            return Enumerable.Empty<IfcClassificationReference>();
+        }
+
+        #region =========== CM: Material relations ===========
+
+
+        #endregion //CM: Material relations
+        #endregion //CM: Material association
+        #endregion //CM: Collect parameters
+
+        #region ======== CM: bSDD parameters to Revit ========
+        /// <summary>
+        /// Save bSDD data to Revit parameters of instance or type element given
+        /// </summary>
+        /// <param name="doc">Active project document</param>
+        /// <param name="ifcEntity">ifcEnity instance or type to convert</param>
         public static void SetIfcDataToRevitElement(Document doc, BsddBridgeData bsddBridgeData)
         {
             BsddSettings bsddSettings = new BsddSettings();
 
             Dictionary<string, bool> keyValuePairs = new Dictionary<string, bool>();
-            //TODO: Let this work with full settings (and aditional project parameters)
+            ///List<IfcEntity> ifcEntities = new List<IfcEntity>();
+            ///ifcEntities.Add(ifcEntity);
+
+
+            ///propertyIsInstanceMap.Add(ifcEntity.Type, ifcEntity.Instance);
+
+            ///BsddBridgeData bsddBridgeData = new BsddBridgeData{ 
+            ///    IfcData = ifcEntities,
+            ///    PropertyIsInstanceMap = propertyIsInstanceMap,
+            ///    Settings = bsddSettings
+            ///};
 
             Logger logger = LogManager.GetCurrentClassLogger();
-
             List<IfcEntity> ifcEntityLst = bsddBridgeData.IfcData;
 
-            //TODO: make sure parameters are being made instance/type according to list below
             Dictionary<string, bool> propertyIsInstanceMap = bsddBridgeData.PropertyIsInstanceMap;
 
             ParameterDataManagement parameterDataManagement = new ParameterDataManagement();
@@ -99,16 +813,58 @@ namespace BsddRevitPlugin.Logic.Model
 
                 try
                 {
-
                     // Create a classification set in which every dictionary will be collected
                     HashSet<IfcClassification> dictionaryCollection = new HashSet<IfcClassification>();
 
+                    //Get the elementType or element
+                    int idInt = Convert.ToInt32(ifcEntity.Tag);
+                    // #TODO convert Int32 to Int64 for future versions of Revit
+                    ElementId typeId = new ElementId(idInt);
+                    Element elementI = null;
+                    ElementType elementT = null;
+                    if (doc.GetElement(typeId) as ElementType != null)
+                    {
+                        elementT = doc.GetElement(typeId) as ElementType;
+                    }
+                    else
+                    {
+                        elementI = doc.GetElement(typeId);
+                    }
+                    var element = elementT ?? elementI;
+
+                    //Initialize parameters
+                    string bsddParameterName = "";
+                    string parameterMappedName = "";
+
+                    //Set parameter type and group for the bsdd classification parameters
+                    ////ForgeTypeId specType = SpecTypeId.String.Text;
                     ForgeTypeId groupType = GroupTypeId.Ifc;
 
+                    //Add all associations to the element in element entity storage
+                    Schema schema = GetBsddDataSchema();
+                    var field = schema.GetField(s_IfcClassificationData);
+                    try
+                    {
+                        using (Transaction tx = new Transaction(doc))
+                        {
+                            tx.Start("Set Entity");
+                            Entity entity = new Entity(schema);
+                            entity.Set(field, JsonConvert.SerializeObject(ifcEntity.HasAssociations));
+                            element.SetEntity(entity);
+                            tx.Commit();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("error");
+                        logger.Error($"ERROR ocurred in: Element json, by adding all assosiations to the element in element entity storage. Exception: {ex}");
+                    }
+
+                    //Create a list of parameters to create
                     List<ParameterCreation> parametersToCreate = new List<ParameterCreation>();
                     Dictionary<string, object> parametersToSet = new Dictionary<string, object>();
-
                     parameterDataManagement.GetParametersToCreateAndSet(doc, ifcEntity, dictionaryCollection, propertyIsInstanceMap, out parametersToCreate, out parametersToSet);
+
 
                     if (ifcEntity.Name == parameterDataManagement._areaName || ifcEntity.Name == parameterDataManagement._roomName)
                     {
@@ -144,56 +900,59 @@ namespace BsddRevitPlugin.Logic.Model
 
                                 tx.Commit();
                             }
-                        }   
+                        }
                         //TODO: No SetElementTypeParameters for instance parameters (yet), needs UI
                     }
                     else
                     {
                         //Get the elementType
-                        int idInt = Convert.ToInt32(ifcEntity.Tag);
-                        ElementId typeId = new ElementId(idInt);
-                        ElementType elementType = doc.GetElement(typeId) as ElementType;
-                        using (Transaction tx = new Transaction(doc))
-                        {
-                            tx.Start("SetIfcEntity");
-
-                            //Set IfcEntity to the Elements DataStorage
-                            SetIfcEntityToElementDataStorage(ifcEntity, elementType);
-
-                            tx.Commit();
-                        }
-
-                        using (Transaction tx = new Transaction(doc))
-                        {
-                            tx.Start("Create or edit parameters");
-
-                            //First create all parameters at once (in Release creating parameters seperately sometimes fails)
-                            List<Category> currentCategoryLst = new List<Category>() { elementType.Category };
-                            Parameters.CreateProjectParameters(doc, parametersToCreate, "tempGroupName", groupType, currentCategoryLst);
-
-                            tx.Commit();
-                        }
-                        if (parametersToCreate.Any(a => a.isInstance == true))
+                        int idInt2 = Convert.ToInt32(ifcEntity.Tag);
+                        ElementId typeId2 = new ElementId(idInt2);
+                        ElementType elementType = doc.GetElement(typeId2) as ElementType;
+                        if (elementType != null)
                         {
                             using (Transaction tx = new Transaction(doc))
                             {
-                                tx.Start("Update instance parameters");
+                                tx.Start("SetIfcEntity");
 
-                                Parameters.SetInstanceParameterVaryBetweenGroups(doc, parametersToCreate, true);
+                                //Set IfcEntity to the Elements DataStorage
+                                SetIfcEntityToElementDataStorage(ifcEntity, elementType);
 
                                 tx.Commit();
                             }
-                        }
+
+                            using (Transaction tx = new Transaction(doc))
+                            {
+                                tx.Start("Create or edit parameters");
+
+                                //First create all parameters at once (in Release creating parameters seperately sometimes fails)
+                                List<Category> currentCategoryLst = new List<Category>() { elementType.Category };
+                                Parameters.CreateProjectParameters(doc, parametersToCreate, "tempGroupName", groupType, currentCategoryLst);
+
+                                tx.Commit();
+                            }
+                            if (parametersToCreate.Any(a => a.isInstance == true))
+                            {
+                                using (Transaction tx = new Transaction(doc))
+                                {
+                                    tx.Start("Update instance parameters");
+
+                                    Parameters.SetInstanceParameterVaryBetweenGroups(doc, parametersToCreate, true);
+
+                                    tx.Commit();
+                                }
+                            }
 
 
-                        using (Transaction tx = new Transaction(doc))
-                        {
-                            tx.Start("Set parameters");
+                            using (Transaction tx = new Transaction(doc))
+                            {
+                                tx.Start("Set parameters");
 
-                            //Set all parameters
-                            Parameters.SetElementTypeParameters(elementType, parametersToSet);
+                                //Set all parameters
+                                Parameters.SetElementTypeParameters(elementType, parametersToSet);
 
-                            tx.Commit();
+                                tx.Commit();
+                            }
                         }
                     }
                 }
@@ -203,162 +962,216 @@ namespace BsddRevitPlugin.Logic.Model
                     throw;
                 }
             }
-
             propertyIsInstanceMap.Clear();
         }
+
         /// <summary>
-        /// Highlight/select the elements in Revit
+        /// Determines the Revit parameter type from an IFC property.
         /// </summary>
-        /// <param name="uidoc"></param>
-        /// <param name="ifcEntityLst"></param>
-        public static void SelectElementsWithIfcData(UIDocument uidoc, List<IfcEntity> ifcEntityLst)
+        /// <param name="property">The IFC property.</param>
+        /// <returns>The corresponding Revit parameter type.</returns>
+        private static ForgeTypeId GetParameterTypeFromProperty(IfcValue ifcValue)
         {
-            Logger logger = LogManager.GetCurrentClassLogger();
+            // The type of the nominal value in the IFC property
+            string valueType = ifcValue.Type;
 
-            logger.Info($"Element json {JsonConvert.SerializeObject(ifcEntityLst)}");
-            Document doc = uidoc.Document;
-
-            try
+            // Map the IFC type to the corresponding Revit parameter type
+            switch (valueType)
             {
+                case "IfcBoolean":
+                    // Map IfcBoolean to Revit's YesNo type
+                    return SpecTypeId.Boolean.YesNo;
 
-                List<ElementId> allElementIds = new List<ElementId>();
-                foreach (IfcEntity ifcEntity in ifcEntityLst)
-                {
+                case "IfcInteger":
+                    // Map IfcInteger to Revit's Integer type
+                    return SpecTypeId.Int.Integer;
 
-                    ParameterDataManagement parameterDataManagement = new ParameterDataManagement();
-                    if (ifcEntity.Name == parameterDataManagement._areaName)
-                    {
-                        // Select all areas
-                        FilteredElementCollector collector = new FilteredElementCollector(doc);
-                        var areas = collector.OfCategory(BuiltInCategory.OST_Areas).WhereElementIsNotElementType().ToList();
-                        allElementIds.AddRange(areas.Select(a => a.Id));
-                    }
-                    else if (ifcEntity.Name == parameterDataManagement._roomName)
-                    {
-                        // Select all rooms
-                        FilteredElementCollector collector = new FilteredElementCollector(doc);
-                        var rooms = collector.OfCategory(BuiltInCategory.OST_Rooms).WhereElementIsNotElementType().ToList();
-                        allElementIds.AddRange(rooms.Select(r => r.Id));
-                    }
-                    else
-                    {
+                case "IfcReal":
+                    // Map IfcReal to Revit's Number type
+                    return SpecTypeId.Number;
 
-                        //Get the elementType
-                        int idInt = Convert.ToInt32(ifcEntity.Tag);
-                        ElementId typeId = new ElementId(idInt);
-                        ElementType elementType = doc.GetElement(typeId) as ElementType;
+                case "IfcDate":
+                case "IfcDateTime":
+                    // Revit does not support date types, so map IfcDate and IfcDateTime to Revit's Text type
+                    return SpecTypeId.String.Text;
 
-                        //Get all instances of the elementtype
-                        FilteredElementCollector collector = new FilteredElementCollector(doc);
-                        var elements = collector
-                            .WhereElementIsNotElementType()
-                            .Where(e => e.GetTypeId() == elementType.Id)
-                            .ToList();
+                case "IfcText":
+                case "IfcLabel":
+                case "IfcIdentifier":
+                    // Map IfcText to Revit's Text type
+                    return SpecTypeId.String.Text;
 
-                        //Get element ids
-                        List<ElementId> elementIds = elements.Select(e => e.Id).ToList();
-
-                        allElementIds.AddRange(elementIds);
-                    }
-
-                }
-
-
-
-                try
-                {
-
-                    // Select the elements in the UI
-                    uidoc.Selection.SetElementIds(allElementIds);
-                }
-                catch
-                {
-                    Console.WriteLine("Could not select any elements");
-                }
-
-
-            }
-            catch (Exception e)
-            {
-                logger.Info(e.Message);
-                throw;
+                default:
+                    // If the IFC type is not recognized, default to Revit's Text type
+                    return SpecTypeId.String.Text;
             }
         }
+
         /// <summary>
-        /// Filter the current selection
+        /// Get mapped parametername (stored in the documents DataStorage)
         /// </summary>
-        /// <param name="elemList"></param>
+        /// <param name="ifcClassificationReference"></param>
         /// <returns></returns>
-        public static List<ElementType> ListFilter(List<ElementType> elemList)
+        public static string GetMappedParameterName(IfcClassificationReference ifcClassificationReference)
         {
+            Uri refSourceLocation = ifcClassificationReference.ReferencedSource.Location;
+
+            if (GlobalBsddSettings.bsddsettings.MainDictionary.IfcClassification.Location == refSourceLocation)
+            {
+                return GlobalBsddSettings.bsddsettings.MainDictionary.ParameterMapping;
+            }
+            else
+            {
+                foreach (var filterDictionary in GlobalBsddSettings.bsddsettings.FilterDictionaries)
+                {
+                    if (filterDictionary.IfcClassification.Location == refSourceLocation)
+                    {
+                        return filterDictionary.ParameterMapping;
+                    }
+                }
+            }
+            return "";
+        }
+
+        /// <summary>
+        /// Makes a type property in Revit and set its given value from the given propertyname in the given propertyset
+        /// </summary>
+        /// <param name="elementType"></param>
+        /// <param name="propertySet"></param>
+        /// <param name="propertyName"></param>
+        /// <param name="propertyValue"></param>
+        private static void CreateAndSetTypeProperty(ElementType elementType, IfcPropertySet propertySet, string propertyName, IfcValue propertyValue)
+        {
+
             Logger logger = LogManager.GetCurrentClassLogger();
 
-            List<ElementType> elemListFiltered = new List<ElementType>();
+            //Create parameter name for each unique bsdd property
+            string bsddParameterName = CreateParameterNameFromPropertySetAndProperty(propertySet.Name, propertyName);
 
+            //Add a project parameter for the bsdd parameter in all Revit categorices if it does not exist 
+            //NOTE: THIS IS UP FOR DISCUSSION, AS IT MIGHT NOT BE NECESSARY TO ADD THE PARAMETER TO ALL CATEGORIES
+            //Utilities.Parameters.CreateProjectParameterForAllCategories(doc, bsddParameterName, "tempGroupName", specType, groupType, false);
 
-            string typeId;
-            List<string> idList = new List<string>();
-            foreach (ElementType item in elemList)
+            if (propertyValue.Value != null)
             {
-                try
+                dynamic value = GetParameterValueInCorrectDatatype(propertyValue);
+
+                //Check each type parameter from the object
+                foreach (Parameter typeparameter in elementType.Parameters)
                 {
-                    if (item != null && item.Category != null)
+                    string typeParameterName = typeparameter.Definition.Name;
+
+
+                    //Add the bsdd value to the parameter
+                    if (typeParameterName == bsddParameterName)
                     {
-                        if (
-                        item.Category.Name != "Levels" &&
-                        item.Category.Name != "Grids" &&
-                        item.Category.Name != "Location Data" &&
-                        item.Category.Name != "Model Groups" &&
-                        item.Category.Name != "RVT Links" &&
-                        item.Category.Name != "Stacked Walls" &&
-                        item.Category.Name.Substring(System.Math.Max(0, item.Category.Name.Length - 4)) != ".dwg" &&
-                        item.Category.Name.Substring(System.Math.Max(0, item.Category.Name.Length - 4)) != ".pdf"
-                        )
+                        try
                         {
-                            //dubble elementen verwijderen
-                            typeId = GetTypeId(item);
-                            bool chk = !idList.Any();
-                            //logger.Debug("Aantal: " + idList.Count());
-                            //logger.Debug("TypeId: " + typeId);
-                            int count = idList.Count();
-                            int number = 1;
-                            foreach (string result in idList)
-                            {
-                                // do something with each item
-                                //logger.Debug("result: " + result);
-                                if (count == number)
-                                {
-                                    // do something different with the last item
-                                    if (result != typeId)
-                                    {
-                                        idList.Add(typeId);
-                                        elemListFiltered.Add(item);
-                                        break;
-                                    }
-                                }
-                                else
-                                {
-                                    // do something different with every item but the last
-                                    if (result == typeId)
-                                    {
-                                        break;
-                                    }
-                                }
-                                number++;
-                            }
-                            if (idList.Count() == 0)
-                            {
-                                idList.Add(typeId);
-                                elemListFiltered.Add(item);
-                            }
+                            //because the value is dynamic, always try catch
+                            typeparameter.Set(value);
+                        }
+                        catch (Exception e)
+                        {
+                            logger.Info($"Property {propertyName}  could not be set for elementType {elementType.Name},'{elementType.Id}'. Exception: {e.Message}");
                         }
                     }
                 }
-                catch { }
+            }
+        }
+
+        /// <summary>
+        /// Converts the value of the given IFC property to the correct datatype.
+        /// </summary>
+        /// <param name="propertyValue">The IFC property to convert.</param>
+        /// <returns>The converted value, or a default value if the conversion fails.</returns>
+        private static dynamic GetParameterValueInCorrectDatatype(IfcValue propertyValue)
+        {
+            dynamic value = propertyValue.Value;
+
+            // Parse value to correct datatype
+            switch (propertyValue.Type)
+            {
+                case "IfcBoolean":
+                    value = TryConvertValue(value, new Func<dynamic, dynamic>(v => (bool)v ? 1 : 0), 0);
+                    break;
+                case "IfcInteger":
+                    value = TryConvertValue(value, new Func<dynamic, dynamic>(v => Convert.ToInt32(v)), 0);
+                    break;
+                case "IfcReal":
+                    value = TryConvertValue(value, new Func<dynamic, dynamic>(v => Convert.ToDouble(v)), 0);
+                    break;
+                case "IfcDate":
+                case "IfcDateTime":
+                    //TODO: Check what seems to be a valid DateTime to get and convert
+                    value = TryConvertValue(value, new Func<dynamic, dynamic>(v => Convert.ToDateTime(v).ToString()), "");
+                    break;
+                default:
+                    // IfcText, IfcLabel, IfcIdentifier or Default
+                    value = TryConvertValue(value, new Func<dynamic, dynamic>(v => v.ToString()), "");
+                    break;
             }
 
-            elemListFiltered = elemListFiltered.Distinct().ToList();
-            return elemListFiltered;
+            return value;
+        }
+        /// <summary>
+        /// Tries to convert a value using the given conversion function.
+        /// </summary>
+        /// <param name="value">The value to convert.</param>
+        /// <param name="convert">The conversion function to use.</param>
+        /// <param name="defaultValue">The default value to return if the conversion fails.</param>
+        /// <returns>The converted value, or the default value if the conversion fails.</returns>
+        private static dynamic TryConvertValue(dynamic value, Func<dynamic, object> convert, dynamic defaultValue)
+        {
+            try
+            {
+                return value != null ? convert(value) : defaultValue;
+            }
+            catch (Exception)
+            {
+                return defaultValue;
+            }
+        }
+
+        /// <summary>
+        /// Creates a Revit bSDD parameter name from the given peropertyset and property.
+        /// </summary>
+        /// <param name="uri">The URI to create the parameter name from.</param>
+        /// <returns>The parameter name created from the URI.</returns>
+        public static string CreateParameterNameFromPropertySetAndProperty(string propertySet, string property)
+        {
+            string parameterName = $"bsdd/prop/{propertySet}/{property}";
+            return parameterName;
+        }
+        #endregion //CM: bSDD parameters to Revit
+
+        #endregion //Class methods
+        #endregion //Class: ElementManager
+    }
+    #endregion //Class: ElementManager
+    #endregion //Classes
+
+    #region ============= Wrapper for Testing =============
+
+    public interface IWrapper
+    {
+        //Methods to test
+        string CreateParameterNameFromPropertySetAndProperty(string properyset, string property);
+        bool IsGeometrical(Element elem);
+    }
+
+    public class Wrapper : IWrapper
+    {
+        public string CreateParameterNameFromPropertySetAndProperty(string properyset, string property)
+        {
+            return ElementsManager.CreateParameterNameFromPropertySetAndProperty(properyset, property);
+        }
+
+        public bool IsGeometrical(Element elem)
+        {
+            return ElementsManager.IsGeometrical(elem);
         }
     }
+
+
+    #endregion
 }

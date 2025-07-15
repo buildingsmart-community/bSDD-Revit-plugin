@@ -1,4 +1,7 @@
-﻿using System;
+﻿//TODO comments
+
+#region ================== References ===================
+using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +12,9 @@ using BsddRevitPlugin.Logic.Model;
 using BsddRevitPlugin.Logic.IfcJson;
 using NLog;
 using System.Diagnostics;
+#endregion
 
+#region ============ Namespace Declaration ============
 namespace BsddRevitPlugin.Logic.IfcExport
 {
     /// <summary>
@@ -41,9 +46,12 @@ namespace BsddRevitPlugin.Logic.IfcExport
             foreach (Element element in elements)
             {
                 ElementType elementType = element as ElementType;
+                List<ElementId> elemSet = new List<ElementId>();
+                elemSet.Add(elementType.Id);
                 if (elementType != null)
                 {
-                    var elementTypeAssociations = ElementsManagerLogic.GetElementTypeAssociations(elementType);
+                    ElementsManager.GetElementTypeAssociations(elemSet, doc, out var ass);
+                    var elementTypeAssociations = ass;
                     foreach (var association in elementTypeAssociations)
                     {
 
@@ -179,3 +187,4 @@ namespace BsddRevitPlugin.Logic.IfcExport
         }
     }
 }
+#endregion

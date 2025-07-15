@@ -8,65 +8,81 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace BsddRevitPlugin.Logic {
-    
-    
+namespace BsddRevitPlugin.Logic
+{
+
+
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.10.0.0")]
-    internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
-        
+    internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase
+    {
+
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
-        
-        public static Settings Default {
-            get {
+
+        public static Settings Default
+        {
+            get
+            {
                 return defaultInstance;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("800")]
-        public double SearchWindowWidth {
-            get {
+        public double SearchWindowWidth
+        {
+            get
+            {
                 return ((double)(this["SearchWindowWidth"]));
             }
-            set {
+            set
+            {
                 this["SearchWindowWidth"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("800")]
-        public double SearchWindowHeight {
-            get {
+        public double SearchWindowHeight
+        {
+            get
+            {
                 return ((double)(this["SearchWindowHeight"]));
             }
-            set {
+            set
+            {
                 this["SearchWindowHeight"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("100")]
-        public double SearchWindowLeft {
-            get {
+        public double SearchWindowLeft
+        {
+            get
+            {
                 return ((double)(this["SearchWindowLeft"]));
             }
-            set {
+            set
+            {
                 this["SearchWindowLeft"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("100")]
-        public double SearchWindowTop {
-            get {
+        public double SearchWindowTop
+        {
+            get
+            {
                 return ((double)(this["SearchWindowTop"]));
             }
-            set {
+            set
+            {
                 this["SearchWindowTop"] = value;
             }
         }

@@ -1,10 +1,17 @@
-﻿using Autodesk.Revit.DB;
+﻿//TODO comments
+
+#region ================== References ===================
+using Autodesk.Revit.DB;
 using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Media.Animation;
+#endregion
 
+#region ============ Namespace Declaration ============
 namespace BsddRevitPlugin.Logic.Utilities
 {
     public class ParameterCreation
@@ -304,11 +311,6 @@ namespace BsddRevitPlugin.Logic.Utilities
                             {
                                 ExternalDefinitionCreationOptions externalDefinitionCreationOptions = new ExternalDefinitionCreationOptions(parameterName, specType);
 
-                                if (false)
-                                {
-                                    externalDefinitionCreationOptions.UserModifiable = false;
-                                }
-
                                 externalDefinitionCreationOptions.GUID = BsddRevitPlugin.Logic.Utilities.UuidFromUri.CreateUuidFromUri(parameterName);
                                 logger.Info($"Parameter = {parameterName}, GUID = {externalDefinitionCreationOptions.GUID.ToString()}");
 
@@ -413,7 +415,7 @@ namespace BsddRevitPlugin.Logic.Utilities
             {
                 if (it.Key is InternalDefinition def)
                 {
-                    if(it.Current is InstanceBinding instanceBinding)
+                    if (it.Current is InstanceBinding instanceBinding)
                     {
                         if (parametersToCreate.Any(x => x.parameterName == def.Name))
                         {
@@ -481,7 +483,7 @@ namespace BsddRevitPlugin.Logic.Utilities
                         }
                         break;
                     }
-                   
+
                 }
             }
             catch (Exception e)
@@ -556,3 +558,4 @@ namespace BsddRevitPlugin.Logic.Utilities
 
     }
 }
+#endregion

@@ -1,4 +1,7 @@
-﻿using Autodesk.Revit.DB.ExtensibleStorage;
+﻿//TODO comments
+
+#region ================== References ===================
+using Autodesk.Revit.DB.ExtensibleStorage;
 using Autodesk.Revit.DB;
 using BsddRevitPlugin.Logic.UI.BsddBridge;
 using NLog;
@@ -11,7 +14,9 @@ using System.IO;
 using Newtonsoft.Json;
 using System.Windows.Controls;
 using BsddRevitPlugin.Logic.Utilities;
+#endregion
 
+#region ============ Namespace Declaration ============
 namespace BsddRevitPlugin.Logic.Model
 {
     public static class SettingsManager
@@ -19,7 +24,7 @@ namespace BsddRevitPlugin.Logic.Model
 
         // bSDD plugin settings schema ID
         private static Guid s_schemaId = new Guid("F7D6DC5C-9521-49E4-B6D8-6F50252E9D73");
-    private const string BsddSettingsFieldName = "BsddSettings";
+        private const string BsddSettingsFieldName = "BsddSettings";
 
         /// <summary>
         /// Retrieves or creates the schema for the BSDD plugin settings.
@@ -227,3 +232,4 @@ namespace BsddRevitPlugin.Logic.Model
     }
 
 }
+#endregion

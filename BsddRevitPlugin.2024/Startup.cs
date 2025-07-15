@@ -1,6 +1,9 @@
 ﻿
 
 using Autodesk.Revit.UI;
+using CefSharp.Wpf;
+using CefSharp;
+using System.Windows;
 
 namespace BsddRevitPlugin.V2024
 {
@@ -10,6 +13,7 @@ namespace BsddRevitPlugin.V2024
         {
             var serviceFactory = new Services.ServiceFactory2024();
             var startup = new Common.Startup(application, serviceFactory);
+
             return startup.OnStartup(application);
         }
 
