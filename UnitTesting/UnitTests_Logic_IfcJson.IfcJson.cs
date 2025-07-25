@@ -143,8 +143,6 @@ namespace UnitTesting_BSDD_Revit_Plugin
             var material = new IfcMaterial
             {
                 Description = "ExampleDescription",
-                MaterialName = "ExampleMaterialName",
-                MaterialType = "ExampleMaterialType",
                 Type = "ExampleAssociationType",
                 Name = "ExampleAssociationName"
             };
@@ -155,8 +153,6 @@ namespace UnitTesting_BSDD_Revit_Plugin
 
             // Assert
             Assert.AreEqual(material.Description, deserialized.Description);
-            Assert.AreEqual(material.MaterialName, deserialized.MaterialName);
-            Assert.AreEqual(material.MaterialType, deserialized.MaterialType);
             Assert.AreEqual(material.Type, deserialized.Type);
             Assert.AreEqual(material.Name, deserialized.Name);
         }

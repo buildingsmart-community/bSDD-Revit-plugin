@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using static System.Net.Mime.MediaTypeNames;
 using System.Reflection.Emit;
+using Application = Autodesk.Revit.ApplicationServices.Application;
 
 namespace BsddRevitPlugin.UnitTesting.TestEnviorment
 {

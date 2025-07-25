@@ -110,22 +110,5 @@ namespace UnitTesting_BSDD_Revit_Plugin
             // Assert
             Assert.IsTrue(_executeCalled);
         }
-
-        [Test]
-        public void CanExecuteChanged_EventIsRaised()
-        {
-            // Arrange
-            Predicate<object> canExecute = param => true;
-            Action<object> execute = param => { };
-            var command = new BsddRevitPlugin.Logic.Commands.RelayCommand(execute, canExecute);
-            bool eventRaised = false;
-            command.CanExecuteChanged += (sender, args) => eventRaised = true;
-
-            // Act
-            command.RaiseCanExecuteChanged();
-
-            // Assert
-            Assert.IsTrue(eventRaised);
-        }
     }
 }

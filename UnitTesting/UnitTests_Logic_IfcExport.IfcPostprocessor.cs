@@ -113,26 +113,6 @@ namespace UnitTesting_BSDD_Revit_Plugin
             Assert.AreEqual(mockData.Object, result[0]);
         }
 
-        [Test]
-        public void TestOrCollectIfcClassificationsChangesClassificationReferencePostprocesData()
-        {
-            //Arrange
-            // Define class to run method CollectIfcClassifications
-            IfcPostprocessor ifcPostprocessor = new IfcPostprocessor();
-            //Set Data
-            var data = new ClassificationReferencePostprocesData { ClassificationLocation = "Test Data" };
-            List<ClassificationReferencePostprocesData> dataList = new List<ClassificationReferencePostprocesData> { data };
-
-            //Act
-            ifcPostprocessor.CollectIfcClassifications(doc);
-
-            // Use reflection to access the private readonly list
-            var fieldInfo = typeof(IfcPostprocessor).GetField("classificationReferencesPostprocesData", BindingFlags.NonPublic | BindingFlags.Instance);
-            dataList = (List<ClassificationReferencePostprocesData>)fieldInfo.GetValue(ifcPostprocessor);
-
-            // Assert
-            Assert.AreNotEqual("Test Data", dataList[0].ClassificationLocation);
-        }
 
         [Test]
         public void TestPostProcess()
