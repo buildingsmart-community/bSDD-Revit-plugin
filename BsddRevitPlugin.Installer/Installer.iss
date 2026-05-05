@@ -3,7 +3,7 @@
 
 #define PluginName "bSDD Revit plugin"
 #define PluginShortName "BsddRevitPlugin"
-#define PluginVersion "1.7.4"
+#define PluginVersion "1.8.0"
 #define PluginPublisher "bSDD Revit plugin contributors"
 #define PluginURL "https://github.com/buildingsmart-community/bSDD-Revit-plugin"
 #define RevitVersions "2023;2024";
@@ -51,7 +51,6 @@ Name: "danish"; MessagesFile: "compiler:Languages\Danish.isl"
 Name: "finnish"; MessagesFile: "compiler:Languages\Finnish.isl"
 Name: "french"; MessagesFile: "compiler:Languages\French.isl"
 Name: "german"; MessagesFile: "compiler:Languages\German.isl"
-Name: "icelandic"; MessagesFile: "compiler:Languages\Icelandic.isl"
 Name: "italian"; MessagesFile: "compiler:Languages\Italian.isl"
 Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
 Name: "norwegian"; MessagesFile: "compiler:Languages\Norwegian.isl"
