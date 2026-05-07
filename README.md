@@ -6,6 +6,7 @@
 * [Introduction](#introduction)
 * [Open bSDD toolkit projects](#open-bsdd-toolkit-projects)
 * [Features](#features)
+* [Building](#building)
 * [Installation](#installation)
 * [Usage](#usage)
 <!-- TOC -->
@@ -43,6 +44,76 @@ The idea of our development is that we inspire our industry to include bSDD in t
 - [x] **consistent application of an unlimited number of IfcClassifications**
 - [x] **leverages the built-in Revit IFC exporter, with a postprocessing step for improving Ifcclassificationreference location URL**
 - [ ] (add property URL) **TODO**
+
+## Building
+
+### Quick Start
+
+The easiest way to build the entire project including the installer is to use the provided build scripts:
+
+**PowerShell (recommended):**
+```powershell
+.\build.ps1
+```
+
+**Batch file:**
+```cmd
+build.bat
+```
+
+**Build in Debug mode:**
+```powershell
+.\build.ps1 -Configuration Debug
+```
+
+**Build installer only (if projects are already built):**
+```powershell
+.\build.ps1 -BuildInstallerOnly
+```
+
+### Prerequisites
+
+- **Visual Studio 2019 or later** with .NET Framework 4.8 development tools
+- **.NET SDK** (for `dotnet` commands)
+- **MSBuild** (included with Visual Studio)
+- **Inno Setup 6** (for building the installer)
+  ```powershell
+  winget install --id=JRSoftware.InnoSetup --exact --silent
+  ```
+
+### Manual Build Steps
+
+If you prefer to build manually or need more control:
+
+1. **Restore NuGet packages:**
+   ```powershell
+   dotnet restore BsddRevitPlugin.sln
+   ```
+
+2. **Build all projects:**
+   ```powershell
+   # ASRR Core libraries
+   msbuild lib\asrr\lib-asrr-core\ASRR.Core.csproj /p:Configuration=Release /p:Platform=AnyCPU /restore
+   msbuild lib\asrr\lib-asrr-core\ASRR.Core.csproj /p:Configuration=Release /p:Platform=x64
+
+   msbuild lib\asrr\lib-asrr-revit-core\ASRR.Revit.Core.csproj /p:Configuration=Release /p:Platform=AnyCPU /restore
+   msbuild lib\asrr\lib-asrr-revit-core\ASRR.Revit.Core.csproj /p:Configuration=Release /p:Platform=x64
+
+   # Plugin projects
+   msbuild BsddRevitPlugin.Resources\BsddRevitPlugin.Resources.csproj /p:Configuration=Release
+   msbuild BsddRevitPlugin.Logic\BsddRevitPlugin.Logic.csproj /p:Configuration=Release /p:Platform=x64
+   msbuild BsddRevitPlugin.2023\BsddRevitPlugin.2023.csproj /p:Configuration=Release /p:Platform=x64
+   msbuild BsddRevitPlugin.2024\BsddRevitPlugin.2024.csproj /p:Configuration=Release /p:Platform=x64
+   ```
+
+3. **Build the installer:**
+   ```powershell
+   & "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe" "BsddRevitPlugin.Installer\Installer.iss"
+   ```
+
+The installer will be created at: `BsddRevitPlugin.Installer\Output\bSDD-Revit-plugin-setup.exe`
+
+For more details about the installer, see [BsddRevitPlugin.Installer/README.md](BsddRevitPlugin.Installer/README.md).
 
 ## Installation
 1. Go to the [Releases](https://github.com/buildingsmart-community/bSDD-Revit-plugin/releases) page
