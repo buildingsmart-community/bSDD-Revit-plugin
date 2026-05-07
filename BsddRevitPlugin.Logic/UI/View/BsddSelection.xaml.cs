@@ -77,8 +77,8 @@ namespace BsddRevitPlugin.Logic.UI.View
              //_browserService.Address = "http://localhost:3000/bsdd_selection";
             //_browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/v1.4.0/bsdd_selection/";
             //_browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/v1.6.0/bsdd_selection/";
-            _browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/main/bsdd_selection/";
-            _browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/v1.8.1/bsdd_selection/";
+            //_browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/main/bsdd_selection/";
+            _browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/v1.8.3/bsdd_selection/";
             _browserService.RegisterJsObject("bsddBridge", new BsddSelectionBridge(SelectEULS, updateUIEvent), true);
             _browserService.IsBrowserInitializedChanged += OnIsBrowserInitializedChanged;
 
