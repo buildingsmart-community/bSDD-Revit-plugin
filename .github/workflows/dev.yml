@@ -24,18 +24,18 @@ jobs:
     
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       
       # install and calculate the new version with GitVersion  
       - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v0.9.7
+        uses: gittools/actions/gitversion/setup@v0.10.2
         with:
-          versionSpec: '5.5.0'
+          versionSpec: '5.12.0'
 
       - name: Determine Version
-        uses: gittools/actions/gitversion/execute@v0.9.7
+        uses: gittools/actions/gitversion/execute@v0.10.2
         with:
           useConfigFile: true
           configFilePath: GitVersion.yml
@@ -49,10 +49,10 @@ jobs:
 
 
       - name: Setup MSBuild.exe
-        uses: microsoft/setup-msbuild@v1.0.2
+        uses: microsoft/setup-msbuild@v2
 
       - name: Setup NuGet
-        uses: NuGet/setup-nuget@v1.0.5
+        uses: NuGet/setup-nuget@v2
 
       - name: Restore NuGet packages
         run: |
