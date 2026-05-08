@@ -20,18 +20,18 @@ jobs:
       
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       
        # install and calculate the new version with GitVersion  
       - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v0.9.7
+        uses: gittools/actions/gitversion/setup@v0.10.2
         with:
-          versionSpec: '5.5.0'
+          versionSpec: '5.12.0'
 
       - name: Determine Version
-        uses: gittools/actions/gitversion/execute@v0.9.7
+        uses: gittools/actions/gitversion/execute@v0.10.2
         with:
           useConfigFile: true
           configFilePath: GitVersion.yml
@@ -43,10 +43,10 @@ jobs:
           echo "NuGetVersionV2: ${{ steps.gitversion.outputs.nuGetVersionV2 }}"   
           echo "CommitsSinceVersionSource: ${{ steps.gitversion.outputs.CommitsSinceVersionSource }}"    
       - name: Setup MSBuild.exe
-        uses: microsoft/setup-msbuild@v1.0.2
+        uses: microsoft/setup-msbuild@v2
 
       - name: Setup NuGet
-        uses: NuGet/setup-nuget@v1.0.5
+        uses: NuGet/setup-nuget@v2
 
       - name: Restore NuGet packages
         run: |
@@ -67,24 +67,22 @@ jobs:
         run: |
           dotnet test
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      - name: Install Inno Setup
+        run: |
+          choco install innosetup -y
+
+      - name: Build Installer
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "BsddRevitPlugin.Installer\Installer.iss"
+
+      - name: Create Release and Upload Assets
+        uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.gitversion.outputs.majorMinorPatch }}
-          release_name: ASRR bSDD Revit plugin v${{ steps.gitversion.outputs.majorMinorPatch }}
-          automatic_release_tag: "latest"
+          tag_name: v${{ steps.gitversion.outputs.majorMinorPatch }}
+          name: bSDD Revit Plugin v${{ steps.gitversion.outputs.majorMinorPatch }}
           draft: false
           prerelease: false
-      - name: Upload Release Asset
-        id: upload-release-asset 
-        uses: actions/upload-release-asset@v1
+          files: |
+            BsddRevitPlugin.Installer/Output/bSDD-Revit-plugin-setup.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: .\BsddRevitPlugin.Installer\Output\BsddRevitPluginAddin.exe
-          asset_name: BsddRevitPluginAddin.exe
-          asset_content_type: application/zip
