@@ -63,7 +63,8 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             {
                 Settings = GlobalBsddSettings.bsddsettings,
                 IfcData = ifcEntity,
-                PropertyIsInstanceMap = ParameterDataManagement.GetProjectParameterTypes(GlobalDocument.currentDocument)
+                PropertyIsInstanceMap = ParameterDataManagement.GetProjectParameterTypes(GlobalDocument.currentDocument),
+                DisplayScale = DisplayScaleUtility.GetDisplayScale()
             };
             _eventHandlerBsddSearch.setBsddBridgeData(bsddBridgeData);
             _eventHandlerBsddSearch.Raise("openSearch");
@@ -124,7 +125,8 @@ namespace BsddRevitPlugin.Logic.UI.BsddBridge
             BsddBridgeData bsddBridgeData = new BsddBridgeData
             {
                 Settings = GlobalBsddSettings.bsddsettings,
-                IfcData = new List<IfcEntity>()
+                IfcData = new List<IfcEntity>(),
+                DisplayScale = DisplayScaleUtility.GetDisplayScale()
             };
             return JsonConvert.SerializeObject(bsddBridgeData);
         }

@@ -75,10 +75,8 @@ namespace BsddRevitPlugin.Logic.UI.View
             //_browserService.Address = "http://localhost:4173/bsdd_selection";
             //_browserService.Address = "http://localhost:3001/bsdd_selection";
              //_browserService.Address = "http://localhost:3000/bsdd_selection";
-            //_browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/v1.4.0/bsdd_selection/";
-            //_browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/v1.6.0/bsdd_selection/";
-            //_browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/main/bsdd_selection/";
-            _browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/v1.8.3/bsdd_selection/";
+            // _browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/main/bsdd_selection/";
+            _browserService.Address = "https://buildingsmart-community.github.io/bSDD-filter-UI/v1.9/bsdd_selection/";
             _browserService.RegisterJsObject("bsddBridge", new BsddSelectionBridge(SelectEULS, updateUIEvent), true);
             _browserService.IsBrowserInitializedChanged += OnIsBrowserInitializedChanged;
 
@@ -241,11 +239,12 @@ namespace BsddRevitPlugin.Logic.UI.View
             //}
             if (_browserService.IsBrowserInitialized)
             {
-#if DEBUG
+// #if DEBUG
 
-                _browserService.ShowDevTools();
-#endif
+//                 _browserService.ShowDevTools();
+// #endif
                 _browserService.ExecuteScriptAsync("CefSharp.BindObjectAsync('bsddBridge');");
+                _browserService.FocusWebContent();
             }
         }
     }

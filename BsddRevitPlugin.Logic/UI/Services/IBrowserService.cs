@@ -15,6 +15,7 @@ namespace BsddRevitPlugin.Logic.UI.Services
         event DependencyPropertyChangedEventHandler IsBrowserInitializedChanged;
         bool IsBrowserInitialized { get; }
         void ShowDevTools();
+        void FocusWebContent();
         string Address { get; set; }
         ICustomBrowserControl BrowserInstance { get; }
         object BrowserControl { get; }
