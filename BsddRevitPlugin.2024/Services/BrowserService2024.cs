@@ -1,5 +1,6 @@
 ﻿using BsddRevitPlugin.Logic.UI.Services;
 using CefSharp;
+using System;
 using System.Windows;
 
 namespace BsddRevitPlugin.V2024.Services
@@ -53,6 +54,41 @@ namespace BsddRevitPlugin.V2024.Services
         public void ShowDevTools()
         {
             this.chromiumWebBrowser.ShowDevTools();
+        }
+
+        public void FocusWebContent()
+        {
+            EventHandler<FrameLoadEndEventArgs> frameLoadHandler = null;
+            frameLoadHandler = (sender, args) =>
+            {
+                if (!args.Frame.IsMain)
+                {
+                    return;
+                }
+
+                this.chromiumWebBrowser.FrameLoadEnd -= frameLoadHandler;
+
+                const string focusScript = @"
+                    (function () {
+                        window.focus();
+                        var first =
+                            document.querySelector('[autofocus]') ||
+                            document.querySelector('input:not([type=hidden]):not([disabled]), textarea:not([disabled]), select:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex=""-1""])');
+
+                        if (first && typeof first.focus === 'function') {
+                            first.focus();
+                        } else if (document.body && typeof document.body.focus === 'function') {
+                            document.body.setAttribute('tabindex', '-1');
+                            document.body.focus();
+                        }
+                    })();";
+
+                args.Frame.ExecuteJavaScriptAsync(focusScript);
+                this.chromiumWebBrowser.Dispatcher.BeginInvoke(new Action(() => this.chromiumWebBrowser.Focus()));
+            };
+
+            this.chromiumWebBrowser.FrameLoadEnd += frameLoadHandler;
+            this.chromiumWebBrowser.Dispatcher.BeginInvoke(new Action(() => this.chromiumWebBrowser.Focus()));
         }
 
         public event DependencyPropertyChangedEventHandler IsBrowserInitializedChanged
